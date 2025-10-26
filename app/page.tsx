@@ -90,7 +90,7 @@ export default function Home() {
             <SubscribeForm />
           </div>
 
-          <p className="text-sm text-gray-200">Join 1,000+ investors getting smarter every morning</p>
+          <p className="text-sm text-gray-200">Get smarter about markets in 5 minutes every morning</p>
         </div>
       </section>
 
@@ -165,7 +165,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#00ff88]/20 rounded-2xl p-8 md:p-12 text-center space-y-6">
           <h3 className="text-3xl md:text-4xl font-bold text-white text-balance">Start your mornings smarter</h3>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto text-pretty">
-            Join thousands of investors who trust Daily Ticker for clear, actionable market insights.
+            Get clear, actionable market insights delivered to your inbox every morning.
           </p>
           <SubscribeForm variant="large" />
         </div>
