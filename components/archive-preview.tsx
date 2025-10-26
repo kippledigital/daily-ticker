@@ -60,7 +60,7 @@ export function ArchivePreview() {
           >
             {/* Brief Header */}
             <div className="bg-[#0B1E32]/50 border-b border-[#1a3a52] p-4">
-              <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <div className="flex items-center gap-2 text-sm text-gray-200 mb-2">
                 <Calendar className="h-4 w-4" />
                 <span className="font-mono">{brief.date}</span>
               </div>
@@ -69,7 +69,7 @@ export function ArchivePreview() {
 
             {/* Brief Content */}
             <div className="p-4 space-y-3">
-              <div className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Top Moves</div>
+              <div className="text-xs text-gray-200 uppercase tracking-wide font-semibold">Top Moves</div>
               {brief.topMoves.map((move, moveIndex) => (
                 <div key={moveIndex} className="flex items-start gap-3 pb-3 border-b border-[#1a3a52]/50 last:border-0">
                   <div className="flex-shrink-0 w-16">
@@ -93,14 +93,14 @@ export function ArchivePreview() {
 
             {/* Brief Footer */}
             <div className="bg-[#0B1E32]/50 border-t border-[#1a3a52] p-3 text-center">
-              <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Example Brief</span>
+              <span className="text-xs text-gray-300 group-hover:text-gray-200 transition-colors">Example Brief</span>
             </div>
           </div>
         ))}
       </div>
 
       <div className="text-center pt-4">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-200">
           Each brief includes market context, key moves, and plain-English explanations
         </p>
       </div>

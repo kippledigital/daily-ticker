@@ -74,7 +74,7 @@ export default function TickerBoard() {
       {/* Status indicator */}
       <div className="absolute top-2 right-4 z-10 flex items-center gap-2 text-xs">
         <div className={`w-2 h-2 rounded-full ${error ? 'bg-yellow-500' : 'bg-ledGreen'} ${!error && 'animate-pulse'}`} />
-        <span className="text-gray-400 font-mono">
+        <span className="text-gray-200 font-mono">
           {error ? 'SAMPLE DATA' : 'LIVE'}
         </span>
       </div>

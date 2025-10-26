@@ -46,14 +46,17 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
         required
         disabled={isLoading || isSuccess}
         className={cn(
-          "flex-1 bg-[#1a3a52] border-[#2a4a62] text-white placeholder:text-gray-400 focus-visible:ring-[#00ff88] focus-visible:border-[#00ff88]",
+          "flex-1 bg-[#1a3a52] border-[#2a4a62] text-white placeholder:text-gray-200 focus-visible:ring-[#00ff88] focus-visible:border-[#00ff88]",
           isLarge && "h-12 text-base",
         )}
       />
       <Button
         type="submit"
         disabled={isLoading || isSuccess}
-        className={cn("bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold", isLarge && "h-12 px-8 text-base")}
+        className={cn(
+          "bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 transition-all",
+          isLarge && "h-12 px-8 text-base"
+        )}
       >
         {isLoading ? (
           <>

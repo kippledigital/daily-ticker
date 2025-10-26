@@ -75,7 +75,7 @@ export default function SubscribeForm() {
         )}
       </form>
 
-      <p className="text-xs text-gray-500 text-center mt-4">
+      <p className="text-xs text-gray-300 text-center mt-4">
         Daily market briefs sent Mon–Fri at 8 AM. Unsubscribe anytime.
       </p>
     </div>

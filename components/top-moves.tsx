@@ -75,7 +75,7 @@ export function TopMoves() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="text-xl font-bold text-white font-mono">{move.symbol}</h4>
-                  <span className="text-sm text-gray-400">{move.company}</span>
+                  <span className="text-sm text-gray-200">{move.company}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span

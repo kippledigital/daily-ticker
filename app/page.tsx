@@ -42,26 +42,32 @@ export default function Home() {
             <TrendingUp className="h-6 w-6 text-[#00ff88]" />
             <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
           </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#about" className="text-sm text-gray-300 hover:text-white transition-colors">
+          <nav className="flex items-center gap-4 md:gap-6">
+            <a href="#about" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
               About
             </a>
-            <a href="#archive" className="text-sm text-gray-300 hover:text-white transition-colors">
+            <a href="#archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
               Archive
             </a>
             <a
               href="mailto:brief@dailyticker.co"
-              className="text-sm text-gray-300 hover:text-white transition-colors flex items-center gap-1"
+              className="hidden md:flex text-sm text-gray-300 hover:text-white transition-colors items-center gap-1"
             >
               <Mail className="h-4 w-4" />
               Contact
+            </a>
+            <a
+              href="#subscribe"
+              className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
+            >
+              Subscribe
             </a>
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24">
+      <section id="subscribe" className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a3a52]/50 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
             <span className="relative flex h-2 w-2">
@@ -84,7 +90,7 @@ export default function Home() {
             <SubscribeForm />
           </div>
 
-          <p className="text-sm text-gray-400">Join 1,000+ investors getting smarter every morning</p>
+          <p className="text-sm text-gray-200">Join 1,000+ investors getting smarter every morning</p>
         </div>
       </section>
 
@@ -174,7 +180,7 @@ export default function Home() {
                 <TrendingUp className="h-5 w-5 text-[#00ff88]" />
                 <span className="font-bold text-white font-mono">Daily Ticker</span>
               </div>
-              <p className="text-sm text-gray-400 leading-relaxed">Market insights that make sense. Delivered daily.</p>
+              <p className="text-sm text-gray-200 leading-relaxed">Market insights that make sense. Delivered daily.</p>
             </div>
 
             <div className="space-y-4">
@@ -184,13 +190,13 @@ export default function Home() {
                   href="https://twitter.com/GetDailyTicker"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-sm text-gray-400 hover:text-[#00ff88] transition-colors"
+                  className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors"
                 >
                   Twitter
                 </a>
                 <a
                   href="mailto:brief@dailyticker.co"
-                  className="block text-sm text-gray-400 hover:text-[#00ff88] transition-colors"
+                  className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors"
                 >
                   Email Us
                 </a>
@@ -200,7 +206,7 @@ export default function Home() {
             <div className="space-y-4">
               <h5 className="font-semibold text-white">Legal</h5>
               <div className="space-y-2">
-                <a href="/privacy" className="block text-sm text-gray-400 hover:text-[#00ff88] transition-colors">
+                <a href="/privacy" className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors">
                   Privacy Policy
                 </a>
               </div>
@@ -208,12 +214,12 @@ export default function Home() {
           </div>
 
           <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-[#1a3a52]">
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-xs text-gray-300 leading-relaxed">
               <strong>Disclaimer:</strong> Daily Ticker is for educational purposes only and does not provide financial
               advice. All content is for informational purposes. Always consult with a qualified financial advisor
               before making investment decisions.
             </p>
-            <p className="text-xs text-gray-500 mt-4">
+            <p className="text-xs text-gray-300 mt-4">
               © {new Date().getFullYear()} Daily Ticker. All rights reserved.
             </p>
           </div>
