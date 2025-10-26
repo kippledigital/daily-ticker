@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Daily Ticker',
     short_name: 'Daily Ticker',
-    description: 'A daily, plain-English market brief for people who want to be in the action but don\'t have time to do the research.',
+    description: 'A daily, clear & actionable market brief for people who want to be in the action but don\'t have time to do the research.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0B1E32',

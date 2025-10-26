@@ -101,7 +101,7 @@ export function ArchivePreview() {
 
       <div className="text-center pt-4">
         <p className="text-sm text-gray-200">
-          Each brief includes market context, key moves, and plain-English explanations
+          Each brief includes market context, key moves, and clear explanations
         </p>
       </div>
     </div>

@@ -1,6 +1,6 @@
 # 🧾 Daily Ticker
 
-A daily, plain-English market brief for people who want to be in the action but don't have time to do the research.
+A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research.
 
 **Live Site:** [dailyticker.co](https://dailyticker.co)
 **Twitter:** [@GetDailyTicker](https://twitter.com/GetDailyTicker)

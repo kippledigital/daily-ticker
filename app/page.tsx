@@ -10,7 +10,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: "Daily Ticker - Market Insights That Make Sense",
-    description: "Daily Ticker delivers clear, actionable stock insights in plain English — no hype, no jargon.",
+    description: "Daily Ticker delivers clear, actionable stock insights — no hype, no jargon.",
     publisher: {
       "@type": "Organization",
       name: "Daily Ticker",
@@ -82,7 +82,7 @@ export default function Home() {
           </h2>
 
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed text-pretty">
-            A daily, plain-English market brief for people who want to be in the action but don&apos;t have time to do the
+            A daily, clear & actionable market brief for people who want to be in the action but don&apos;t have time to do the
             research.
           </p>
 
@@ -118,7 +118,7 @@ export default function Home() {
             <div className="h-12 w-12 rounded-lg bg-[#00ff88]/10 flex items-center justify-center">
               <TrendingUp className="h-6 w-6 text-[#00ff88]" />
             </div>
-            <h4 className="text-xl font-bold text-white">Plain English</h4>
+            <h4 className="text-xl font-bold text-white">Clear & Actionable</h4>
             <p className="text-gray-300 leading-relaxed">
               No Wall Street jargon. Just clear, actionable insights you can understand in minutes.
             </p>

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 // Image metadata
-export const alt = 'Daily Ticker — Plain-English Market Briefs';
+export const alt = 'Daily Ticker — Clear & Actionable Market Briefs';
 export const size = {
   width: 1200,
   height: 630,
@@ -74,7 +74,7 @@ export default async function Image() {
               maxWidth: 800,
             }}
           >
-            Plain-English Market Briefs for Busy Investors
+            Clear & Actionable Market Briefs for Busy Investors
           </div>
 
           {/* Ticker symbols */}

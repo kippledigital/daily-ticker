@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Daily Ticker — Plain-English Market Briefs for Busy Investors",
-  description: "A daily, plain-English market brief for people who want to be in the action but don't have time to do the research. Sent Mon–Fri at 8 AM.",
+  title: "Daily Ticker — Clear & Actionable Market Briefs for Busy Investors",
+  description: "A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research. Sent Mon–Fri at 8 AM.",
   keywords: ["stock market", "market brief", "investing", "daily newsletter", "market insights"],
   authors: [{ name: "Daily Ticker" }],
   creator: "Daily Ticker",
   publisher: "Daily Ticker",
   metadataBase: new URL('https://dailyticker.co'),
   openGraph: {
-    title: "Daily Ticker — Plain-English Market Briefs",
-    description: "A daily, plain-English market brief for people who want to be in the action but don't have time to do the research.",
+    title: "Daily Ticker — Clear & Actionable Market Briefs",
+    description: "A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research.",
     url: 'https://dailyticker.co',
     siteName: 'Daily Ticker',
     images: [
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Daily Ticker — Plain-English Market Briefs',
+    title: 'Daily Ticker — Clear & Actionable Market Briefs',
     description: 'Daily market insights for busy investors. Sent Mon–Fri at 8 AM.',
     creator: '@GetDailyTicker',
     images: ['/og.png'],
