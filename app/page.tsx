@@ -209,6 +209,9 @@ export default function Home() {
                 <a href="/privacy" className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors">
                   Privacy Policy
                 </a>
+                <a href="/terms" className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors">
+                  Terms of Service
+                </a>
               </div>
             </div>
           </div>
