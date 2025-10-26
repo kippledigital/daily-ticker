@@ -4,7 +4,15 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'dailyticker.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'polygon.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.polygon.io',
       },
     ],
   },

@@ -16,19 +16,36 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call - replace with actual Beehiiv/ConvertKit integration
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
 
-    setIsLoading(false)
-    setIsSuccess(true)
-    setEmail("")
+      const data = await response.json()
 
-    setTimeout(() => setIsSuccess(false), 3000)
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe')
+      }
+
+      setIsSuccess(true)
+      setEmail("")
+      setTimeout(() => setIsSuccess(false), 5000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to subscribe. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const isLarge = variant === "large"
@@ -72,6 +89,9 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
           </>
         )}
       </Button>
+      {error && (
+        <p className="text-sm text-[#ff4444] mt-2">{error}</p>
+      )}
     </form>
   )
 }

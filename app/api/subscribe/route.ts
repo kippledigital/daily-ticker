@@ -1,11 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_EMAIL_LENGTH = 254; // RFC 5321
+
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
-    // Validate email
-    if (!email || !email.includes('@')) {
+    // Validate email format
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json(
+        { error: 'Please provide a valid email address.' },
+        { status: 400 }
+      );
+    }
+
+    // Trim and lowercase email
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check length
+    if (normalizedEmail.length > MAX_EMAIL_LENGTH) {
+      return NextResponse.json(
+        { error: 'Email address is too long.' },
+        { status: 400 }
+      );
+    }
+
+    // Check format with regex
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
       return NextResponse.json(
         { error: 'Please provide a valid email address.' },
         { status: 400 }
@@ -42,7 +65,7 @@ export async function POST(request: NextRequest) {
     //   throw new Error('Failed to subscribe');
     // }
 
-    console.log('New subscription:', email);
+    console.log('New subscription:', normalizedEmail);
 
     return NextResponse.json(
       {
