@@ -17,10 +17,10 @@ export const metadata: Metadata = {
     siteName: 'Daily Ticker',
     images: [
       {
-        url: '/og.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Daily Ticker',
+        alt: 'Daily Ticker — Clear & Actionable Market Briefs',
       },
     ],
     locale: 'en_US',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: 'Daily Ticker — Clear & Actionable Market Briefs',
     description: 'Daily market insights for busy investors. Sent Mon–Fri at 8 AM.',
     creator: '@GetDailyTicker',
-    images: ['/og.png'],
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
