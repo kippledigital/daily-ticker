@@ -35,37 +35,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Integrate with Beehiiv or ConvertKit
-    // For now, we'll just log it and return success
-    // Replace this with actual API integration:
+    // Beehiiv integration
+    const beehiivApiKey = process.env.BEEHIIV_API_KEY;
+    const publicationId = process.env.BEEHIIV_PUBLICATION_ID;
 
-    // Example Beehiiv integration:
-    // const beehiivApiKey = process.env.BEEHIIV_API_KEY;
-    // const publicationId = process.env.BEEHIIV_PUBLICATION_ID;
-    //
-    // const response = await fetch(
-    //   `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`,
-    //   {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${beehiivApiKey}`,
-    //     },
-    //     body: JSON.stringify({
-    //       email,
-    //       reactivate_existing: false,
-    //       send_welcome_email: true,
-    //       utm_source: 'website',
-    //       utm_medium: 'organic',
-    //     }),
-    //   }
-    // );
-    //
-    // if (!response.ok) {
-    //   throw new Error('Failed to subscribe');
-    // }
+    if (!beehiivApiKey || !publicationId) {
+      console.error('Beehiiv credentials not configured');
+      return NextResponse.json(
+        { error: 'Subscription service not configured' },
+        { status: 500 }
+      );
+    }
 
-    console.log('New subscription:', normalizedEmail);
+    const response = await fetch(
+      `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${beehiivApiKey}`,
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          reactivate_existing: false,
+          send_welcome_email: true,
+          utm_source: 'website',
+          utm_medium: 'organic',
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Beehiiv API error:', data);
+      throw new Error(data.message || 'Failed to subscribe to newsletter');
+    }
+
+    console.log('New subscription successful:', normalizedEmail);
 
     return NextResponse.json(
       {
