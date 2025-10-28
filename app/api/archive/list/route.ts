@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRedis } from '@/lib/redis';
-import type { BriefData } from '../store/route';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,73 +8,68 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const ticker = searchParams.get('ticker')?.toUpperCase();
 
-    const redis = await getRedis();
+    // Build query
+    let query = supabase
+      .from('briefs')
+      .select(`
+        id,
+        date,
+        subject,
+        tldr,
+        actionable_count,
+        stocks (
+          ticker,
+          sector
+        )
+      `)
+      .order('date', { ascending: false });
 
-    // Get all brief dates (sorted by newest first)
-    const allDates = await redis.zRange('briefs:dates', 0, -1, { REV: true });
-
-    if (!allDates || allDates.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: [],
-        total: 0,
-        limit,
-        offset,
-      });
-    }
-
-    // If filtering by ticker, fetch all briefs and filter
-    let filteredDates = allDates;
-
+    // If filtering by ticker, join with stocks table
     if (ticker) {
-      const briefsToCheck = await Promise.all(
-        allDates.map(async (date) => {
-          const briefData = await redis.get(`brief:${date}`);
-          return briefData ? JSON.parse(briefData) as BriefData : null;
-        })
-      );
-
-      filteredDates = allDates.filter((date, index) => {
-        const brief = briefsToCheck[index];
-        if (!brief) return false;
-        return brief.stocks.some(stock => stock.ticker === ticker);
-      });
+      query = query.filter('stocks.ticker', 'eq', ticker);
     }
 
-    // Apply pagination
-    const paginatedDates = filteredDates.slice(offset, offset + limit);
+    // Get total count
+    const { count } = await supabase
+      .from('briefs')
+      .select('*', { count: 'exact', head: true });
 
-    // Fetch brief metadata for paginated dates
-    const briefs = await Promise.all(
-      paginatedDates.map(async (date) => {
-        const briefData = await redis.get(`brief:${date}`);
-        const brief = briefData ? JSON.parse(briefData) as BriefData : null;
-        if (!brief) return null;
+    // Get paginated data
+    const { data: briefs, error } = await query
+      .range(offset, offset + limit - 1);
 
-        // Return metadata only (not full HTML)
-        const uniqueSectors = new Set(brief.stocks.map(s => s.sector));
-        return {
-          date: brief.date,
-          subject: brief.subject,
-          tldr: brief.tldr,
-          actionableCount: brief.actionableCount,
-          stockCount: brief.stocks.length,
-          tickers: brief.stocks.map(s => s.ticker),
-          sectors: Array.from(uniqueSectors),
-        };
-      })
-    );
+    if (error) {
+      console.error('Error fetching briefs:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch briefs list' },
+        { status: 500 }
+      );
+    }
 
-    // Filter out null values
-    const validBriefs = briefs.filter(b => b !== null);
+    // Transform data
+    const transformedBriefs = briefs?.map((brief: any) => {
+      const stocks = brief.stocks || [];
+      const uniqueSectors = Array.from(new Set(stocks.map((s: any) => s.sector)));
+      const tickers = stocks.map((s: any) => s.ticker);
+
+      return {
+        date: brief.date,
+        subject: brief.subject,
+        tldr: brief.tldr,
+        actionableCount: brief.actionable_count,
+        stockCount: stocks.length,
+        tickers,
+        sectors: uniqueSectors,
+      };
+    }) || [];
 
     return NextResponse.json({
       success: true,
-      data: validBriefs,
-      total: filteredDates.length,
+      data: transformedBriefs,
+      total: count || 0,
       limit,
       offset,
-      hasMore: offset + limit < filteredDates.length,
+      hasMore: offset + limit < (count || 0),
     });
   } catch (error) {
     console.error('Error listing briefs:', error);

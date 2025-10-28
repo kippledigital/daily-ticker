@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRedis } from '@/lib/redis';
+import { supabase } from '@/lib/supabase';
 import type { BriefData } from '../store/route';
 
 export async function GET(
@@ -18,22 +18,52 @@ export async function GET(
       );
     }
 
-    const redis = await getRedis();
+    // Fetch brief with stocks
+    const { data: brief, error } = await supabase
+      .from('briefs')
+      .select(`
+        *,
+        stocks (*)
+      `)
+      .eq('date', date)
+      .single();
 
-    // Fetch brief from Redis
-    const briefData = await redis.get(`brief:${date}`);
-    const brief = briefData ? JSON.parse(briefData) as BriefData : null;
-
-    if (!brief) {
+    if (error || !brief) {
       return NextResponse.json(
         { error: `Brief not found for date: ${date}` },
         { status: 404 }
       );
     }
 
+    // Transform to BriefData format
+    const briefData: BriefData = {
+      date: (brief as any).date,
+      subject: (brief as any).subject,
+      htmlContent: (brief as any).html_content,
+      tldr: (brief as any).tldr || undefined,
+      actionableCount: (brief as any).actionable_count,
+      stocks: ((brief as any).stocks as any[]).map((stock) => ({
+        ticker: stock.ticker,
+        sector: stock.sector,
+        confidence: stock.confidence,
+        riskLevel: stock.risk_level,
+        action: stock.action,
+        entryPrice: stock.entry_price,
+        entryZoneLow: stock.entry_zone_low || undefined,
+        entryZoneHigh: stock.entry_zone_high || undefined,
+        summary: stock.summary,
+        whyMatters: stock.why_matters,
+        momentumCheck: stock.momentum_check,
+        actionableInsight: stock.actionable_insight,
+        allocation: stock.allocation || undefined,
+        cautionNotes: stock.caution_notes || undefined,
+        learningMoment: stock.learning_moment || undefined,
+      })),
+    };
+
     return NextResponse.json({
       success: true,
-      data: brief,
+      data: briefData,
     });
   } catch (error) {
     console.error(`Error fetching brief for ${params.date}:`, error);

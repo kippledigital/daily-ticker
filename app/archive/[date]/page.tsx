@@ -14,53 +14,53 @@ interface BriefPageProps {
 
 async function getBrief(date: string): Promise<BriefData | null> {
   try {
-    // Call the API route handler directly (server-side import)
-    const { GET } = await import('@/app/api/archive/[date]/route')
-    const request = new NextRequest(`http://localhost/api/archive/${date}`)
-    const response = await GET(request, { params: { date } })
+    const { supabase } = await import('@/lib/supabase')
 
-    if (!response.ok) {
-      return null
+    const { data: brief, error } = await supabase
+      .from('briefs')
+      .select(`
+        *,
+        stocks (*)
+      `)
+      .eq('date', date)
+      .single()
+
+    if (error || !brief) return null
+
+    // Transform to BriefData format
+    return {
+      date: brief.date,
+      subject: brief.subject,
+      htmlContent: brief.html_content,
+      tldr: brief.tldr || undefined,
+      actionableCount: brief.actionable_count,
+      stocks: (brief.stocks as any[]).map((stock) => ({
+        ticker: stock.ticker,
+        sector: stock.sector,
+        confidence: stock.confidence,
+        riskLevel: stock.risk_level,
+        action: stock.action,
+        entryPrice: stock.entry_price,
+        entryZoneLow: stock.entry_zone_low || undefined,
+        entryZoneHigh: stock.entry_zone_high || undefined,
+        summary: stock.summary,
+        whyMatters: stock.why_matters,
+        momentumCheck: stock.momentum_check,
+        actionableInsight: stock.actionable_insight,
+        allocation: stock.allocation || undefined,
+        cautionNotes: stock.caution_notes || undefined,
+        learningMoment: stock.learning_moment || undefined,
+      })),
     }
-
-    const data = await response.json()
-    return data.success ? data.data : null
   } catch (error) {
     console.error(`Error fetching brief for ${date}:`, error)
     return null
   }
 }
 
-export async function generateMetadata({ params }: BriefPageProps): Promise<Metadata> {
-  const brief = await getBrief(params.date)
-
-  if (!brief) {
-    return {
-      title: 'Brief Not Found — Daily Ticker',
-    }
-  }
-
-  const formattedDate = new Date(brief.date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-
-  return {
-    title: `${brief.subject} — Daily Ticker`,
-    description: brief.tldr || `Market brief for ${formattedDate}. ${brief.stocks.length} stocks analyzed.`,
-    keywords: [...brief.stocks.map(s => `${s.ticker} stock`), 'stock brief', 'market analysis'],
-    openGraph: {
-      title: brief.subject,
-      description: brief.tldr || `${brief.stocks.length} stocks analyzed on ${formattedDate}`,
-      images: ['/opengraph-image'],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: brief.subject,
-      description: brief.tldr || `${brief.stocks.length} stocks analyzed`,
-    },
-  }
+export const metadata: Metadata = {
+  title: 'Daily Brief — Daily Ticker',
+  description: 'Read our daily market brief with stock recommendations',
 }
 
 export default async function BriefPage({ params }: BriefPageProps) {

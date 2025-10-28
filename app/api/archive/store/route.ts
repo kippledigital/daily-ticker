@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRedis } from '@/lib/redis';
+import { supabase } from '@/lib/supabase';
 
 export interface StockRecommendation {
   ticker: string;
@@ -57,10 +57,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const redis = await getRedis();
-
     // Check if brief already exists
-    const existingBrief = await redis.get(`brief:${data.date}`);
+    const { data: existingBrief } = await supabase
+      .from('briefs')
+      .select('id')
+      .eq('date', data.date)
+      .single();
+
     if (existingBrief) {
       return NextResponse.json(
         { error: `Brief for ${data.date} already exists` },
@@ -68,15 +71,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store brief in Redis
-    await redis.set(`brief:${data.date}`, JSON.stringify(data));
+    // Insert brief
+    const { data: brief, error: briefError } = await supabase
+      .from('briefs')
+      .insert({
+        date: data.date,
+        subject: data.subject,
+        html_content: data.htmlContent,
+        tldr: data.tldr || null,
+        actionable_count: data.actionableCount,
+      })
+      .select()
+      .single();
 
-    // Add date to index (for listing briefs)
-    await redis.lPush('briefs:index', data.date);
+    if (briefError || !brief) {
+      console.error('Error inserting brief:', briefError);
+      return NextResponse.json(
+        { error: 'Failed to store brief' },
+        { status: 500 }
+      );
+    }
 
-    // Also create a sorted set for date-based queries
-    const timestamp = new Date(data.date).getTime();
-    await redis.zAdd('briefs:dates', { score: timestamp, value: data.date });
+    // Insert stocks
+    const stocksToInsert = data.stocks.map((stock) => ({
+      brief_id: brief.id,
+      ticker: stock.ticker,
+      sector: stock.sector,
+      confidence: stock.confidence,
+      risk_level: stock.riskLevel,
+      action: stock.action,
+      entry_price: stock.entryPrice,
+      entry_zone_low: stock.entryZoneLow || null,
+      entry_zone_high: stock.entryZoneHigh || null,
+      summary: stock.summary,
+      why_matters: stock.whyMatters,
+      momentum_check: stock.momentumCheck,
+      actionable_insight: stock.actionableInsight,
+      allocation: stock.allocation || null,
+      caution_notes: stock.cautionNotes || null,
+      learning_moment: stock.learningMoment || null,
+    }));
+
+    const { error: stocksError } = await supabase
+      .from('stocks')
+      .insert(stocksToInsert);
+
+    if (stocksError) {
+      console.error('Error inserting stocks:', stocksError);
+      // Rollback: delete the brief
+      await supabase.from('briefs').delete().eq('id', brief.id);
+      return NextResponse.json(
+        { error: 'Failed to store stock data' },
+        { status: 500 }
+      );
+    }
 
     console.log(`✅ Stored brief for ${data.date} with ${data.stocks.length} stocks`);
 
