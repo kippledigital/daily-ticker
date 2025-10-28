@@ -1,0 +1,30 @@
+COPY-PASTE MESSAGE FOR GUMLOOP SUPPORT
+========================================
+
+Hi Gumloop team,
+
+Quick update on the Daily Ticker integration:
+
+My production domain (dailyticker.co) isn't live yet, so please update the webhook URLs to use my Vercel deployment URL for testing:
+
+Node 20 (Save Stock Brief to Database) - xkJWdvmiKW9CACruhG8ygQ:
+OLD URL: https://dailyticker.co/api/archive/store
+NEW URL: https://daily-ticker.vercel.app/api/archive/store
+
+Node 7b (Get Historical Data) - giA6E9EQuq2xp3herHmjae:
+OLD URL: https://dailyticker.co/api/archive/list?limit=30
+NEW URL: https://daily-ticker.vercel.app/api/archive/list?limit=30
+
+All other configuration (headers, body, field mappings, error handling) remains exactly the same - just the base URL changes.
+
+Once my domain goes live, I'll ask you to switch these back to dailyticker.co URLs.
+
+Thanks!
+
+---
+
+FOR YOUR REFERENCE:
+Current Vercel URL: https://daily-ticker.vercel.app
+Production URL (after DNS): https://dailyticker.co
+
+Test archive page: https://daily-ticker.vercel.app/archive
