@@ -127,7 +127,14 @@ async function updateEmailSentCount(emails: string[]): Promise<void> {
 /**
  * Sends test email to specific address
  */
-export async function sendTestEmail(params: SendEmailParams & { testEmail: string }): Promise<boolean> {
+export interface SendTestEmailResult {
+  success: boolean;
+  emailId?: string;
+  error?: string;
+  errorDetails?: any;
+}
+
+export async function sendTestEmail(params: SendEmailParams & { testEmail: string }): Promise<SendTestEmailResult> {
   const { testEmail, subject, htmlContent } = params;
 
   try {
@@ -148,14 +155,42 @@ export async function sendTestEmail(params: SendEmailParams & { testEmail: strin
     });
 
     if (error) {
-      console.error('Error sending test email:', error);
-      return false;
+      console.error('❌ Resend API error sending test email:');
+      console.error('Error object:', JSON.stringify(error, null, 2));
+      console.error('Error message:', error.message);
+      console.error('Error name:', error.name);
+      return {
+        success: false,
+        error: error.message,
+        errorDetails: {
+          name: error.name,
+          message: error.message,
+          ...error,
+        },
+      };
     }
 
-    console.log('Test email sent successfully:', data);
-    return true;
+    console.log('✅ Test email sent successfully:', data);
+    return {
+      success: true,
+      emailId: data?.id,
+    };
   } catch (error) {
-    console.error('Error in sendTestEmail:', error);
-    return false;
+    console.error('❌ Exception in sendTestEmail:', error);
+    if (error instanceof Error) {
+      console.error('Exception message:', error.message);
+      console.error('Exception stack:', error.stack);
+      return {
+        success: false,
+        error: error.message,
+        errorDetails: {
+          stack: error.stack,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: 'Unknown error occurred',
+    };
   }
 }

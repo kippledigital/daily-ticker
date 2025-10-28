@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     console.log(`Sending test email to ${testEmail}...`);
 
     // Send simple test email
-    const success = await sendTestEmail({
+    const result = await sendTestEmail({
       testEmail,
       subject: '📈 Daily Ticker Test Email',
       htmlContent: `
@@ -153,11 +153,12 @@ export async function GET(request: NextRequest) {
       `,
     });
 
-    if (success) {
+    if (result.success) {
       return NextResponse.json(
         {
           success: true,
           message: `Test email sent successfully to ${testEmail}`,
+          emailId: result.emailId,
           nextSteps: [
             'Check your inbox (including spam folder)',
             'Verify the email looks good',
@@ -171,18 +172,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Failed to send email',
+          error: result.error || 'Failed to send email',
+          errorDetails: result.errorDetails,
           possibleReasons: [
             'Resend API key is invalid',
             'Sending domain (dailyticker.co) is not verified in Resend',
             'Recipient email is invalid or blocked',
             'Resend account has not been activated',
+            'Resend account is in sandbox mode (verify recipient or request production access)',
           ],
           howToFix: [
             '1. Go to https://resend.com/domains',
-            '2. Add and verify dailyticker.co',
-            '3. Add DNS records (DKIM, SPF, DMARC)',
-            '4. Wait for verification (usually 5-10 minutes)',
+            '2. Verify dailyticker.co is showing as "Active"',
+            '3. Check if account is in sandbox mode',
+            '4. If sandbox mode: Request production access at https://resend.com/settings',
             '5. Try sending test email again',
           ],
         },
