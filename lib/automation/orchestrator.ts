@@ -7,7 +7,6 @@ import { validateStockAnalysis } from './validator';
 import { injectTrendSymbol } from './trend-injector';
 import { generateEmailContent } from './email-generator';
 import { sendMorningBrief } from './email-sender';
-import { postDailyWatchlist } from './twitter-poster';
 
 /**
  * Main automation orchestrator
@@ -16,14 +15,13 @@ import { postDailyWatchlist } from './twitter-poster';
  * Workflow:
  * 1. Enhanced Stock Discovery (3 tickers from focus sectors)
  * 2. Get Historical Data (last 30 days)
- * 3. Gather Financial Data & News (Perplexity-style)
- * 4. AI Stock Analysis (GPT-4 with exact Gumloop prompt)
+ * 3. Gather Financial Data & News (real-time APIs)
+ * 4. AI Stock Analysis (GPT-4 with validation layer)
  * 5. Validation Check (ensure all fields present)
  * 6. Trend Symbol Injection (add 📈/📉/→)
  * 7. Email Generation (Scout persona with beginner-friendly content)
  * 8. Send Email (Resend to subscribers)
- * 9. Post to Twitter (Daily 3 format)
- * 10. Store in Archive (Supabase)
+ * 9. Store in Archive (Supabase)
  */
 export async function runDailyAutomation(): Promise<AutomationResult> {
   const result: AutomationResult = {
@@ -143,20 +141,8 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
 
     result.steps.emailSending = emailSent;
 
-    // Step 9: Post to Twitter
-    console.log('🐦 Step 9: Posting to Twitter...');
-    const twitterPosted = await postDailyWatchlist(stocksWithTrends, date);
-
-    if (!twitterPosted) {
-      console.warn('⚠️  Twitter posting failed, continuing with other steps...');
-    } else {
-      console.log(`✅ Tweet posted successfully`);
-    }
-
-    result.steps.twitterPosting = twitterPosted;
-
-    // Step 10: Store in archive (Supabase)
-    console.log('💾 Step 10: Storing in archive...');
+    // Step 9: Store in archive (Supabase)
+    console.log('💾 Step 9: Storing in archive...');
     const archived = await storeInArchive({
       date,
       subject: emailContent.subject,
