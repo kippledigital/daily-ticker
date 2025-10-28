@@ -1,0 +1,66 @@
+COPY-PASTE PROMPT FOR GUMLOOP
+================================
+
+Hi Gumloop team,
+
+I need to update my Daily Ticker automation workflow to use my website's database instead of Google Sheets.
+
+CURRENT SETUP:
+- 19-node automation that generates daily stock market briefs
+- Node 19 sends email via Gmail
+- Currently saves historical data to Google Sheets
+
+CHANGES NEEDED:
+
+1. ADD NODE 20: Save Brief to Database
+   - Place after Node 19 (Gmail send)
+   - Type: HTTP Request (POST)
+   - URL: https://dailyticker.co/api/archive/store
+   - Headers: Content-Type: application/json
+   - Body (JSON format):
+     {
+       "date": "{{Current Date in YYYY-MM-DD format}}",
+       "subject": "{{Output from Node 18: Subject Line Generator}}",
+       "htmlContent": "{{Output from Node 17: Morning Brief HTML}}",
+       "tldr": "{{Output from Node 16: TL;DR Brief}}",
+       "actionableCount": {{Count of BUY + WATCH recommendations from Node 14}},
+       "stocks": {{Output from Node 13: Stock Analysis JSON array}}
+     }
+   - Expected Response: 201 status code = success
+   - Error Handling: If this fails, log error but continue (don't block email send)
+
+2. ADD NODE 7b: Get Historical Data
+   - Place before Node 13 (Stock Analysis)
+   - Type: HTTP Request (GET)
+   - URL: https://dailyticker.co/api/archive/list?limit=30
+   - Purpose: Retrieve last 30 days of recommendations
+   - Use this data to:
+     * Reference past stock mentions in analysis (Node 13)
+     * Add "trending this month" context in TL;DR (Node 16)
+     * Include "previously recommended" notes in brief (Node 17)
+     * Craft subject lines mentioning recent winners (Node 18)
+
+3. REMOVE: Google Sheets integration (after confirming above works)
+
+STOCK DATA FORMAT:
+Each stock object needs these fields:
+- ticker (string, e.g., "AAPL")
+- sector (string, e.g., "Tech")
+- confidence (number 0-100)
+- riskLevel (string: "Low", "Medium", or "High")
+- action (string: "BUY", "WATCH", "HOLD", or "AVOID")
+- entryPrice (number)
+- summary (string)
+- whyMatters (string)
+- momentumCheck (string)
+- actionableInsight (string)
+
+TESTING:
+Can you help me test Node 20 works before going live? I can provide a test curl command.
+
+QUESTIONS:
+1. How do I map current node outputs to the JSON body in Node 20?
+2. Can I parse the response from Node 7b to use historical data in my AI prompts?
+3. What's the best way to handle API errors without stopping the daily workflow?
+
+Thank you!
