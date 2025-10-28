@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { StockAnalysis } from '@/types/automation';
+import { AggregatedStockData } from './data-aggregator';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,6 +10,148 @@ export interface AnalyzeStockParams {
   ticker: string;
   financialData: string;
   historicalWatchlist: string;
+  aggregatedData?: AggregatedStockData; // For validation
+}
+
+/**
+ * Validates AI-generated analysis against real aggregated data
+ * Prevents hallucination and adjusts confidence based on data quality
+ */
+function validateAnalysisAgainstRealData(
+  analysis: StockAnalysis,
+  realData: AggregatedStockData
+): StockAnalysis {
+  const warnings: string[] = [];
+  let adjustedConfidence = analysis.confidence;
+
+  // 1. Validate price (2% tolerance for timing differences)
+  const priceDiscrepancy = Math.abs(analysis.last_price - realData.price) / realData.price;
+  if (priceDiscrepancy > 0.02) {
+    console.warn(
+      `Price discrepancy for ${analysis.ticker}: AI=$${analysis.last_price}, Real=$${realData.price.toFixed(2)}`
+    );
+    warnings.push('AI price differs from verified price');
+    // Use real verified price
+    analysis.last_price = realData.price;
+    // Reduce confidence slightly
+    adjustedConfidence = Math.max(adjustedConfidence - 5, 0);
+  }
+
+  // 2. Validate volume
+  if (realData.volume > 0 && analysis.avg_volume > 0) {
+    const volumeDiscrepancy = Math.abs(analysis.avg_volume - realData.volume) / realData.volume;
+    if (volumeDiscrepancy > 0.5) {
+      // 50% tolerance for volume
+      console.warn(
+        `Volume discrepancy for ${analysis.ticker}: AI=${analysis.avg_volume}, Real=${realData.volume}`
+      );
+      // Use real volume
+      analysis.avg_volume = realData.volume;
+    }
+  }
+
+  // 3. Validate sector
+  if (realData.sector !== 'Unknown' && analysis.sector !== realData.sector) {
+    console.warn(`Sector mismatch for ${analysis.ticker}: AI=${analysis.sector}, Real=${realData.sector}`);
+    // Use real sector if it's a valid sector type
+    const validSectors = [
+      'Technology',
+      'Healthcare',
+      'Energy',
+      'Finance',
+      'Consumer',
+      'Industrial',
+      'Materials',
+      'Real Estate',
+      'Utilities',
+      'Communication',
+      'Other',
+    ];
+    if (validSectors.includes(realData.sector)) {
+      analysis.sector = realData.sector as StockAnalysis['sector'];
+    }
+  }
+
+  // 4. Adjust confidence based on data quality score
+  const dataQualityScore = realData.dataQuality.overallScore;
+  if (dataQualityScore < 70) {
+    // Low data quality = cap confidence at 75
+    adjustedConfidence = Math.min(adjustedConfidence, 75);
+    warnings.push(`Low data quality (${dataQualityScore}/100) - confidence capped at 75`);
+  } else if (dataQualityScore < 50) {
+    // Very low data quality = cap confidence at 60
+    adjustedConfidence = Math.min(adjustedConfidence, 60);
+    warnings.push(`Very low data quality (${dataQualityScore}/100) - confidence capped at 60`);
+  }
+
+  // 5. Check for price verification
+  if (!realData.priceVerified) {
+    adjustedConfidence = Math.max(adjustedConfidence - 10, 0);
+    warnings.push('Price not verified across sources');
+  }
+
+  // 6. Validate P/E ratio reasonableness (if we have fundamentals)
+  if (realData.peRatio > 0) {
+    // P/E ratio should be between 0.1 and 500 (extreme but possible)
+    if (realData.peRatio < 0.1 || realData.peRatio > 500) {
+      warnings.push('Unusual P/E ratio detected - verify fundamentals');
+      adjustedConfidence = Math.max(adjustedConfidence - 5, 0);
+    }
+  }
+
+  // 7. Check market cap reasonableness
+  if (realData.marketCap > 0 && realData.marketCap < 100_000_000) {
+    // Market cap < $100M is micro-cap (very risky)
+    if (analysis.risk_level === 'Low') {
+      analysis.risk_level = 'Medium'; // Upgrade risk level
+    }
+    warnings.push('Micro-cap stock (<$100M) - risk adjusted');
+  }
+
+  // 8. Incorporate social sentiment into why_trust if available
+  if (realData.socialSentiment && realData.socialSentiment.totalMentions > 100) {
+    const sentimentNote =
+      realData.socialSentiment.score > 0.3
+        ? 'Strong bullish social sentiment'
+        : realData.socialSentiment.score < -0.3
+          ? 'Strong bearish social sentiment'
+          : 'Mixed social sentiment';
+
+    // Append to why_trust if not already mentioned
+    if (!analysis.why_trust.toLowerCase().includes('social')) {
+      analysis.why_trust += ` ${sentimentNote} on Reddit/Twitter (${realData.socialSentiment.totalMentions} mentions).`;
+    }
+  }
+
+  // 9. Incorporate analyst recommendations if available
+  if (realData.analystRatings) {
+    const consensus = realData.analystRatings.consensus;
+    if (!analysis.why_trust.toLowerCase().includes('analyst')) {
+      analysis.why_trust += ` Analyst consensus: ${consensus}.`;
+    }
+  }
+
+  // 10. Add insider trading signal to caution_notes if relevant
+  if (realData.insiderActivity && realData.insiderActivity.netActivity === 'selling') {
+    if (realData.insiderActivity.recentSells > realData.insiderActivity.recentBuys * 2) {
+      if (!analysis.caution_notes.toLowerCase().includes('insider')) {
+        analysis.caution_notes += ` Insiders selling (${realData.insiderActivity.recentSells} sells vs ${realData.insiderActivity.recentBuys} buys in last 30 days).`;
+      }
+    }
+  }
+
+  // Apply adjusted confidence
+  analysis.confidence = adjustedConfidence;
+
+  // Log warnings
+  if (warnings.length > 0) {
+    console.log(`Validation warnings for ${analysis.ticker}:`, warnings);
+  }
+
+  // Log data quality metrics
+  console.log(`${analysis.ticker} - Data Quality: ${dataQualityScore}/100, Final Confidence: ${adjustedConfidence}`);
+
+  return analysis;
 }
 
 /**
@@ -16,7 +159,7 @@ export interface AnalyzeStockParams {
  * Replicates the "Ask AI" node from Gumloop automation
  */
 export async function analyzeStock(params: AnalyzeStockParams): Promise<StockAnalysis | null> {
-  const { ticker, financialData, historicalWatchlist } = params;
+  const { ticker, financialData, historicalWatchlist, aggregatedData } = params;
 
   // Exact prompt from Gumloop "Ask AI" node
   const prompt = `HISTORICAL WATCHLIST DATA (Last 30 Days): ${historicalWatchlist}
@@ -50,7 +193,12 @@ Output your analysis as valid JSON with these fields: ticker, confidence (number
     }
 
     // Parse JSON response
-    const analysis = JSON.parse(response) as StockAnalysis;
+    let analysis = JSON.parse(response) as StockAnalysis;
+
+    // Validate AI output against real aggregated data
+    if (aggregatedData) {
+      analysis = validateAnalysisAgainstRealData(analysis, aggregatedData);
+    }
 
     return analysis;
   } catch (error) {

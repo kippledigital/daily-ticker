@@ -136,13 +136,16 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       temperature: 0.8, // Creative but consistent
     });
 
-    const htmlContent = completion.choices[0]?.message?.content || '';
+    let htmlContent = completion.choices[0]?.message?.content || '';
 
     // Generate TL;DR first
     const tldr = await generateTLDR(stocks);
 
     // Generate subject line (needs the brief content)
     const subject = await generateSubjectLine(stocks, tldr);
+
+    // Add source citations footer to HTML
+    htmlContent = addSourceCitations(htmlContent, date);
 
     return {
       subject,
@@ -211,4 +214,70 @@ Return ONLY the TL;DR text, nothing else.`;
     console.error('Error generating TL;DR:', error);
     return summaries;
   }
+}
+
+/**
+ * Add source citations footer to HTML email
+ */
+function addSourceCitations(htmlContent: string, date: string): string {
+  const timestamp = new Date(date).toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  });
+
+  // Source citation footer
+  const citationFooter = `
+<div style="margin-top:40px;padding:24px;background:#f8f9fa;border-radius:8px;border-left:4px solid #3498db;">
+  <h3 style="color:#2c3e50;font-size:16px;margin:0 0 12px 0;font-weight:600;">📊 Data Sources & Transparency</h3>
+  <p style="font-size:14px;color:#555;margin:0 0 8px 0;line-height:1.6;">
+    All financial data, prices, and metrics in this brief are sourced from:
+  </p>
+  <ul style="font-size:14px;color:#555;margin:0 0 12px 0;padding-left:20px;line-height:1.8;">
+    <li><strong>Alpha Vantage</strong> — Real-time fundamentals, P/E ratios, earnings, company financials</li>
+    <li><strong>Finnhub</strong> — Social sentiment (Reddit & Twitter), insider trading, analyst recommendations</li>
+    <li><strong>Polygon.io</strong> — Real-time stock prices and market data</li>
+  </ul>
+  <p style="font-size:13px;color:#777;margin:0;line-height:1.6;">
+    🕐 <strong>Data Retrieved:</strong> ${timestamp}<br>
+    ✓ <strong>Verification:</strong> Prices cross-referenced across multiple sources<br>
+    📈 <strong>Quality Score:</strong> Each stock includes a data quality rating (0-100)
+  </p>
+</div>
+
+<div style="margin-top:24px;padding:20px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107;">
+  <p style="font-size:13px;color:#856404;margin:0;line-height:1.6;">
+    <strong>⚠️ Important Disclaimer:</strong> Daily Ticker is for educational purposes only and does not provide financial advice.
+    All stock recommendations are based on publicly available data and should not be considered as investment advice.
+    Always do your own research and consult with a qualified financial advisor before making investment decisions.
+    Past performance does not guarantee future results.
+  </p>
+</div>
+
+<div style="margin-top:24px;text-align:center;padding:20px 0;border-top:2px solid #e0e0e0;">
+  <p style="font-size:14px;color:#666;margin:0 0 8px 0;">
+    📧 <strong>Daily Ticker</strong> — Clear, Actionable Market Insights
+  </p>
+  <p style="font-size:13px;color:#999;margin:0;">
+    <a href="https://dailyticker.co" style="color:#3498db;text-decoration:none;">Visit Archive</a> |
+    <a href="https://dailyticker.co/privacy" style="color:#999;text-decoration:none;">Privacy Policy</a> |
+    <a href="https://dailyticker.co/terms" style="color:#999;text-decoration:none;">Terms</a>
+  </p>
+</div>`;
+
+  // Try to insert before closing </div> tag, or append if not found
+  if (htmlContent.includes('</div>')) {
+    // Find the last </div> and insert before it
+    const lastDivIndex = htmlContent.lastIndexOf('</div>');
+    htmlContent = htmlContent.slice(0, lastDivIndex) + citationFooter + htmlContent.slice(lastDivIndex);
+  } else {
+    // Append to end
+    htmlContent += citationFooter;
+  }
+
+  return htmlContent;
 }

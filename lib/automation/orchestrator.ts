@@ -1,7 +1,7 @@
 import { AutomationResult, ValidatedStock } from '@/types/automation';
 import { discoverTrendingStocks } from './stock-discovery';
 import { getHistoricalWatchlistData } from './historical-data';
-import { gatherFinancialDataBatch } from './news-gatherer';
+import { gatherFinancialDataBatch, getRawAggregatedData } from './news-gatherer';
 import { analyzeStock } from './ai-analyzer';
 import { validateStockAnalysis } from './validator';
 import { injectTrendSymbol } from './trend-injector';
@@ -60,18 +60,34 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     console.log(`✅ Financial data gathered for ${tickers.length} tickers`);
     result.steps.newsGathering = true;
 
-    // Step 4: AI Analysis for each stock
-    console.log('🤖 Step 4: Analyzing stocks with AI...');
+    // Step 3b: Get raw aggregated data for validation
+    console.log('🔍 Step 3b: Fetching aggregated data for validation...');
+    const aggregatedDataPromises = tickers.map(ticker => getRawAggregatedData(ticker));
+    const aggregatedDataArray = await Promise.all(aggregatedDataPromises);
+
+    // Create map of ticker -> aggregated data
+    const aggregatedDataMap = new Map();
+    tickers.forEach((ticker, index) => {
+      if (aggregatedDataArray[index]) {
+        aggregatedDataMap.set(ticker, aggregatedDataArray[index]);
+      }
+    });
+
+    console.log(`✅ Aggregated data fetched for validation`);
+
+    // Step 4: AI Analysis for each stock with validation
+    console.log('🤖 Step 4: Analyzing stocks with AI (with validation layer)...');
     const analysisPromises = tickers.map(ticker =>
       analyzeStock({
         ticker,
         financialData: financialData[ticker],
         historicalWatchlist: historicalData,
+        aggregatedData: aggregatedDataMap.get(ticker), // Pass for validation
       })
     );
 
     const analyses = await Promise.all(analysisPromises);
-    console.log(`✅ AI analysis complete for ${analyses.length} stocks`);
+    console.log(`✅ AI analysis complete for ${analyses.length} stocks (validated against real data)`);
     result.steps.aiAnalysis = true;
 
     // Step 5: Validate each analysis
