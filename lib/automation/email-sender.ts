@@ -103,8 +103,11 @@ export async function sendTestEmail(params: SendEmailParams & { testEmail: strin
   const { testEmail, subject, htmlContent } = params;
 
   try {
+    // Use Resend's test address if domain not verified, otherwise use custom domain
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
     const { data, error } = await resend.emails.send({
-      from: 'Daily Ticker <brief@dailyticker.co>',
+      from: fromAddress,
       to: [testEmail],
       subject: `[TEST] ${subject}`,
       html: htmlContent,
