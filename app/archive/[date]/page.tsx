@@ -13,20 +13,12 @@ interface BriefPageProps {
 
 async function getBrief(date: string): Promise<BriefData | null> {
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
+    // Import Redis client and fetch directly (server-side)
+    const { getRedis } = await import('@/lib/redis')
+    const redis = await getRedis()
 
-    const response = await fetch(`${baseUrl}/api/archive/${date}`, {
-      cache: 'no-store',
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const data = await response.json()
-    return data.success ? data.data : null
+    const briefData = await redis.get(`brief:${date}`)
+    return briefData ? JSON.parse(briefData) as BriefData : null
   } catch (error) {
     console.error(`Error fetching brief for ${date}:`, error)
     return null
