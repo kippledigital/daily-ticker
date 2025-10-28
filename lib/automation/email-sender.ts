@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export interface SendEmailParams {
   subject: string;
@@ -10,13 +17,13 @@ export interface SendEmailParams {
 
 /**
  * Sends email using Resend API
- * Replaces Gumloop's Gmail sender
+ * Fetches subscribers from Supabase (replaces Beehiiv)
  */
 export async function sendMorningBrief(params: SendEmailParams): Promise<boolean> {
   const { subject, htmlContent, to } = params;
 
   try {
-    // Get recipient list from Beehiiv or use manual list
+    // Get recipient list from Supabase or use manual list
     const recipients = to || await getSubscriberEmails();
 
     if (recipients.length === 0) {
@@ -24,17 +31,26 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
       return false;
     }
 
-    // Send email via Resend
+    console.log(`Sending to ${recipients.length} subscribers...`);
+
+    // Determine from address
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+    // Send email via Resend (Resend sends email analytics to your dashboard automatically!)
     const { data, error } = await resend.emails.send({
-      from: 'Daily Ticker <brief@dailyticker.co>',
+      from: fromAddress,
       to: recipients,
       subject: subject,
       html: htmlContent,
-      // Optional: Add tags for tracking
+      // Optional: Add tags for tracking in Resend dashboard
       tags: [
         {
           name: 'campaign',
           value: 'morning-brief',
+        },
+        {
+          name: 'date',
+          value: new Date().toISOString().split('T')[0],
         },
       ],
     });
@@ -45,6 +61,10 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
     }
 
     console.log('Email sent successfully:', data);
+
+    // Update email sent count for all subscribers
+    await updateEmailSentCount(recipients);
+
     return true;
   } catch (error) {
     console.error('Error in sendMorningBrief:', error);
@@ -53,47 +73,55 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
 }
 
 /**
- * Gets subscriber email list from Beehiiv
- * Falls back to test email if Beehiiv is not configured
+ * Gets subscriber email list from Supabase
+ * Only returns active subscribers
  */
 async function getSubscriberEmails(): Promise<string[]> {
-  // Option 1: Use Beehiiv API to get active subscribers
-  if (process.env.BEEHIIV_API_KEY && process.env.BEEHIIV_PUBLICATION_ID) {
-    try {
-      const response = await fetch(
-        `https://api.beehiiv.com/v2/publications/${process.env.BEEHIIV_PUBLICATION_ID}/subscriptions`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.BEEHIIV_API_KEY}`,
-          },
-        }
-      );
+  try {
+    const { data, error } = await supabase
+      .from('subscribers')
+      .select('email')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch Beehiiv subscribers');
-      }
-
-      const data = await response.json();
-
-      // Extract emails from active subscribers
-      const emails = data.data
-        .filter((sub: any) => sub.status === 'active')
-        .map((sub: any) => sub.email);
-
-      return emails;
-    } catch (error) {
-      console.error('Error fetching Beehiiv subscribers:', error);
+    if (error) {
+      console.error('Error fetching Supabase subscribers:', error);
+      throw error;
     }
-  }
 
-  // Option 2: Use test email for development
-  if (process.env.TEST_EMAIL) {
-    return [process.env.TEST_EMAIL];
-  }
+    if (!data || data.length === 0) {
+      console.warn('No active subscribers found in Supabase');
+      return [];
+    }
 
-  // Option 3: Fallback (configure in production)
-  console.warn('No subscriber source configured. Set BEEHIIV_API_KEY or TEST_EMAIL');
-  return [];
+    const emails = data.map((sub) => sub.email);
+    console.log(`Found ${emails.length} active subscribers`);
+
+    return emails;
+  } catch (error) {
+    console.error('Error fetching subscribers:', error);
+    return [];
+  }
+}
+
+/**
+ * Updates email sent count for subscribers
+ */
+async function updateEmailSentCount(emails: string[]): Promise<void> {
+  try {
+    // Increment emails_sent counter for all recipients
+    const { error } = await supabase.rpc('increment_emails_sent', {
+      email_list: emails,
+    });
+
+    if (error) {
+      console.error('Error updating email sent count:', error);
+    } else {
+      console.log(`Updated email_sent count for ${emails.length} subscribers`);
+    }
+  } catch (error) {
+    console.error('Error in updateEmailSentCount:', error);
+  }
 }
 
 /**

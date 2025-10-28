@@ -262,10 +262,13 @@ function addSourceCitations(htmlContent: string, date: string): string {
   <p style="font-size:14px;color:#666;margin:0 0 8px 0;">
     📧 <strong>Daily Ticker</strong> — Clear, Actionable Market Insights
   </p>
-  <p style="font-size:13px;color:#999;margin:0;">
+  <p style="font-size:13px;color:#999;margin:0 0 12px 0;">
     <a href="https://dailyticker.co" style="color:#3498db;text-decoration:none;">Visit Archive</a> |
     <a href="https://dailyticker.co/privacy" style="color:#999;text-decoration:none;">Privacy Policy</a> |
     <a href="https://dailyticker.co/terms" style="color:#999;text-decoration:none;">Terms</a>
+  </p>
+  <p style="font-size:12px;color:#aaa;margin:8px 0 0 0;">
+    Don't want these emails? <a href="https://dailyticker.co/unsubscribe" style="color:#999;text-decoration:underline;">Unsubscribe here</a>
   </p>
 </div>`;
 
