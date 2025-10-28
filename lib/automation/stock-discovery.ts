@@ -1,6 +1,7 @@
 import { StockDiscoveryConfig } from '@/types/automation';
 import { getStockQuotes } from '@/lib/polygon';
 import { getRecentlyAnalyzedTickers } from './historical-data';
+import { getSocialSentiment } from '@/lib/finnhub';
 
 /**
  * Discovers trending stocks based on criteria
@@ -34,7 +35,8 @@ const DEFAULT_CONFIG: StockDiscoveryConfig = {
 };
 
 /**
- * Discovers trending stocks using Polygon.io data
+ * Discovers trending stocks using Polygon.io data + Finnhub social sentiment
+ * Enhanced with social media buzz to find stocks gaining traction
  */
 export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfig> = {}): Promise<string[]> {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
@@ -63,11 +65,33 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
     // Fetch real-time quotes for all candidates
     const quotes = await getStockQuotes(candidates);
 
+    // Fetch social sentiment for top movers (limit API calls)
+    // Only fetch for stocks with significant price movement (> 1%)
+    const topMovers = quotes
+      .filter(q => Math.abs(q.changePercent) > 1)
+      .slice(0, 15) // Limit to top 15 to save API calls
+      .map(q => q.symbol);
+
+    console.log(`Fetching social sentiment for ${topMovers.length} top movers...`);
+    const sentimentPromises = topMovers.map(async ticker => {
+      try {
+        const sentiment = await getSocialSentiment(ticker);
+        return { ticker, sentiment };
+      } catch {
+        return { ticker, sentiment: null };
+      }
+    });
+
+    const sentimentResults = await Promise.all(sentimentPromises);
+    const sentimentMap = new Map(
+      sentimentResults.map(r => [r.ticker, r.sentiment])
+    );
+
     // Score each stock based on:
-    // 1. Price change % (momentum)
-    // 2. Volume relative to average
-    // 3. Price > minimum
-    // 4. Randomization for variety
+    // 1. Price change % (momentum) - 40% weight
+    // 2. Social sentiment score - 30% weight
+    // 3. Social mentions count - 20% weight
+    // 4. Randomization for variety - 10% weight
 
     const scoredStocks = quotes
       .filter(q => {
@@ -76,12 +100,57 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
         if (q.volume && q.volume < (finalConfig.minVolume || 0)) return false;
         return true;
       })
-      .map(q => ({
-        ticker: q.symbol,
-        score: Math.abs(q.changePercent) + Math.random() * 10, // Momentum + randomness
-        changePercent: q.changePercent,
-      }))
+      .map(q => {
+        const sentiment = sentimentMap.get(q.symbol);
+
+        // Momentum score (0-40 points)
+        const momentumScore = Math.abs(q.changePercent) * 4; // 10% move = 40 points
+
+        // Social sentiment score (0-30 points)
+        // Sentiment ranges from -1 to 1, we normalize to 0-30
+        const sentimentScore = sentiment
+          ? ((sentiment.overall.sentimentScore + 1) / 2) * 30
+          : 0;
+
+        // Social buzz score (0-20 points)
+        // More mentions = higher score (capped at 20)
+        const buzzScore = sentiment
+          ? Math.min((sentiment.overall.totalMentions / 100) * 20, 20)
+          : 0;
+
+        // Randomization (0-10 points) for variety
+        const randomScore = Math.random() * 10;
+
+        const totalScore = momentumScore + sentimentScore + buzzScore + randomScore;
+
+        return {
+          ticker: q.symbol,
+          score: totalScore,
+          changePercent: q.changePercent,
+          sentiment: sentiment
+            ? {
+                score: sentiment.overall.sentimentScore.toFixed(2),
+                mentions: sentiment.overall.totalMentions,
+                trend: sentiment.overall.trend,
+              }
+            : null,
+          breakdown: {
+            momentum: momentumScore.toFixed(1),
+            sentiment: sentimentScore.toFixed(1),
+            buzz: buzzScore.toFixed(1),
+            random: randomScore.toFixed(1),
+          },
+        };
+      })
       .sort((a, b) => b.score - a.score);
+
+    // Log top candidates for transparency
+    console.log('Top candidates with scores:');
+    scoredStocks.slice(0, 10).forEach(s => {
+      console.log(
+        `${s.ticker}: ${s.score.toFixed(1)} (${s.breakdown.momentum}m + ${s.breakdown.sentiment}s + ${s.breakdown.buzz}b + ${s.breakdown.random}r) ${s.changePercent >= 0 ? '📈' : '📉'}${Math.abs(s.changePercent).toFixed(2)}%${s.sentiment ? ` | ${s.sentiment.mentions} mentions` : ''}`
+      );
+    });
 
     // Take top N tickers
     const selected = scoredStocks.slice(0, finalConfig.numberOfTickers).map(s => s.ticker);
