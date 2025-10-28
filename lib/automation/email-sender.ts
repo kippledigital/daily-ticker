@@ -162,11 +162,7 @@ export async function sendTestEmail(params: SendEmailParams & { testEmail: strin
       return {
         success: false,
         error: error.message,
-        errorDetails: {
-          name: error.name,
-          message: error.message,
-          ...error,
-        },
+        errorDetails: error,
       };
     }
 
