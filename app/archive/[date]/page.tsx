@@ -1,7 +1,8 @@
-import { Metadata } from 'next'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { NextRequest } from 'next/server'
+import { useRouter } from 'next/navigation'
 import { TrendingUp, Calendar, Share2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { BriefData } from '@/app/api/archive/store/route'
@@ -12,62 +13,43 @@ interface BriefPageProps {
   }
 }
 
-async function getBrief(date: string): Promise<BriefData | null> {
-  try {
-    const { supabase } = await import('@/lib/supabase')
+export default function BriefPage({ params }: BriefPageProps) {
+  const [brief, setBrief] = useState<BriefData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-    const { data: brief, error } = await supabase
-      .from('briefs')
-      .select(`
-        *,
-        stocks (*)
-      `)
-      .eq('date', date)
-      .single()
+  useEffect(() => {
+    async function fetchBrief() {
+      try {
+        const response = await fetch(`/api/archive/${params.date}`)
+        const data = await response.json()
 
-    if (error || !brief) return null
-
-    // Transform to BriefData format
-    return {
-      date: brief.date,
-      subject: brief.subject,
-      htmlContent: brief.html_content,
-      tldr: brief.tldr || undefined,
-      actionableCount: brief.actionable_count,
-      stocks: (brief.stocks as any[]).map((stock) => ({
-        ticker: stock.ticker,
-        sector: stock.sector,
-        confidence: stock.confidence,
-        riskLevel: stock.risk_level,
-        action: stock.action,
-        entryPrice: stock.entry_price,
-        entryZoneLow: stock.entry_zone_low || undefined,
-        entryZoneHigh: stock.entry_zone_high || undefined,
-        summary: stock.summary,
-        whyMatters: stock.why_matters,
-        momentumCheck: stock.momentum_check,
-        actionableInsight: stock.actionable_insight,
-        allocation: stock.allocation || undefined,
-        cautionNotes: stock.caution_notes || undefined,
-        learningMoment: stock.learning_moment || undefined,
-      })),
+        if (data.success && data.data) {
+          setBrief(data.data)
+        } else {
+          router.push('/archive')
+        }
+      } catch (error) {
+        console.error('Error fetching brief:', error)
+        router.push('/archive')
+      } finally {
+        setLoading(false)
+      }
     }
-  } catch (error) {
-    console.error(`Error fetching brief for ${date}:`, error)
-    return null
+
+    fetchBrief()
+  }, [params.date, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B1E32] flex items-center justify-center">
+        <div className="text-[#00ff88]">Loading...</div>
+      </div>
+    )
   }
-}
-
-export const metadata: Metadata = {
-  title: 'Daily Brief — Daily Ticker',
-  description: 'Read our daily market brief with stock recommendations',
-}
-
-export default async function BriefPage({ params }: BriefPageProps) {
-  const brief = await getBrief(params.date)
 
   if (!brief) {
-    notFound()
+    return null
   }
 
   const formattedDate = new Date(brief.date).toLocaleDateString('en-US', {
@@ -102,153 +84,176 @@ export default async function BriefPage({ params }: BriefPageProps) {
         </Link>
 
         {/* Brief Header */}
-        <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-8 mb-8">
-          <div className="flex items-center gap-2 text-sm text-gray-300 mb-4">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
             <Calendar className="h-4 w-4" />
             <span className="font-mono">{formattedDate}</span>
           </div>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
             {brief.subject}
           </h1>
+          {brief.tldr && (
+            <p className="text-lg text-gray-300 leading-relaxed">
+              {brief.tldr}
+            </p>
+          )}
+        </div>
 
-          <div className="flex flex-wrap gap-4 text-sm mb-6">
-            <div className="flex items-center gap-2 text-gray-400">
-              <span className="font-semibold text-white">{brief.stocks.length}</span>
-              <span>stocks analyzed</span>
-            </div>
-            {brief.actionableCount > 0 && (
-              <div className="flex items-center gap-2 text-gray-400">
-                <span className="font-semibold text-[#00ff88]">{brief.actionableCount}</span>
-                <span>actionable recommendations</span>
+        {/* Brief Content */}
+        <div
+          className="prose prose-invert max-w-none mb-12"
+          dangerouslySetInnerHTML={{ __html: brief.htmlContent }}
+        />
+
+        {/* Stock Recommendations */}
+        <div className="space-y-8">
+          <h2 className="text-2xl font-bold text-white">Stock Analysis</h2>
+
+          {brief.stocks.map((stock, index) => (
+            <div
+              key={index}
+              className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6"
+            >
+              {/* Stock Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-2xl font-bold text-white font-mono">
+                      {stock.ticker}
+                    </h3>
+                    <span className="px-3 py-1 bg-[#0B1E32] border border-[#1a3a52] rounded-md text-sm text-gray-300">
+                      {stock.sector}
+                    </span>
+                  </div>
+                  <p className="text-gray-300">{stock.summary}</p>
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Share Buttons */}
-          <div className="flex flex-wrap gap-3 pt-6 border-t border-[#1a3a52]">
-            <span className="text-sm text-gray-400 flex items-center gap-2">
-              <Share2 className="h-4 w-4" />
-              Share:
-            </span>
+              {/* Stock Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Confidence</div>
+                  <div className="text-lg font-semibold text-[#00ff88]">
+                    {stock.confidence}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Risk Level</div>
+                  <div className={`text-lg font-semibold ${
+                    stock.riskLevel === 'Low' ? 'text-green-400' :
+                    stock.riskLevel === 'Medium' ? 'text-yellow-400' :
+                    'text-red-400'
+                  }`}>
+                    {stock.riskLevel}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Action</div>
+                  <div className={`text-lg font-semibold ${
+                    stock.action === 'BUY' ? 'text-green-400' :
+                    stock.action === 'WATCH' ? 'text-yellow-400' :
+                    stock.action === 'HOLD' ? 'text-blue-400' :
+                    'text-red-400'
+                  }`}>
+                    {stock.action}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Entry Price</div>
+                  <div className="text-lg font-semibold text-white">
+                    ${stock.entryPrice.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stock Details */}
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm font-semibold text-gray-400 mb-1">Why It Matters</div>
+                  <p className="text-gray-300">{stock.whyMatters}</p>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-gray-400 mb-1">Momentum Check</div>
+                  <p className="text-gray-300">{stock.momentumCheck}</p>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-gray-400 mb-1">Actionable Insight</div>
+                  <p className="text-[#00ff88]">{stock.actionableInsight}</p>
+                </div>
+
+                {stock.allocation && (
+                  <div>
+                    <div className="text-sm font-semibold text-gray-400 mb-1">Suggested Allocation</div>
+                    <p className="text-gray-300">{stock.allocation}</p>
+                  </div>
+                )}
+
+                {stock.cautionNotes && (
+                  <div>
+                    <div className="text-sm font-semibold text-gray-400 mb-1">Caution Notes</div>
+                    <p className="text-yellow-400">{stock.cautionNotes}</p>
+                  </div>
+                )}
+
+                {stock.learningMoment && (
+                  <div>
+                    <div className="text-sm font-semibold text-gray-400 mb-1">Learning Moment</div>
+                    <p className="text-blue-400">{stock.learningMoment}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Share Section */}
+        <div className="mt-12 pt-8 border-t border-[#1a3a52]">
+          <h3 className="text-lg font-semibold text-white mb-4">Share this brief</h3>
+          <div className="flex flex-wrap gap-3">
             <a
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-400 hover:text-[#00ff88] transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors"
             >
-              Twitter
+              <Share2 className="h-4 w-4" />
+              Share on Twitter
             </a>
             <a
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-400 hover:text-[#00ff88] transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors"
             >
-              LinkedIn
+              <Share2 className="h-4 w-4" />
+              Share on LinkedIn
             </a>
             <button
-              onClick={() => navigator.clipboard.writeText(shareUrl)}
-              className="text-sm text-gray-400 hover:text-[#00ff88] transition-colors"
+              onClick={() => {
+                navigator.clipboard.writeText(shareUrl)
+                alert('Link copied to clipboard!')
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors"
             >
+              <Share2 className="h-4 w-4" />
               Copy Link
             </button>
           </div>
         </div>
 
-        {/* Brief Content */}
-        <div
-          className="prose prose-invert max-w-none bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-8"
-          dangerouslySetInnerHTML={{ __html: brief.htmlContent }}
-        />
-
-        {/* Stock Summary Cards */}
-        <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-bold text-white">Stocks Analyzed</h2>
-          <div className="grid gap-4">
-            {brief.stocks.map((stock) => (
-              <div
-                key={stock.ticker}
-                className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-xl font-bold text-white font-mono">{stock.ticker}</h3>
-                    <p className="text-sm text-gray-400">{stock.sector}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-white">${stock.entryPrice.toFixed(2)}</div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          stock.action === 'BUY'
-                            ? 'bg-[#00ff88]/20 text-[#00ff88]'
-                            : stock.action === 'WATCH'
-                              ? 'bg-yellow-500/20 text-yellow-500'
-                              : stock.action === 'HOLD'
-                                ? 'bg-blue-500/20 text-blue-500'
-                                : 'bg-red-500/20 text-red-500'
-                        }`}
-                      >
-                        {stock.action}
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          stock.riskLevel === 'Low'
-                            ? 'bg-green-500/20 text-green-500'
-                            : stock.riskLevel === 'Medium'
-                              ? 'bg-yellow-500/20 text-yellow-500'
-                              : 'bg-red-500/20 text-red-500'
-                        }`}
-                      >
-                        {stock.riskLevel} Risk
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-400 mb-1">Summary</h4>
-                    <p className="text-gray-300 leading-relaxed">{stock.summary}</p>
-                  </div>
-
-                  {stock.actionableInsight && (
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-400 mb-1">Actionable Insight</h4>
-                      <p className="text-[#00ff88] leading-relaxed">{stock.actionableInsight}</p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Confidence: </span>
-                      <span className="text-white font-semibold">{stock.confidence}%</span>
-                    </div>
-                    {stock.entryZoneLow && stock.entryZoneHigh && (
-                      <div>
-                        <span className="text-gray-400">Entry Zone: </span>
-                        <span className="text-white font-mono">
-                          ${stock.entryZoneLow.toFixed(2)} - ${stock.entryZoneHigh.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="mt-12 bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#00ff88]/20 rounded-2xl p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">Get Daily Briefs Like This</h3>
+        {/* Subscribe CTA */}
+        <div className="mt-12 p-8 bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg text-center">
+          <h3 className="text-2xl font-bold text-white mb-3">
+            Get Daily Briefs Like This
+          </h3>
           <p className="text-gray-300 mb-6">
-            Subscribe to Daily Ticker and receive morning market briefs every Mon-Fri at 8 AM.
+            Subscribe to receive market insights and stock analysis every morning
           </p>
           <Link href="/#subscribe">
-            <Button className="bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold px-8 py-6 text-lg">
-              Subscribe for Free
+            <Button className="bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold px-8">
+              Subscribe Now
             </Button>
           </Link>
         </div>
