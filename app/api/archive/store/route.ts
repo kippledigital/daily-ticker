@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { getRedis } from '@/lib/redis';
 
 export interface StockRecommendation {
   ticker: string;
@@ -57,8 +57,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const redis = await getRedis();
+
     // Check if brief already exists
-    const existingBrief = await kv.get(`brief:${data.date}`);
+    const existingBrief = await redis.get(`brief:${data.date}`);
     if (existingBrief) {
       return NextResponse.json(
         { error: `Brief for ${data.date} already exists` },
@@ -66,15 +68,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store brief in KV
-    await kv.set(`brief:${data.date}`, data);
+    // Store brief in Redis
+    await redis.set(`brief:${data.date}`, JSON.stringify(data));
 
     // Add date to index (for listing briefs)
-    await kv.lpush('briefs:index', data.date);
+    await redis.lPush('briefs:index', data.date);
 
     // Also create a sorted set for date-based queries
     const timestamp = new Date(data.date).getTime();
-    await kv.zadd('briefs:dates', { score: timestamp, member: data.date });
+    await redis.zAdd('briefs:dates', { score: timestamp, value: data.date });
 
     console.log(`✅ Stored brief for ${data.date} with ${data.stocks.length} stocks`);
 

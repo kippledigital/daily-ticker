@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { getRedis } from '@/lib/redis';
 import type { BriefData } from '../store/route';
 
 export async function GET(request: NextRequest) {
@@ -9,8 +9,10 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const ticker = searchParams.get('ticker')?.toUpperCase();
 
+    const redis = await getRedis();
+
     // Get all brief dates (sorted by newest first)
-    const allDates = await kv.zrange('briefs:dates', 0, -1, { rev: true }) as string[];
+    const allDates = await redis.zRange('briefs:dates', 0, -1, { REV: true });
 
     if (!allDates || allDates.length === 0) {
       return NextResponse.json({
@@ -28,8 +30,8 @@ export async function GET(request: NextRequest) {
     if (ticker) {
       const briefsToCheck = await Promise.all(
         allDates.map(async (date) => {
-          const brief = await kv.get(`brief:${date}`) as BriefData | null;
-          return brief;
+          const briefData = await redis.get(`brief:${date}`);
+          return briefData ? JSON.parse(briefData) as BriefData : null;
         })
       );
 
@@ -46,7 +48,8 @@ export async function GET(request: NextRequest) {
     // Fetch brief metadata for paginated dates
     const briefs = await Promise.all(
       paginatedDates.map(async (date) => {
-        const brief = await kv.get(`brief:${date}`) as BriefData | null;
+        const briefData = await redis.get(`brief:${date}`);
+        const brief = briefData ? JSON.parse(briefData) as BriefData : null;
         if (!brief) return null;
 
         // Return metadata only (not full HTML)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { getRedis } from '@/lib/redis';
 import type { BriefData } from '../store/route';
 
 export async function GET(
@@ -18,8 +18,11 @@ export async function GET(
       );
     }
 
-    // Fetch brief from KV
-    const brief = await kv.get(`brief:${date}`) as BriefData | null;
+    const redis = await getRedis();
+
+    // Fetch brief from Redis
+    const briefData = await redis.get(`brief:${date}`);
+    const brief = briefData ? JSON.parse(briefData) as BriefData : null;
 
     if (!brief) {
       return NextResponse.json(
