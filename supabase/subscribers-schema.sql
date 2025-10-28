@@ -113,6 +113,13 @@ CREATE POLICY "Allow public read own subscription" ON subscribers
   TO anon
   USING (true);
 
+-- Policy: Allow public (anon) to update their own subscription status (for unsubscribe)
+CREATE POLICY "Allow public unsubscribe" ON subscribers
+  FOR UPDATE
+  TO anon
+  USING (true)
+  WITH CHECK (status IN ('active', 'unsubscribed', 'bounced'));
+
 -- Helpful views for analytics
 CREATE OR REPLACE VIEW subscriber_stats AS
 SELECT
