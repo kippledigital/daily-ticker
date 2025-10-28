@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { NextRequest } from 'next/server'
 import { TrendingUp, Calendar, Share2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { BriefData } from '@/app/api/archive/store/route'
@@ -13,12 +14,17 @@ interface BriefPageProps {
 
 async function getBrief(date: string): Promise<BriefData | null> {
   try {
-    // Import Redis client and fetch directly (server-side)
-    const { getRedis } = await import('@/lib/redis')
-    const redis = await getRedis()
+    // Call the API route handler directly (server-side import)
+    const { GET } = await import('@/app/api/archive/[date]/route')
+    const request = new NextRequest(`http://localhost/api/archive/${date}`)
+    const response = await GET(request, { params: { date } })
 
-    const briefData = await redis.get(`brief:${date}`)
-    return briefData ? JSON.parse(briefData) as BriefData : null
+    if (!response.ok) {
+      return null
+    }
+
+    const data = await response.json()
+    return data.success ? data.data : null
   } catch (error) {
     console.error(`Error fetching brief for ${date}:`, error)
     return null
