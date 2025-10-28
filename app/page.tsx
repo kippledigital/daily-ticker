@@ -46,7 +46,7 @@ export default function Home() {
             <a href="#about" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
               About
             </a>
-            <a href="#archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
+            <a href="/archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
               Archive
             </a>
             <a
