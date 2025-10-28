@@ -1,46 +1,37 @@
-import OpenAI from 'openai';
+/**
+ * Financial Data & News Gatherer
+ *
+ * NOW USES REAL APIs instead of AI hallucination:
+ * - Alpha Vantage for fundamentals and news
+ * - Finnhub for social sentiment and insider trading
+ * - Data Aggregator for unified, verified data
+ *
+ * This replaces the old GPT-4 "simulation" approach with real-time market data
+ */
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { aggregateStockData, AggregatedStockData } from './data-aggregator';
 
 /**
- * Gathers comprehensive financial data and news for a stock
- * Replicates Gumloop's "Gather Financial Data & News" node (Perplexity AI web search)
+ * Gathers comprehensive financial data and news for a stock using REAL APIs
  *
- * Search Query: "Comprehensive financial analysis for {ticker} stock including current price,
- * market cap, P/E ratio, 52-week high/low, recent earnings, revenue, latest news,
- * partnerships, product launches, analyst ratings, and insider trading activity"
+ * Returns formatted text summary for AI analysis
  */
 export async function gatherFinancialData(ticker: string): Promise<string> {
-  const searchQuery = `Comprehensive financial analysis for ${ticker} stock including current price, market cap, P/E ratio, 52-week high/low, recent earnings, revenue, latest news, partnerships, product launches, analyst ratings, and insider trading activity`;
-
   try {
-    // Use GPT-4 with web search instructions to simulate Perplexity
-    // Note: In production, you may want to use Tavily API or Perplexity API directly
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a financial research assistant. Provide comprehensive, up-to-date financial data and analysis based on the latest available information. Include specific numbers, dates, and sources when possible. Format the response as a detailed summary covering all requested topics.`,
-        },
-        {
-          role: 'user',
-          content: searchQuery,
-        },
-      ],
-      temperature: 0.3, // Lower temperature for factual accuracy
-    });
+    console.log(`Gathering real financial data for ${ticker}...`);
 
-    const response = completion.choices[0]?.message?.content;
+    // Get aggregated, validated data from all sources
+    const data = await aggregateStockData(ticker);
 
-    if (!response) {
-      console.error(`No financial data gathered for ${ticker}`);
+    if (!data) {
+      console.error(`No data available for ${ticker}`);
       return `Limited data available for ${ticker}. Stock ticker: ${ticker}`;
     }
 
-    return response;
+    // Format data as readable text for AI analysis
+    const summary = formatDataForAI(data);
+
+    return summary;
   } catch (error) {
     console.error(`Error gathering financial data for ${ticker}:`, error);
     return `Error gathering data for ${ticker}. Stock ticker: ${ticker}`;
@@ -48,52 +39,129 @@ export async function gatherFinancialData(ticker: string): Promise<string> {
 }
 
 /**
- * Gathers financial data for multiple stocks in parallel
+ * Format aggregated data as readable text for AI analysis
+ */
+function formatDataForAI(data: AggregatedStockData): string {
+  const sections: string[] = [];
+
+  // Header
+  sections.push(`=== ${data.name} (${data.ticker}) ===`);
+  sections.push(`Sector: ${data.sector} | Industry: ${data.industry}`);
+  sections.push(`Data Quality Score: ${data.dataQuality.overallScore}/100`);
+  if (data.dataQuality.warnings.length > 0) {
+    sections.push(`Warnings: ${data.dataQuality.warnings.join(', ')}`);
+  }
+  sections.push('');
+
+  // Price Information
+  sections.push('--- PRICE DATA (VERIFIED) ---');
+  sections.push(`Current Price: $${data.price.toFixed(2)} (${data.priceSource})`);
+  sections.push(`Price Verified: ${data.priceVerified ? 'YES ✓' : 'NO ⚠️'}`);
+  sections.push(`Change: ${data.change >= 0 ? '+' : ''}$${data.change.toFixed(2)} (${data.changePercent >= 0 ? '+' : ''}${data.changePercent.toFixed(2)}%)`);
+  sections.push(`Volume: ${data.volume.toLocaleString()}`);
+  sections.push(`Day Range: $${data.low.toFixed(2)} - $${data.high.toFixed(2)}`);
+  sections.push(`52-Week Range: $${data.fiftyTwoWeekLow.toFixed(2)} - $${data.fiftyTwoWeekHigh.toFixed(2)}`);
+  sections.push('');
+
+  // Fundamentals
+  sections.push('--- FUNDAMENTALS (REAL-TIME) ---');
+  sections.push(`Market Cap: $${(data.marketCap / 1e9).toFixed(2)}B`);
+  sections.push(`P/E Ratio: ${data.peRatio.toFixed(2)}`);
+  sections.push(`EPS: $${data.eps.toFixed(2)}`);
+  sections.push(`Revenue (TTM): $${(data.revenue / 1e9).toFixed(2)}B`);
+  sections.push(`Profit Margin: ${(data.profitMargin * 100).toFixed(2)}%`);
+  if (data.dividendYield) {
+    sections.push(`Dividend Yield: ${(data.dividendYield * 100).toFixed(2)}%`);
+  }
+  if (data.beta) {
+    sections.push(`Beta: ${data.beta.toFixed(2)}`);
+  }
+  sections.push('');
+
+  // News & Sentiment
+  sections.push('--- RECENT NEWS & SENTIMENT ---');
+  sections.push(`Overall News Sentiment: ${data.overallNewsSentiment.toUpperCase()}`);
+  sections.push(`Recent News Articles: ${data.news.length}`);
+  sections.push('');
+  sections.push('Top News Headlines:');
+  data.news.slice(0, 5).forEach((article, index) => {
+    const sentiment = article.sentiment ? ` [${article.sentiment.toUpperCase()}]` : '';
+    sections.push(`${index + 1}. ${article.title}${sentiment}`);
+    sections.push(`   Source: ${article.source} | ${new Date(article.publishedAt).toLocaleDateString()}`);
+    sections.push(`   Summary: ${article.summary.substring(0, 150)}...`);
+    sections.push('');
+  });
+
+  // Social Sentiment
+  if (data.socialSentiment) {
+    sections.push('--- SOCIAL SENTIMENT (REDDIT + TWITTER) ---');
+    sections.push(`Sentiment Score: ${data.socialSentiment.score.toFixed(2)} (-1 to 1)`);
+    sections.push(`Trend: ${data.socialSentiment.trend.toUpperCase()}`);
+    sections.push(`Total Mentions: ${data.socialSentiment.totalMentions.toLocaleString()}`);
+    sections.push(`Summary: ${data.socialSentiment.summary}`);
+    sections.push('');
+  } else {
+    sections.push('--- SOCIAL SENTIMENT ---');
+    sections.push('Limited social media activity for this stock');
+    sections.push('');
+  }
+
+  // Insider Trading
+  if (data.insiderActivity) {
+    sections.push('--- INSIDER TRADING (LAST 30 DAYS) ---');
+    sections.push(`Recent Buys: ${data.insiderActivity.recentBuys}`);
+    sections.push(`Recent Sells: ${data.insiderActivity.recentSells}`);
+    sections.push(`Net Activity: ${data.insiderActivity.netActivity.toUpperCase()}`);
+    sections.push('');
+  }
+
+  // Analyst Recommendations
+  if (data.analystRatings) {
+    sections.push('--- ANALYST RECOMMENDATIONS ---');
+    sections.push(`Strong Buy: ${data.analystRatings.strongBuy}`);
+    sections.push(`Buy: ${data.analystRatings.buy}`);
+    sections.push(`Hold: ${data.analystRatings.hold}`);
+    sections.push(`Sell: ${data.analystRatings.sell}`);
+    sections.push(`Strong Sell: ${data.analystRatings.strongSell}`);
+    sections.push(`Consensus: ${data.analystRatings.consensus.toUpperCase()}`);
+    sections.push('');
+  }
+
+  // Company Description
+  if (data.description) {
+    sections.push('--- COMPANY OVERVIEW ---');
+    sections.push(data.description.substring(0, 500) + '...');
+    sections.push('');
+  }
+
+  // Data Sources
+  sections.push('--- DATA SOURCES ---');
+  sections.push(`Sources: ${data.sources.join(', ')}`);
+  sections.push(`Retrieved: ${new Date(data.timestamp).toLocaleString()}`);
+
+  return sections.join('\n');
+}
+
+/**
+ * Gathers financial data for multiple stocks
  */
 export async function gatherFinancialDataBatch(tickers: string[]): Promise<Record<string, string>> {
   const results: Record<string, string> = {};
 
-  const promises = tickers.map(async ticker => {
+  for (const ticker of tickers) {
     const data = await gatherFinancialData(ticker);
-    return { ticker, data };
-  });
-
-  const completed = await Promise.all(promises);
-
-  for (const { ticker, data } of completed) {
     results[ticker] = data;
+
+    // Rate limiting: small delay between requests
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
   return results;
 }
 
 /**
- * Alternative: Use Tavily API for web search (better than GPT-4 for real-time data)
- * Uncomment and use this if you have a Tavily API key
+ * Get raw aggregated data (for use in other modules)
  */
-/*
-import { tavily } from '@tavily/core';
-
-const tavilyClient = tavily({ apiKey: process.env.TAVILY_API_KEY });
-
-export async function gatherFinancialDataWithTavily(ticker: string): Promise<string> {
-  const searchQuery = `Comprehensive financial analysis for ${ticker} stock including current price, market cap, P/E ratio, 52-week high/low, recent earnings, revenue, latest news, partnerships, product launches, analyst ratings, and insider trading activity`;
-
-  try {
-    const response = await tavilyClient.search(searchQuery, {
-      search_depth: 'advanced',
-      max_results: 5,
-    });
-
-    // Combine results into a comprehensive summary
-    const summary = response.results
-      .map(result => `${result.title}\n${result.content}`)
-      .join('\n\n');
-
-    return summary;
-  } catch (error) {
-    console.error(`Error with Tavily search for ${ticker}:`, error);
-    return `Error gathering data for ${ticker}. Stock ticker: ${ticker}`;
-  }
+export async function getRawAggregatedData(ticker: string): Promise<AggregatedStockData | null> {
+  return aggregateStockData(ticker);
 }
-*/
