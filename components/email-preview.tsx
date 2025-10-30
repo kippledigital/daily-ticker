@@ -177,7 +177,7 @@ export function EmailPreview() {
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
                   <p className="text-sm text-gray-300">
-                    Consider scaling in on pullbacks to $510-515 range. Watch tomorrow's broader tech sector
+                    Consider scaling in on pullbacks to $510-515 range. Watch tomorrow&apos;s broader tech sector
                     performance for confirmation of trend strength.
                   </p>
                 </div>
@@ -209,7 +209,7 @@ export function EmailPreview() {
                 <div>
                   <h4 className="text-sm font-bold text-white mb-1">💡 Why This Matters</h4>
                   <p className="text-sm text-gray-300 leading-relaxed">
-                    The AI chip market is expanding beyond NVIDIA's dominance. AMD's competitive pricing and strong
+                    The AI chip market is expanding beyond NVIDIA&apos;s dominance. AMD&apos;s competitive pricing and strong
                     software ecosystem make it a compelling alternative for cost-conscious enterprises.
                   </p>
                 </div>
@@ -344,9 +344,9 @@ export function EmailPreview() {
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
                 <span>📚</span> Learning Corner
               </h3>
-              <h4 className="text-sm font-semibold text-white mb-2">What is a "Stop Loss"?</h4>
+              <h4 className="text-sm font-semibold text-white mb-2">What is a &ldquo;Stop Loss&rdquo;?</h4>
               <p className="text-sm text-gray-300 leading-relaxed mb-3">
-                A stop loss is a predetermined price level where you'll exit a position to limit losses. Think of it
+                A stop loss is a predetermined price level where you&apos;ll exit a position to limit losses. Think of it
                 as a safety net - if the stock drops to this price, you automatically sell to prevent bigger losses.
               </p>
               <p className="text-sm text-gray-300 leading-relaxed">

@@ -86,7 +86,7 @@ export function HybridTicker() {
       setCurrentPickIndex((prevIndex) => (prevIndex + 1) % dailyPicks.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [dailyPicks.length])
 
   // Format today's date
   const today = new Date()
