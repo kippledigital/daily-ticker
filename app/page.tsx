@@ -63,7 +63,7 @@ export default function Home() {
 
       {/* Hero Section - REDESIGNED */}
       <section id="subscribe" className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="max-w-5xl mx-auto text-center space-y-8">
           {/* Live Indicator */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a3a52]/50 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
             <span className="relative flex h-2 w-2">
@@ -83,14 +83,14 @@ export default function Home() {
             <p className="text-xl md:text-2xl text-white font-semibold">
               Get 3 actionable stock picks daily — FREE
             </p>
-            <p className="text-base md:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Premium tier launching Q1 2026 with 5 picks, portfolio allocation, and unlimited archive.
             </p>
           </div>
 
           {/* Subscribe Form */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <SubscribeForm />
+            <SubscribeForm variant="large" />
           </div>
         </div>
       </section>
