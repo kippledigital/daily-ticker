@@ -27,14 +27,35 @@ export function HybridTicker() {
     { symbol: "DOW", price: 38240.10, change: 114.72, changePercent: 0.3 },
   ])
 
-  const [topPick] = useState<TopPick>({
-    symbol: "NVDA",
-    company: "NVIDIA",
-    price: 495.22,
-    changePercent: 2.58,
-    confidence: 87,
-    summary: "AI chip demand surge",
-  })
+  const dailyPicks: TopPick[] = [
+    {
+      symbol: "NVDA",
+      company: "NVIDIA",
+      price: 495.22,
+      changePercent: 2.58,
+      confidence: 87,
+      summary: "AI chip demand surge with record data center revenue",
+    },
+    {
+      symbol: "AMD",
+      company: "Advanced Micro Devices",
+      price: 142.85,
+      changePercent: 3.12,
+      confidence: 82,
+      summary: "Strong earnings beat on CPU and GPU sales momentum",
+    },
+    {
+      symbol: "MSFT",
+      company: "Microsoft",
+      price: 378.91,
+      changePercent: 1.45,
+      confidence: 85,
+      summary: "Azure cloud growth accelerating with enterprise AI adoption",
+    },
+  ]
+
+  const [currentPickIndex, setCurrentPickIndex] = useState(0)
+  const topPick = dailyPicks[currentPickIndex]
 
   const [isLive, setIsLive] = useState(false)
 
@@ -56,6 +77,14 @@ export function HybridTicker() {
     fetchMarketData()
     // Refresh every 60 seconds
     const interval = setInterval(fetchMarketData, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Auto-cycle through daily picks every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPickIndex((prevIndex) => (prevIndex + 1) % dailyPicks.length)
+    }, 5000)
     return () => clearInterval(interval)
   }, [])
 
@@ -104,11 +133,28 @@ export function HybridTicker() {
             </div>
           </div>
 
-          {/* Right: Today's Top Pick */}
+          {/* Right: Today's Free Picks (Cycling) */}
           <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent">
-            <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2 mb-4">
-              <span>🎯</span> Today&apos;s Top Pick
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                <span>🎯</span> Today&apos;s Free Picks
+              </h3>
+              <div className="flex gap-1.5">
+                {dailyPicks.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPickIndex(index)}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-300",
+                      index === currentPickIndex
+                        ? "w-6 bg-[#00ff88]"
+                        : "w-1.5 bg-gray-600 hover:bg-gray-500"
+                    )}
+                    aria-label={`View pick ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
 
             <div className="space-y-4">
               <div className="flex items-start justify-between">
@@ -189,11 +235,28 @@ export function HybridTicker() {
             </div>
           </div>
 
-          {/* Today's Top Pick */}
+          {/* Today's Free Picks (Cycling) - Mobile */}
           <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent">
-            <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2 mb-4">
-              <span>🎯</span> Today&apos;s Top Pick
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                <span>🎯</span> Today&apos;s Free Picks
+              </h3>
+              <div className="flex gap-1.5">
+                {dailyPicks.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPickIndex(index)}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-300",
+                      index === currentPickIndex
+                        ? "w-6 bg-[#00ff88]"
+                        : "w-1.5 bg-gray-600 hover:bg-gray-500"
+                    )}
+                    aria-label={`View pick ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
 
             <div className="space-y-4">
               <div className="flex items-start justify-between">
