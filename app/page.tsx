@@ -62,8 +62,8 @@ export default function Home() {
       </header>
 
       {/* Hero Section - REDESIGNED */}
-      <section id="subscribe" className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
+      <section id="subscribe" className="container mx-auto px-4 py-12 md:py-16">
+        <div className="max-w-5xl mx-auto text-center space-y-6">
           {/* Live Indicator */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a3a52]/50 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
             <span className="relative flex h-2 w-2">
@@ -96,7 +96,7 @@ export default function Home() {
       </section>
 
       {/* Live Ticker - MOVED ABOVE THE FOLD: Market Pulse + Cycling Free Picks */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-6">
         <HybridTicker />
       </section>
 
