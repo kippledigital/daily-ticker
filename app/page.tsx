@@ -2,7 +2,7 @@
 
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
-import { TopMoves } from "@/components/top-moves"
+import { EmailPreview } from "@/components/email-preview"
 import { ArchivePreview } from "@/components/archive-preview"
 import { ROICalculator } from "@/components/roi-calculator"
 import { Mail, TrendingUp, Target, Zap, BookOpen } from "lucide-react"
@@ -143,6 +143,23 @@ export default function Home() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Email Preview - NEW: See what you'll get */}
+      <section className="container mx-auto px-4 py-16 bg-gradient-to-b from-transparent to-[#0a1929]/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
+              <span>📧</span> Live Preview
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">See what you&apos;ll get</h3>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+              Every morning, you&apos;ll receive a concise brief with the day&apos;s most important market moves and why they matter.
+            </p>
+          </div>
+
+          <EmailPreview />
         </div>
       </section>
 
