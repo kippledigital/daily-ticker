@@ -90,7 +90,12 @@ export default function Home() {
             <SubscribeForm />
           </div>
 
-          <p className="text-sm text-gray-200">Get smarter about markets in 5 minutes every morning</p>
+          <p className="text-sm text-gray-200">
+            Start free • Entry prices, sector analysis, and market context
+          </p>
+          <p className="text-xs text-gray-400">
+            Upgrade for stop-loss levels, profit targets, and allocation percentages
+          </p>
         </div>
       </section>
 
@@ -148,6 +153,143 @@ export default function Home() {
             <h4 className="text-xl font-bold text-white">No Hype</h4>
             <p className="text-gray-300 leading-relaxed">
               Transparent, credible analysis. We tell you why moves happen, not just what moved.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Comparison Section */}
+      <section className="container mx-auto px-4 py-16" id="pricing">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">Choose Your Level</h3>
+            <p className="text-gray-300 text-lg">Start free, upgrade when you&apos;re ready for advanced insights</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Free Tier */}
+            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-2xl p-8 space-y-6">
+              <div>
+                <h4 className="text-2xl font-bold text-white mb-2">Free</h4>
+                <p className="text-gray-300">Core market insights</p>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold text-white">$0</span>
+                  <span className="text-gray-300">/month</span>
+                </div>
+              </div>
+
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Daily stock picks (2-3 per day)</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Entry prices & ideal entry zones</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Sector analysis & market context</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Why it matters & momentum checks</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>7-day archive access</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-400">
+                  <span className="text-gray-600 mt-1">✕</span>
+                  <span>Confidence scores (blurred)</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-400">
+                  <span className="text-gray-600 mt-1">✕</span>
+                  <span>Stop-loss levels</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-400">
+                  <span className="text-gray-600 mt-1">✕</span>
+                  <span>Profit targets</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-400">
+                  <span className="text-gray-600 mt-1">✕</span>
+                  <span>Position sizing recommendations</span>
+                </li>
+              </ul>
+
+              <a
+                href="#subscribe"
+                className="block w-full text-center px-6 py-3 bg-[#1a3a52] text-white font-semibold rounded-lg hover:bg-[#244a62] transition-colors border border-[#00ff88]/20"
+              >
+                Get Started Free
+              </a>
+            </div>
+
+            {/* Premium Tier */}
+            <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl p-8 space-y-6 relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="inline-block px-4 py-1 bg-[#00ff88] text-[#0B1E32] text-sm font-bold rounded-full">
+                  BEST VALUE
+                </span>
+              </div>
+
+              <div>
+                <h4 className="text-2xl font-bold text-white mb-2">Premium</h4>
+                <p className="text-gray-300">Complete trading toolkit</p>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold text-white">$8</span>
+                  <span className="text-gray-300">/month</span>
+                  <span className="block text-sm text-gray-400 mt-1">or $96/year (save 17%)</span>
+                </div>
+              </div>
+
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="font-semibold">Everything in Free, plus:</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span><strong>AI confidence scores</strong> (0-100 rating)</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span><strong>Stop-loss levels</strong> for risk management</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span><strong>Profit targets</strong> (2:1 reward-to-risk)</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span><strong>Position sizing</strong> recommendations (% allocation)</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Full caution notes & risk warnings</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Unlimited archive access</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span>Mini learning moments (trading education)</span>
+                </li>
+              </ul>
+
+              <button className="w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors">
+                Upgrade to Premium
+              </button>
+              <p className="text-xs text-center text-gray-400">
+                60 picks/month • ~$1.60 per pick • Cancel anytime
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Compare to services like Motley Fool ($199/year for 2 picks/month). Daily Ticker delivers <strong className="text-white">60 picks/month</strong> for just $96/year — that&apos;s <strong className="text-[#00ff88]">30x more value</strong>.
             </p>
           </div>
         </div>

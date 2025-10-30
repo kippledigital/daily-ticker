@@ -28,6 +28,9 @@ export async function generateEmailContent(params: EmailGenerationParams): Promi
 Ticker: ${stock.ticker}
 Sector: ${stock.sector}
 Price: $${stock.last_price}
+Stop Loss: $${stock.stop_loss.toFixed(2)}
+Profit Target: $${stock.profit_target.toFixed(2)}
+Risk/Reward Ratio: 1:${((stock.profit_target - stock.last_price) / (stock.last_price - stock.stop_loss)).toFixed(1)}
 Confidence: ${stock.confidence}%
 Risk Level: ${stock.risk_level}
 Summary: ${stock.summary}
@@ -72,7 +75,7 @@ What's happening (recent move or news)
 
 What to do (e.g., "watch," "wait," "hold," "avoid")
 
-Beginner-friendly explanation ("This means…" or "In plain terms…")
+Why this matters to you (simple, relatable explanation of the opportunity or risk)
 
 If no clear buys:
 
@@ -98,11 +101,15 @@ Every brief should teach one small concept (like "market cap" or "volume").
 
 🧱 OUTPUT FORMAT (HTML ONLY)
 
-<div style="font-family: Inter, Arial, sans-serif; max-width:720px; color:#222; line-height:1.6; margin:auto;"> <h1 style="color:#2c3e50;">☀️ Morning Brief — Top Stocks to Watch</h1> <p style="font-size:16px;">Simple, clear insights for everyday investors. What's moving, why it matters, and what to do next.</p> <hr style="border:0;border-top:1px solid #ddd;margin:20px 0;"> <h2 style="color:#1a5276;">🎯 TL;DR</h2> <ul style="font-size:16px;"> <li><strong>[Ticker 1]</strong> — [One-sentence takeaway: what's happening and why it matters]</li> <li><strong>[Ticker 2]</strong> — [One-sentence takeaway]</li> <li><strong>[Ticker 3]</strong> — [One-sentence takeaway]</li> </ul> <hr style="border:0;border-top:1px solid #ddd;margin:20px 0;"> <h2 style="color:#145a32;">📊 Today's Stocks at a Glance</h2> [If tickers exist, list them in this format; if none, display a calm "no new ideas today" reflection.] <div style="margin-bottom:30px;"> <h3 style="color:#2471a3;">🔹 [TICKER] — [Company Name]</h3> <p><strong>What it does:</strong> [Explain in plain English — what the company makes or does.]</p> <p><strong>Why it matters today:</strong> [Describe recent price movement, news, or volume simply.]</p> <ul style="padding-left:18px;"> <li><strong>Price:</strong> $[X]</li> <li><strong>Recent move:</strong> [E.g., "Up 12% this week after strong earnings."]</li> <li><strong>Trend:</strong> [Uptrend / Sideways / Cooling off]</li> </ul> <p style="background:#f8f9fa;padding:12px;border-left:4px solid #3498db;"> <strong>🧭 What to Do:</strong> ["Watch," "Hold," "Wait for dip near $X," etc.] </p> <p style="font-size:15px;color:#444;"> <strong>💡 In Plain English:</strong> [Explain what this means for a beginner. Example: "This stock is popular right now because of AI news, but prices can swing a lot."] </p> <p style="font-size:14px;color:#555;"> <strong>Risk level:</strong> [Low / Medium / High] | <strong>Confidence:</strong> [👍 Solid pick / ⚖️ Worth watching / ⚠️ Risky right now] </p> </div> <hr style="border:0;border-top:1px solid #ddd;margin:20px 0;"> <h2 style="color:#76448a;">🎬 Quick Moves for Today</h2> <ul> <li>✓ [Action 1 — e.g., "Add [Ticker] to your watchlist under $X."]</li> <li>✓ [Action 2 — e.g., "Skip [Ticker] until earnings next week."]</li> <li>✓ [Action 3 — e.g., "Revisit [Ticker] if price dips below $X."]</li> </ul> <hr style="border:0;border-top:1px solid #ddd;margin:20px 0;"> <h2 style="color:#d35400;">📘 Learning Corner</h2> <p style="font-size:15px;">Today's concept: <strong>[Term]</strong> — [Explain simply what it means and why it matters to new investors.]</p> <hr style="border:0;border-top:1px solid #ddd;margin:20px 0;"> <h2 style="color:#117a65;">💭 What I'd Do If I Were You</h2> <p style="font-size:15px;">[Write as first-person advice: "I'd hold off buying today and keep $ ready for dips." Mention small, practical actions — "Maybe start with $50–$100 to learn."]</p> <p style="font-size:14px;color:#666;margin-top:20px;"> 👋 Remember — investing isn't about constant action, it's about steady learning and patience. </p> <p style="font-size:12px;color:#999;margin-top:20px;"><strong>Sources:</strong> Yahoo Finance, Google Finance, Perplexity, Market news feeds</p> </div>
+<div style="font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width:680px; background:#0B1E32; color:#F0F0F0; margin:0 auto; padding:0;"> <div style="background:linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); padding:40px 24px 32px; text-align:center; border-bottom:3px solid #00ff88;"> <div style="display:inline-block; margin-bottom:12px;"> <span style="font-size:32px; vertical-align:middle; margin-right:8px;">📈</span> <h1 style="display:inline-block; color:#00ff88; margin:0; font-family:'Space Mono',Consolas,monospace; font-size:32px; font-weight:700; vertical-align:middle; letter-spacing:-0.5px;">Daily Ticker</h1> </div> <p style="color:#00ff88; font-size:14px; margin:0; opacity:0.9; font-weight:500;">☀️ Morning Brief — Market Insights That Make Sense</p> </div> <div style="padding:32px 24px;"> <p style="font-size:17px; color:#e5e7eb; line-height:1.7; margin:0 0 32px 0;">Simple, clear insights for everyday investors. What's moving, why it matters, and what to do next.</p> <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:0 0 32px 0;"></div> <div style="background:#1a3a52; border-left:4px solid #00ff88; border-radius:8px; padding:20px 20px 20px 24px; margin-bottom:32px;"> <h2 style="color:#00ff88; font-size:22px; margin:0 0 16px 0; font-weight:600; letter-spacing:-0.3px;">🎯 TL;DR</h2> <ul style="font-size:15px; color:#e5e7eb; line-height:1.8; margin:0; padding-left:20px;"> <li style="margin-bottom:10px; padding-left:4px;"><strong style="color:#00ff88; font-weight:600;">[Ticker 1]</strong> <span style="color:#d1d5db;">—</span> [One-sentence takeaway: what's happening and why it matters]</li> <li style="margin-bottom:10px; padding-left:4px;"><strong style="color:#00ff88; font-weight:600;">[Ticker 2]</strong> <span style="color:#d1d5db;">—</span> [One-sentence takeaway]</li> <li style="margin-bottom:0; padding-left:4px;"><strong style="color:#00ff88; font-weight:600;">[Ticker 3]</strong> <span style="color:#d1d5db;">—</span> [One-sentence takeaway]</li> </ul> </div> <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:0 0 32px 0;"></div> <h2 style="color:#00ff88; font-size:22px; margin:0 0 24px 0; font-weight:600; letter-spacing:-0.3px;">📊 Today's Stocks at a Glance</h2> [If tickers exist, list them in this format; if none, display a calm "no new ideas today" reflection.] <div style="background:#1a3a52; border-radius:12px; padding:24px; margin-bottom:24px; border:1px solid #2a4a62;"> <div style="margin-bottom:20px;"> <h3 style="color:#00ff88; font-size:24px; margin:0 0 4px 0; font-weight:700; font-family:'Space Mono',Consolas,monospace; letter-spacing:-0.5px;">🔹 [TICKER]</h3> <p style="color:#9ca3af; margin:0; font-size:14px; font-weight:500;">[Company Name]</p> </div> <div style="margin-bottom:16px;"> <p style="color:#d1d5db; margin:0; font-size:14px; line-height:1.6;"><span style="color:#9ca3af; text-transform:uppercase; font-size:11px; font-weight:600; letter-spacing:0.5px;">What it does</span><br><span style="font-size:15px; color:#e5e7eb;">[Explain in plain English — what the company makes or does.]</span></p> </div> <div style="margin-bottom:20px;"> <p style="color:#d1d5db; margin:0; font-size:14px; line-height:1.6;"><span style="color:#9ca3af; text-transform:uppercase; font-size:11px; font-weight:600; letter-spacing:0.5px;">Why it matters today</span><br><span style="font-size:15px; color:#e5e7eb;">[Describe recent price movement, news, or volume simply.]</span></p> </div> <div style="background:#0B1E32; border-radius:8px; padding:16px; margin-bottom:16px; border:1px solid #1a3a52;"> <table width="100%" cellpadding="0" cellspacing="0" border="0"> <tr> <td style="padding:0 8px 12px 0; border-right:1px solid #1a3a52;"> <div style="font-size:11px; color:#9ca3af; margin-bottom:4px; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Price</div> <div style="font-size:20px; font-weight:700; color:#ffffff; font-family:'Space Mono',Consolas,monospace;">$[X.XX]</div> </td> <td style="padding:0 0 12px 12px;"> <div style="font-size:11px; color:#9ca3af; margin-bottom:4px; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Recent Move</div> <div style="font-size:14px; font-weight:600; color:#d1d5db;">[Up 12% this week]</div> </td> </tr> <tr> <td colspan="2" style="padding:12px 0 0 0; border-top:1px solid #1a3a52;"> <div style="font-size:11px; color:#9ca3af; margin-bottom:4px; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Trend</div> <div style="font-size:14px; font-weight:600; color:#d1d5db;">[Uptrend / Sideways / Cooling off]</div> </td> </tr> </table> </div> <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;"> <tr> <td width="48%" style="padding-right:2%;"> <div style="background:#2a1a1f; border-radius:8px; padding:14px; border:2px solid #ff3366;"> <p style="font-size:11px; color:#ffb3c6; margin:0 0 6px 0; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Stop Loss</p> <p style="font-size:22px; font-weight:700; color:#ff3366; margin:0; font-family:'Space Mono',Consolas,monospace;">$[X.XX]</p> </div> </td> <td width="48%" style="padding-left:2%;"> <div style="background:#0a2a1a; border-radius:8px; padding:14px; border:2px solid #00ff88;"> <p style="font-size:11px; color:#b3ffdd; margin:0 0 6px 0; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Profit Target</p> <p style="font-size:22px; font-weight:700; color:#00ff88; margin:0; font-family:'Space Mono',Consolas,monospace;">$[X.XX]</p> </div> </td> </tr> </table> <div style="background:#1a3a52; border-radius:6px; padding:10px; margin-bottom:16px; text-align:center; border:1px solid #2a4a62;"> <p style="font-size:12px; color:#9ca3af; margin:0;">Risk/Reward Ratio: <strong style="color:#00ff88; font-size:15px; font-weight:700;">1:[X.X]</strong></p> </div> <div style="background:linear-gradient(135deg, #00ff88 0%, #00dd77 100%); padding:16px 20px; border-radius:8px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,255,136,0.2);"> <p style="margin:0; color:#0B1E32; font-size:15px; font-weight:700;"><span style="font-size:18px; margin-right:6px;">🧭</span>What to Do: <span style="font-weight:600;">["Watch," "Hold," "Wait for dip near $X," etc.]</span></p> </div> <div style="margin-bottom:16px;"> <p style="color:#d1d5db; margin:0; font-size:15px; line-height:1.7;"><span style="color:#9ca3af; text-transform:uppercase; font-size:11px; font-weight:600; letter-spacing:0.5px;">Why this matters to you</span><br><span style="color:#e5e7eb;">[Simple, relatable explanation of the opportunity or risk. Example: "AI chip demand is driving this stock higher, but tech stocks can be volatile - great for growth, risky for short-term plays."]</span></p> </div> <p style="font-size:13px; color:#9ca3af; margin:0; padding-top:12px; border-top:1px solid #2a4a62;"> <strong style="font-weight:600;">Risk level:</strong> [Low / Medium / High] <span style="margin:0 6px; color:#4a5a6a;">•</span> <strong style="font-weight:600;">Confidence:</strong> [👍 Solid pick / ⚖️ Worth watching / ⚠️ Risky right now] </p> </div> <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:32px 0;"></div> <h2 style="color:#00ff88; font-size:22px; margin:0 0 16px 0; font-weight:600; letter-spacing:-0.3px;">🎬 Quick Moves for Today</h2> <ul style="color:#e5e7eb; line-height:1.8; margin:0 0 32px 0; padding-left:20px; font-size:15px;"> <li style="margin-bottom:10px; padding-left:4px;"><span style="color:#00ff88; font-weight:700; margin-right:4px;">✓</span>[Action 1 — e.g., "Add [Ticker] to your watchlist under $X."]</li> <li style="margin-bottom:10px; padding-left:4px;"><span style="color:#00ff88; font-weight:700; margin-right:4px;">✓</span>[Action 2 — e.g., "Skip [Ticker] until earnings next week."]</li> <li style="margin-bottom:0; padding-left:4px;"><span style="color:#00ff88; font-weight:700; margin-right:4px;">✓</span>[Action 3 — e.g., "Revisit [Ticker] if price dips below $X."]</li> </ul> <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:0 0 32px 0;"></div> <div style="background:linear-gradient(135deg, #1a3a52 0%, #0B1E32 100%); border-radius:8px; padding:20px; margin-bottom:32px; border:1px solid #2a4a62;"> <h2 style="color:#00ff88; font-size:22px; margin:0 0 12px 0; font-weight:600; letter-spacing:-0.3px;">📘 Learning Corner</h2> <p style="font-size:15px; color:#d1d5db; margin:0; line-height:1.7;"> <span style="color:#9ca3af; font-size:13px; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Today's concept:</span><br> <strong style="color:#00ff88; font-size:16px; font-weight:600;">[Term]</strong> <span style="color:#e5e7eb;">— [Explain simply what it means and why it matters to new investors.]</span> </p> </div> <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:0 0 32px 0;"></div> <div style="background:#1a3a52; border-radius:8px; padding:20px; margin-bottom:24px; border-left:4px solid #00ff88;"> <h2 style="color:#00ff88; font-size:22px; margin:0 0 12px 0; font-weight:600; letter-spacing:-0.3px;">💭 What I'd Do If I Were You</h2> <p style="font-size:15px; color:#d1d5db; margin:0 0 12px 0; line-height:1.7;">[Write as first-person advice: "I'd hold off buying today and keep $ ready for dips." Mention small, practical actions — "Maybe start with $50–$100 to learn."]</p> <p style="font-size:14px; color:#9ca3af; margin:0; padding-top:12px; border-top:1px solid #2a4a62; font-style:italic;"> 👋 Remember — investing isn't about constant action, it's about steady learning and patience. </p> </div> </div> </div>
 
 🧩 CRITICAL RULES
 
 Always show tickers if data exists. Never output "no new picks" if tickers are available.
+
+MUST include Stop Loss and Profit Target for each stock in the format shown above (red for stop loss, green for profit target).
+
+MUST include Risk/Reward ratio calculation for each stock.
 
 Use simple words. Avoid any technical finance phrasing unless explained.
 
@@ -230,45 +237,23 @@ function addSourceCitations(htmlContent: string, date: string): string {
     timeZoneName: 'short',
   });
 
-  // Source citation footer
+  // Compact unified footer
   const citationFooter = `
-<div style="margin-top:40px;padding:24px;background:#f8f9fa;border-radius:8px;border-left:4px solid #3498db;">
-  <h3 style="color:#2c3e50;font-size:16px;margin:0 0 12px 0;font-weight:600;">📊 Data Sources & Transparency</h3>
-  <p style="font-size:14px;color:#555;margin:0 0 8px 0;line-height:1.6;">
-    All financial data, prices, and metrics in this brief are sourced from:
+<div style="margin-top:40px;padding:20px;background:#1a3a52;border-radius:8px;border-top:3px solid #00ff88;">
+  <p style="font-size:12px;color:#9ca3af;margin:0 0 12px 0;line-height:1.6;">
+    <strong style="color:#d1d5db;">Data:</strong> Alpha Vantage • Finnhub • Polygon.io
+    <span style="color:#6b7280;margin:0 8px;">|</span>
+    Retrieved ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
   </p>
-  <ul style="font-size:14px;color:#555;margin:0 0 12px 0;padding-left:20px;line-height:1.8;">
-    <li><strong>Alpha Vantage</strong> — Real-time fundamentals, P/E ratios, earnings, company financials</li>
-    <li><strong>Finnhub</strong> — Social sentiment (Reddit & Twitter), insider trading, analyst recommendations</li>
-    <li><strong>Polygon.io</strong> — Real-time stock prices and market data</li>
-  </ul>
-  <p style="font-size:13px;color:#777;margin:0;line-height:1.6;">
-    🕐 <strong>Data Retrieved:</strong> ${timestamp}<br>
-    ✓ <strong>Verification:</strong> Prices cross-referenced across multiple sources<br>
-    📈 <strong>Quality Score:</strong> Each stock includes a data quality rating (0-100)
+  <p style="font-size:11px;color:#9ca3af;margin:0 0 16px 0;padding-top:12px;border-top:1px solid #2a4a62;line-height:1.5;">
+    <strong style="color:#d1d5db;">Disclaimer:</strong> For educational purposes only. Not financial advice. Do your own research and consult a qualified financial advisor.
   </p>
-</div>
-
-<div style="margin-top:24px;padding:20px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107;">
-  <p style="font-size:13px;color:#856404;margin:0;line-height:1.6;">
-    <strong>⚠️ Important Disclaimer:</strong> Daily Ticker is for educational purposes only and does not provide financial advice.
-    All stock recommendations are based on publicly available data and should not be considered as investment advice.
-    Always do your own research and consult with a qualified financial advisor before making investment decisions.
-    Past performance does not guarantee future results.
-  </p>
-</div>
-
-<div style="margin-top:24px;text-align:center;padding:20px 0;border-top:2px solid #e0e0e0;">
-  <p style="font-size:14px;color:#666;margin:0 0 8px 0;">
-    📧 <strong>Daily Ticker</strong> — Clear, Actionable Market Insights
-  </p>
-  <p style="font-size:13px;color:#999;margin:0 0 12px 0;">
-    <a href="https://dailyticker.co" style="color:#3498db;text-decoration:none;">Visit Archive</a> |
-    <a href="https://dailyticker.co/privacy" style="color:#999;text-decoration:none;">Privacy Policy</a> |
-    <a href="https://dailyticker.co/terms" style="color:#999;text-decoration:none;">Terms</a>
-  </p>
-  <p style="font-size:12px;color:#aaa;margin:8px 0 0 0;">
-    Don't want these emails? <a href="https://dailyticker.co/unsubscribe" style="color:#999;text-decoration:underline;">Unsubscribe here</a>
+  <p style="font-size:12px;color:#9ca3af;margin:0;text-align:center;">
+    <a href="https://dailyticker.co/archive" style="color:#00ff88;text-decoration:none;">Archive</a>
+    <span style="margin:0 6px;">•</span>
+    <a href="https://dailyticker.co/privacy" style="color:#9ca3af;text-decoration:none;">Privacy</a>
+    <span style="margin:0 6px;">•</span>
+    <a href="https://dailyticker.co/unsubscribe" style="color:#9ca3af;text-decoration:none;">Unsubscribe</a>
   </p>
 </div>`;
 
