@@ -17,6 +17,8 @@ export interface StockAnalysis {
   caution_notes: string;
   ideal_entry_zone: string;
   mini_learning_moment: string;
+  stop_loss: number; // Price level where trader should exit to limit losses
+  profit_target: number; // Price level where trader should take profits (2:1 reward-to-risk)
 }
 
 export interface ValidatedStock extends StockAnalysis {
