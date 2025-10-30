@@ -58,12 +58,6 @@ export default function Home() {
               <Mail className="h-4 w-4" />
               Contact
             </a>
-            <a
-              href="#subscribe"
-              className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
-            >
-              Get Started Free
-            </a>
           </nav>
         </div>
       </header>
@@ -81,7 +75,7 @@ export default function Home() {
           </div>
 
           {/* Headline - Updated per PM spec */}
-          <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight text-balance">
+          <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight text-balance">
             Market insights that make sense
           </h2>
 
@@ -100,25 +94,17 @@ export default function Home() {
             <SubscribeForm />
           </div>
 
-          {/* Early Bird Discount Callout - NEW per PM spec */}
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
-            <span className="text-2xl">💡</span>
-            <p className="text-sm md:text-base text-gray-200 font-medium">
-              Early subscribers get exclusive launch discount <span className="text-yellow-400 font-bold">(50% off first year)</span>
-            </p>
-          </div>
-
           {/* Brief Feature List */}
           <div className="grid md:grid-cols-3 gap-4 pt-8 text-left">
             <div className="flex items-start gap-3">
-              <span className="text-[#00ff88] text-lg">✓</span>
+              <span className="text-gray-400 text-lg">✓</span>
               <div>
                 <p className="text-white font-semibold text-sm">Entry Prices</p>
                 <p className="text-gray-400 text-xs">Exact zones to buy</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-[#00ff88] text-lg">✓</span>
+              <span className="text-gray-400 text-lg">✓</span>
               <div>
                 <p className="text-white font-semibold text-sm">Sector Analysis</p>
                 <p className="text-gray-400 text-xs">Market context</p>
@@ -147,22 +133,11 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
               <span>🎯</span> Free Preview
             </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">Today&apos;s Top Moves</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Today&apos;s Top Moves</h3>
             <p className="text-gray-300 text-lg">Real insights, zero jargon — see what you&apos;ll get every morning</p>
           </div>
 
           <TopMoves />
-
-          {/* Premium Teaser - NEW */}
-          <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-[#1a3a52]/40 to-[#0B1E32] border border-[#00ff88]/20">
-              <span className="text-2xl">🔒</span>
-              <div className="text-left">
-                <p className="text-white font-semibold text-sm">Premium subscribers get 2 additional picks daily</p>
-                <p className="text-gray-400 text-xs">+ Confidence scores, allocation %, stop-loss levels</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -170,15 +145,15 @@ export default function Home() {
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">How Daily Ticker Works</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">How Daily Ticker Works</h3>
             <p className="text-gray-300 text-lg">Everything you need to make informed decisions, delivered daily</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-[#00ff88]/10 flex items-center justify-center">
-                <Target className="h-6 w-6 text-[#00ff88]" />
+              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
+                <Target className="h-6 w-6 text-white" />
               </div>
               <h4 className="text-xl font-bold text-white">Actionable Stock Picks</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
@@ -188,8 +163,8 @@ export default function Home() {
 
             {/* Feature 2 */}
             <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-[#00ff88]/10 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-[#00ff88]" />
+              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-white" />
               </div>
               <h4 className="text-xl font-bold text-white">5-Minute Read, Zero Fluff</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
@@ -199,8 +174,8 @@ export default function Home() {
 
             {/* Feature 3 */}
             <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-[#00ff88]/10 flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-[#00ff88]" />
+              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
+                <BookOpen className="h-6 w-6 text-white" />
               </div>
               <h4 className="text-xl font-bold text-white">Learn While You Earn</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
@@ -227,7 +202,7 @@ export default function Home() {
       <section className="container mx-auto px-4 py-16" id="pricing">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">Choose Your Plan</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Choose Your Plan</h3>
             <p className="text-gray-300 text-lg">Start free, upgrade when you&apos;re ready for advanced insights</p>
           </div>
 
@@ -248,23 +223,23 @@ export default function Home() {
 
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>3 stock picks</strong> daily</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>Entry prices & ideal entry zones</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>Sector analysis & market context</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>Why it matters & momentum checks</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>7-day archive access</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-400">
@@ -322,35 +297,35 @@ export default function Home() {
 
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span className="font-semibold">Everything in Free, plus:</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>5 stock picks</strong> daily (+2 more opportunities)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>AI confidence scores</strong> (0-100 rating)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>Portfolio allocation %</strong> for each pick</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>Stop-loss levels</strong> for risk management</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>Profit targets</strong> (2:1 reward-to-risk)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>Unlimited archive + performance tracking</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-[#00ff88] mt-1">✓</span>
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>Daily learning moments (trading education)</span>
                 </li>
               </ul>
@@ -380,7 +355,7 @@ export default function Home() {
       {/* Final CTA Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#00ff88]/20 rounded-2xl p-8 md:p-12 text-center space-y-6">
-          <h3 className="text-3xl md:text-4xl font-bold text-white text-balance">Start your mornings smarter</h3>
+          <h3 className="text-2xl md:text-3xl font-bold text-white text-balance">Start your mornings smarter</h3>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto text-pretty">
             Join thousands of investors getting clear, actionable market insights delivered at 8 AM EST.
           </p>
