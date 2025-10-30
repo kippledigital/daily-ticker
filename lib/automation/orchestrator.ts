@@ -92,12 +92,21 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     console.log('✔️  Step 5: Validating stock analyses...');
     const validatedStocks: ValidatedStock[] = [];
 
-    for (const analysis of analyses) {
-      if (analysis) {
-        const validated = validateStockAnalysis(analysis);
-        if (validated) {
-          validatedStocks.push(validated);
-        }
+    for (let i = 0; i < analyses.length; i++) {
+      const analysis = analyses[i];
+      const ticker = tickers[i];
+
+      if (!analysis) {
+        console.warn(`⚠️ ${ticker}: Analysis returned null/undefined (AI analysis failed)`);
+        continue;
+      }
+
+      const validated = validateStockAnalysis(analysis);
+      if (validated) {
+        validatedStocks.push(validated);
+        console.log(`✅ ${ticker}: Validation passed`);
+      } else {
+        console.warn(`⚠️ ${ticker}: Validation failed (missing required fields or quality issues)`);
       }
     }
 
@@ -105,7 +114,7 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
       throw new Error('No valid stock analyses after validation');
     }
 
-    console.log(`✅ ${validatedStocks.length} stocks validated successfully`);
+    console.log(`✅ ${validatedStocks.length}/${tickers.length} stocks validated successfully`);
     result.steps.validation = true;
 
     // Step 6: Inject trend symbols
