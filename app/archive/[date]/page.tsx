@@ -116,7 +116,7 @@ export default function BriefPage({ params }: BriefPageProps) {
 
           {/* Stock Cards */}
           <div>
-            <h2 className="text-[#00ff88] text-2xl font-semibold mb-6">📊 Today's Stocks at a Glance</h2>
+            <h2 className="text-[#00ff88] text-2xl font-semibold mb-6">📊 Today&apos;s Stocks at a Glance</h2>
 
             {brief.stocks.map((stock, index) => (
               <div

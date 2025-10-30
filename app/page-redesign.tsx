@@ -182,7 +182,7 @@ export default function Home() {
               </div>
               <h4 className="text-xl font-bold text-white">Actionable Stock Picks</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
-                Not just "what moved" but <strong>when to enter</strong>, <strong>how much to allocate</strong>, and <strong>why it matters</strong>. Every pick includes entry zones and risk levels.
+                Not just &ldquo;what moved&rdquo; but <strong>when to enter</strong>, <strong>how much to allocate</strong>, and <strong>why it matters</strong>. Every pick includes entry zones and risk levels.
               </p>
             </div>
 
