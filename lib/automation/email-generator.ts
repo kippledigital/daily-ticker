@@ -141,9 +141,15 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
+      max_tokens: 4096, // Ensure enough tokens for complete email
     });
 
     let htmlContent = completion.choices[0]?.message?.content || '';
+
+    // Check if response was truncated
+    if (completion.choices[0]?.finish_reason === 'length') {
+      console.warn('⚠️ Email generation was truncated due to token limit. Consider reducing template size or increasing max_tokens.');
+    }
 
     // Generate TL;DR first
     const tldr = await generateTLDR(stocks);
