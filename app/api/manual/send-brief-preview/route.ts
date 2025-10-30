@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const sampleStocks: ValidatedStock[] = [
       {
         ticker: 'NVDA',
-        sector: 'TECHNOLOGY',
+        sector: 'Technology',
         last_price: 207.04,
         stop_loss: 190.48,
         profit_target: 240.16,
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       },
       {
         ticker: 'MSFT',
-        sector: 'TECHNOLOGY',
+        sector: 'Technology',
         last_price: 541.55,
         stop_loss: 497.82,
         profit_target: 628.99,
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       },
       {
         ticker: 'AMD',
-        sector: 'TECHNOLOGY',
+        sector: 'Technology',
         last_price: 165.43,
         stop_loss: 152.09,
         profit_target: 192.10,
