@@ -211,6 +211,8 @@ async function storeInArchive(data: {
       entryPrice: stock.last_price,
       entryZoneLow: parseFloat(stock.ideal_entry_zone.match(/[\d.]+/)?.[0] || '0'),
       entryZoneHigh: parseFloat(stock.ideal_entry_zone.match(/[\d.]+/g)?.[1] || '0'),
+      stopLoss: stock.stop_loss,
+      profitTarget: stock.profit_target,
       summary: stock.summary,
       whyMatters: stock.why_matters,
       momentumCheck: stock.momentum_check,

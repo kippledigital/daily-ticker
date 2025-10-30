@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS stocks (
   entry_price DECIMAL(10, 2) NOT NULL,
   entry_zone_low DECIMAL(10, 2),
   entry_zone_high DECIMAL(10, 2),
+  stop_loss DECIMAL(10, 2),
+  profit_target DECIMAL(10, 2),
   summary TEXT NOT NULL,
   why_matters TEXT NOT NULL,
   momentum_check TEXT NOT NULL,
@@ -33,6 +35,28 @@ CREATE TABLE IF NOT EXISTS stocks (
   learning_moment TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Add columns to existing stocks table (if table already exists)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'stocks' AND column_name = 'stop_loss'
+  ) THEN
+    ALTER TABLE stocks ADD COLUMN stop_loss DECIMAL(10, 2);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'stocks' AND column_name = 'profit_target'
+  ) THEN
+    ALTER TABLE stocks ADD COLUMN profit_target DECIMAL(10, 2);
+  END IF;
+END $$;
+
+-- Add comments for new columns
+COMMENT ON COLUMN stocks.stop_loss IS 'Price level where trader should exit to limit losses';
+COMMENT ON COLUMN stocks.profit_target IS 'Price level where trader should take profits (2:1 reward-to-risk ratio)';
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_briefs_date ON briefs(date DESC);

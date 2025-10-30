@@ -10,6 +10,8 @@ export interface StockRecommendation {
   entryPrice: number;
   entryZoneLow?: number;
   entryZoneHigh?: number;
+  stopLoss?: number;
+  profitTarget?: number;
   summary: string;
   whyMatters: string;
   momentumCheck: string;
@@ -103,6 +105,8 @@ export async function POST(request: NextRequest) {
       entry_price: stock.entryPrice,
       entry_zone_low: stock.entryZoneLow || null,
       entry_zone_high: stock.entryZoneHigh || null,
+      stop_loss: stock.stopLoss || null,
+      profit_target: stock.profitTarget || null,
       summary: stock.summary,
       why_matters: stock.whyMatters,
       momentum_check: stock.momentumCheck,
@@ -117,11 +121,11 @@ export async function POST(request: NextRequest) {
       .insert(stocksToInsert);
 
     if (stocksError) {
-      console.error('Error inserting stocks:', stocksError);
+      console.error('Error inserting stocks:', JSON.stringify(stocksError, null, 2));
       // Rollback: delete the brief
       await supabase.from('briefs').delete().eq('id', brief.id);
       return NextResponse.json(
-        { error: 'Failed to store stock data' },
+        { error: 'Failed to store stock data', details: stocksError },
         { status: 500 }
       );
     }

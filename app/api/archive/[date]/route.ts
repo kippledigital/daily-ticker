@@ -51,6 +51,8 @@ export async function GET(
         entryPrice: stock.entry_price,
         entryZoneLow: stock.entry_zone_low || undefined,
         entryZoneHigh: stock.entry_zone_high || undefined,
+        stopLoss: stock.stop_loss || undefined,
+        profitTarget: stock.profit_target || undefined,
         summary: stock.summary,
         whyMatters: stock.why_matters,
         momentumCheck: stock.momentum_check,
