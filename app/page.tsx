@@ -3,7 +3,6 @@
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
-import { ArchivePreview } from "@/components/archive-preview"
 import { ROICalculator } from "@/components/roi-calculator"
 import { Mail, TrendingUp, Target, Zap, BookOpen } from "lucide-react"
 
@@ -160,13 +159,6 @@ export default function Home() {
           </div>
 
           <EmailPreview />
-        </div>
-      </section>
-
-      {/* Archive Preview - REPOSITIONED (was after pricing) */}
-      <section className="container mx-auto px-4 py-16" id="archive">
-        <div className="max-w-6xl mx-auto">
-          <ArchivePreview />
         </div>
       </section>
 
