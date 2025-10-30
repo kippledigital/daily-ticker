@@ -88,8 +88,24 @@ export function HybridTicker() {
     return () => clearInterval(interval)
   }, [])
 
+  // Format today's date
+  const today = new Date()
+  const formattedDate = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto space-y-4">
+      {/* Date Header */}
+      <div className="text-center">
+        <p className="text-sm font-mono text-gray-400 uppercase tracking-wider">
+          {formattedDate}
+        </p>
+      </div>
+
       <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden shadow-2xl">
         {/* Desktop Layout: Side-by-Side */}
         <div className="hidden lg:grid lg:grid-cols-2 divide-x divide-[#1a3a52]">
