@@ -5,7 +5,7 @@ import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
 import { ArchivePreview } from "@/components/archive-preview"
 import { ROICalculator } from "@/components/roi-calculator"
-import { Mail, TrendingUp, Target, Zap, BookOpen } from "lucide-react"
+import { Mail, TrendingUp } from "lucide-react"
 
 export default function Home() {
   const structuredData = {
@@ -99,51 +99,6 @@ export default function Home() {
       {/* Live Ticker - MOVED ABOVE THE FOLD: Market Pulse + Cycling Free Picks */}
       <section className="container mx-auto px-4 py-12">
         <HybridTicker />
-      </section>
-
-      {/* Features Section - REDESIGNED with specific value props */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">How Daily Ticker Works</h3>
-            <p className="text-gray-300 text-lg">Everything you need to make informed decisions, delivered daily</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
-                <Target className="h-6 w-6 text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-white">Actionable Stock Picks</h4>
-              <p className="text-gray-300 leading-relaxed text-sm">
-                Not just &ldquo;what moved&rdquo; but <strong>when to enter</strong>, <strong>how much to allocate</strong>, and <strong>why it matters</strong>. Every pick includes entry zones and risk levels.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-white">5-Minute Read, Zero Fluff</h4>
-              <p className="text-gray-300 leading-relaxed text-sm">
-                Your time is valuable. We cut through the noise and deliver <strong>only what you need</strong> to make decisions. No 50-page reports, just clear insights.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-white">Learn While You Earn</h4>
-              <p className="text-gray-300 leading-relaxed text-sm">
-                Premium subscribers get <strong>daily learning moments</strong> — investing concepts explained in plain English so you get smarter over time.
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Email Preview - NEW: See what you'll get */}
