@@ -7,6 +7,7 @@ import { validateStockAnalysis } from './validator';
 import { injectTrendSymbol } from './trend-injector';
 import { generateEmailContent } from './email-generator';
 import { sendMorningBrief } from './email-sender';
+import { sendErrorNotification } from './error-notifier';
 
 /**
  * Main automation orchestrator
@@ -88,9 +89,10 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     console.log(`✅ AI analysis complete for ${analyses.length} stocks (validated against real data)`);
     result.steps.aiAnalysis = true;
 
-    // Step 5: Validate each analysis
+    // Step 5: Validate each analysis (with retry logic)
     console.log('✔️  Step 5: Validating stock analyses...');
     const validatedStocks: ValidatedStock[] = [];
+    const failedTickers: string[] = [];
 
     for (let i = 0; i < analyses.length; i++) {
       const analysis = analyses[i];
@@ -98,6 +100,7 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
 
       if (!analysis) {
         console.warn(`⚠️ ${ticker}: Analysis returned null/undefined (AI analysis failed)`);
+        failedTickers.push(ticker);
         continue;
       }
 
@@ -107,14 +110,49 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
         console.log(`✅ ${ticker}: Validation passed`);
       } else {
         console.warn(`⚠️ ${ticker}: Validation failed (missing required fields or quality issues)`);
+        failedTickers.push(ticker);
+      }
+    }
+
+    // Step 5b: Retry failed stocks once
+    if (failedTickers.length > 0 && validatedStocks.length < 3) {
+      console.log(`🔄 Retrying ${failedTickers.length} failed stock(s): ${failedTickers.join(', ')}`);
+
+      for (const ticker of failedTickers) {
+        try {
+          console.log(`  Retrying ${ticker}...`);
+          const retryAnalysis = await analyzeStock({
+            ticker,
+            financialData: financialData[ticker],
+            historicalWatchlist: historicalData,
+            aggregatedData: aggregatedDataMap.get(ticker),
+          });
+
+          if (retryAnalysis) {
+            const validated = validateStockAnalysis(retryAnalysis);
+            if (validated) {
+              validatedStocks.push(validated);
+              console.log(`  ✅ ${ticker}: Retry successful!`);
+
+              // Stop retrying once we have 3 stocks
+              if (validatedStocks.length >= 3) break;
+            } else {
+              console.warn(`  ⚠️ ${ticker}: Retry validation failed`);
+            }
+          } else {
+            console.warn(`  ⚠️ ${ticker}: Retry analysis returned null`);
+          }
+        } catch (error) {
+          console.error(`  ❌ ${ticker}: Retry failed with error:`, error);
+        }
       }
     }
 
     if (validatedStocks.length === 0) {
-      throw new Error('No valid stock analyses after validation');
+      throw new Error('No valid stock analyses after validation and retry');
     }
 
-    console.log(`✅ ${validatedStocks.length}/${tickers.length} stocks validated successfully`);
+    console.log(`✅ ${validatedStocks.length}/${tickers.length} stocks validated successfully (${failedTickers.length} retried)`);
     result.steps.validation = true;
 
     // Step 6: Inject trend symbols
@@ -188,6 +226,19 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     console.error('❌ Automation failed:', error);
     result.success = false;
     result.error = error instanceof Error ? error.message : 'Unknown error';
+
+    // Send error notification to admin
+    await sendErrorNotification({
+      step: 'Daily Automation',
+      message: result.error,
+      details: error instanceof Error ? {
+        name: error.name,
+        stack: error.stack,
+        steps: result.steps,
+      } : { error, steps: result.steps },
+      timestamp: new Date(),
+    });
+
     return result;
   }
 }

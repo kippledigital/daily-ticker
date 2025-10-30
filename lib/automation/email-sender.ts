@@ -42,7 +42,7 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
       to: recipients,
       subject: subject,
       html: htmlContent,
-      // Optional: Add tags for tracking in Resend dashboard
+      // Tags for tracking in Resend dashboard and analytics
       tags: [
         {
           name: 'campaign',
@@ -52,7 +52,17 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
           name: 'date',
           value: new Date().toISOString().split('T')[0],
         },
+        {
+          name: 'subscriber_count',
+          value: recipients.length.toString(),
+        },
+        {
+          name: 'automation',
+          value: 'daily-ticker',
+        },
       ],
+      // Enable tracking for opens and clicks
+      // Resend automatically tracks these and shows in your dashboard!
     });
 
     if (error) {
