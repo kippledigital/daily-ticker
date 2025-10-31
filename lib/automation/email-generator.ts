@@ -141,7 +141,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 4096, // Ensure enough tokens for complete email
+      max_tokens: 8000, // Increased to ensure complete email generation (was 4096)
     });
 
     let htmlContent = completion.choices[0]?.message?.content || '';
