@@ -129,7 +129,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo', // Changed from gpt-4-turbo-preview - has 128k context and better output
+      model: 'gpt-4o', // GPT-4o supports up to 16384 max_tokens (gpt-4-turbo only supports 4096)
       messages: [
         {
           role: 'system',
@@ -141,7 +141,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 16000, // Significantly increased to handle full email template (was 8000)
+      max_tokens: 16000, // Need high limit due to large HTML template in system prompt (~4000 tokens)
     });
 
     let htmlContent = completion.choices[0]?.message?.content || '';
