@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, Clock, ArrowRight } from "lucide-react"
+import { Mail, Clock, ArrowRight, TrendingUp, BarChart3, Briefcase } from "lucide-react"
 import Link from "next/link"
 
 export function EmailPreview() {
@@ -25,7 +25,7 @@ export function EmailPreview() {
             <div className="px-4 py-4 bg-[#1a3a52]/20 border-l-2 border-[#00ff88]">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">📈</span>
+                  <TrendingUp className="h-5 w-5 text-[#00ff88]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
@@ -47,7 +47,7 @@ export function EmailPreview() {
             <div className="px-4 py-4 hover:bg-[#1a3a52]/10 transition-colors cursor-pointer opacity-60">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-gray-700/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">📊</span>
+                  <BarChart3 className="h-5 w-5 text-gray-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
@@ -68,7 +68,7 @@ export function EmailPreview() {
             <div className="px-4 py-4 hover:bg-[#1a3a52]/10 transition-colors cursor-pointer opacity-40">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-gray-700/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">💼</span>
+                  <Briefcase className="h-5 w-5 text-gray-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
@@ -114,7 +114,7 @@ export function EmailPreview() {
             {/* Header with logo */}
             <div className="text-center border-b-2 border-[#00ff88]/20 pb-4">
               <div className="inline-flex items-center gap-2 mb-2">
-                <span className="text-2xl">📈</span>
+                <TrendingUp className="h-6 w-6 text-[#00ff88]" />
                 <h1 className="text-2xl font-bold font-mono text-white" style={{ letterSpacing: '-0.05em' }}>
                   Daily Ticker
                 </h1>
@@ -139,6 +139,15 @@ export function EmailPreview() {
                 <div>
                   <h3 className="text-xl font-mono font-bold text-white">NVDA</h3>
                   <p className="text-sm text-gray-400">NVIDIA Corporation</p>
+                  {/* Premium: Confidence Score */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
+                      <span className="text-xs font-mono font-bold text-[#00ff88]">87% Confidence</span>
+                    </div>
+                    <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
+                      <span className="text-xs font-mono font-bold text-blue-400">Allocate 8%</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-mono font-bold text-white">$521.45</p>
@@ -190,6 +199,15 @@ export function EmailPreview() {
                 <div>
                   <h3 className="text-xl font-mono font-bold text-white">AMD</h3>
                   <p className="text-sm text-gray-400">Advanced Micro Devices</p>
+                  {/* Premium: Confidence Score */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
+                      <span className="text-xs font-mono font-bold text-[#00ff88]">82% Confidence</span>
+                    </div>
+                    <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
+                      <span className="text-xs font-mono font-bold text-blue-400">Allocate 6%</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-mono font-bold text-white">$147.32</p>
@@ -241,6 +259,15 @@ export function EmailPreview() {
                 <div>
                   <h3 className="text-xl font-mono font-bold text-white">MSFT</h3>
                   <p className="text-sm text-gray-400">Microsoft Corporation</p>
+                  {/* Premium: Confidence Score */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
+                      <span className="text-xs font-mono font-bold text-[#00ff88]">91% Confidence</span>
+                    </div>
+                    <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
+                      <span className="text-xs font-mono font-bold text-blue-400">Allocate 10%</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-mono font-bold text-white">$385.67</p>
@@ -286,55 +313,30 @@ export function EmailPreview() {
               </div>
             </div>
 
-            {/* Premium Picks (Blurred/Locked) */}
-            <div className="relative">
-              <div className="absolute inset-0 backdrop-blur-sm bg-[#1a3a52]/50 rounded-lg z-10 flex items-center justify-center">
-                <div className="text-center p-6">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-[#00ff88]/10 border-2 border-[#00ff88]/20 mb-4">
-                    <span className="text-3xl">🔒</span>
+            {/* Premium Preview Callout */}
+            <div className="bg-gradient-to-br from-[#00ff88]/5 to-transparent border-2 border-[#00ff88]/20 rounded-lg p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#00ff88]/10 border-2 border-[#00ff88]/30">
+                    <span className="text-2xl">✨</span>
                   </div>
-                  <h4 className="text-lg font-bold text-white mb-2">2 More Premium Picks</h4>
-                  <p className="text-sm text-gray-300 mb-4">
-                    Upgrade to Premium for 5 total picks daily with confidence scores, allocation %, and risk analysis
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-bold text-white mb-2">
+                    This is what Premium looks like
+                  </h4>
+                  <p className="text-sm text-gray-300 leading-relaxed mb-4">
+                    You just saw a full premium email with confidence scores, portfolio allocation %, stop-loss levels,
+                    and profit targets. Free users get the same picks but <strong className="text-white">without the trading toolkit</strong> that
+                    turns analysis into action.
                   </p>
                   <a
                     href="#pricing"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
                   >
-                    View Premium Plans
+                    Upgrade to Premium
                     <ArrowRight className="h-4 w-4" />
                   </a>
-                </div>
-              </div>
-
-              {/* Blurred content underneath */}
-              <div className="opacity-30 space-y-4">
-                <div className="border-l-2 border-gray-600 pl-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-xl font-mono font-bold text-gray-400">TSLA</h3>
-                      <p className="text-sm text-gray-500">Tesla Inc</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-mono font-bold text-gray-400">$242.84</p>
-                      <p className="text-sm font-mono font-bold text-gray-500">+2.1%</p>
-                    </div>
-                  </div>
-                  <div className="h-24 bg-gray-800/30 rounded"></div>
-                </div>
-
-                <div className="border-l-2 border-gray-600 pl-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-xl font-mono font-bold text-gray-400">GOOGL</h3>
-                      <p className="text-sm text-gray-500">Alphabet Inc</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-mono font-bold text-gray-400">$141.23</p>
-                      <p className="text-sm font-mono font-bold text-gray-500">+1.5%</p>
-                    </div>
-                  </div>
-                  <div className="h-24 bg-gray-800/30 rounded"></div>
                 </div>
               </div>
             </div>
