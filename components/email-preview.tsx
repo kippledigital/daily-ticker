@@ -331,10 +331,10 @@ export function EmailPreview() {
                     turns analysis into action.
                   </p>
                   <a
-                    href="#pricing"
+                    href="/premium"
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
                   >
-                    Upgrade to Premium
+                    Join Premium Waitlist
                     <ArrowRight className="h-4 w-4" />
                   </a>
                 </div>

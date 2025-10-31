@@ -26,19 +26,19 @@ export function ROICalculator() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-gradient-to-br from-[#1a3a52]/40 to-[#0B1E32] border-2 border-[#00ff88]/20 rounded-2xl p-8 md:p-10 space-y-8">
+      <div className="bg-gradient-to-br from-[#1a3a52]/40 to-[#0B1E32] border-2 border-[#00ff88]/20 rounded-2xl p-6 md:p-8 space-y-6">
         {/* Header */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20">
             <DollarSign className="h-4 w-4 text-[#00ff88]" />
-            <span className="text-sm font-semibold text-[#00ff88]">ROI Calculator</span>
+            <span className="text-sm font-semibold text-[#00ff88]">Value Calculator</span>
           </div>
-          <h3 className="text-3xl md:text-4xl font-bold text-white">See Your Potential Returns</h3>
-          <p className="text-gray-300 text-lg">Calculate what Daily Ticker Premium could be worth to you</p>
+          <h3 className="text-2xl md:text-3xl font-bold text-white">See Your Potential Returns</h3>
+          <p className="text-gray-300">Calculate what Daily Ticker Premium could be worth to you</p>
         </div>
 
         {/* Portfolio Size Selector */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <label htmlFor="portfolio-size" className="block text-sm font-semibold text-gray-200 uppercase tracking-wide">
             Your Portfolio Size
           </label>
@@ -57,10 +57,10 @@ export function ROICalculator() {
         </div>
 
         {/* Calculations */}
-        <div className="space-y-4 py-6 border-y border-[#1a3a52]">
-          <p className="text-gray-200 font-semibold mb-4">If Daily Ticker Premium helps you:</p>
+        <div className="space-y-3 py-4 border-y border-[#1a3a52]">
+          <p className="text-gray-200 font-semibold mb-3">If Daily Ticker Premium helps you:</p>
 
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {/* Extra Gain */}
             <div className="flex items-start gap-4 p-4 bg-[#00ff88]/5 rounded-lg border border-[#00ff88]/10">
               <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#00ff88]/10 flex items-center justify-center">

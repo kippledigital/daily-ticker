@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import HyperText from "@/components/ui/hyper-text"
 import NumberTicker from "@/components/ui/number-ticker"
+import { BorderBeam } from "@/components/ui/border-beam"
 
 interface MarketIndex {
   symbol: string
@@ -130,9 +131,14 @@ export function HybridTicker() {
         </p>
       </div>
 
-      <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden shadow-2xl">
-        {/* Desktop Layout: 1/3 Market Pulse, 2/3 Daily Picks */}
-        <div className="hidden lg:grid lg:grid-cols-[1fr,2fr] divide-x divide-[#1a3a52]">
+      <div className="relative rounded-xl overflow-hidden shadow-2xl bg-[#0a1929] border border-[#1a3a52]">
+        {/* Animated border beam */}
+        <BorderBeam size={300} duration={12} borderWidth={1.5} colorFrom="#00ff88" colorTo="#1a3a52" />
+
+        {/* Content */}
+        <div className="relative">
+          {/* Desktop Layout: 40/60 Market Pulse / Daily Picks */}
+          <div className="hidden lg:grid lg:grid-cols-[2fr,3fr] divide-x divide-[#1a3a52]">
           {/* Left: Market Pulse */}
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -345,6 +351,7 @@ export function HybridTicker() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

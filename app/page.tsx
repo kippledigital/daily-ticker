@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
@@ -372,9 +373,9 @@ export default function Home() {
                 </li>
               </ul>
 
-              <button className="w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50">
+              <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
                 Join Premium Waitlist
-              </button>
+              </Link>
               <p className="text-xs text-center text-gray-400">
                 Be first to know when premium launches • Lock in 50% off
               </p>
