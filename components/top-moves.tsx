@@ -51,60 +51,33 @@ const riskColors = {
 
 export function TopMoves() {
   return (
-    <div className="grid gap-6">
+    <div className="grid md:grid-cols-3 gap-4">
       {mockMoves.map((move) => (
         <div
           key={move.symbol}
-          className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 hover:border-[#2a4a62] transition-colors"
+          className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-4 hover:border-[#2a4a62] transition-colors"
         >
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-            <div className="flex items-start gap-4">
-              <div
-                className={cn(
-                  "h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0",
-                  move.isPositive ? "bg-[#00ff88]/10" : "bg-[#ff4444]/10",
-                )}
-              >
-                {move.isPositive ? (
-                  <TrendingUp className="h-6 w-6 text-[#00ff88]" />
-                ) : (
-                  <TrendingDown className="h-6 w-6 text-[#ff4444]" />
-                )}
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-xl font-bold text-white font-mono">{move.symbol}</h4>
-                  <span className="text-sm text-gray-200">{move.company}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      "text-2xl font-mono font-bold",
-                      move.isPositive ? "text-[#00ff88]" : "text-[#ff4444]",
-                    )}
-                  >
-                    {move.change}
-                  </span>
-                  <span className={cn("text-lg font-mono", move.isPositive ? "text-[#00ff88]" : "text-[#ff4444]")}>
-                    {move.changePercent}
-                  </span>
-                </div>
-              </div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              {move.isPositive ? (
+                <TrendingUp className="h-4 w-4 text-[#00ff88]" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-[#ff4444]" />
+              )}
+              <h4 className="text-lg font-bold text-white font-mono">{move.symbol}</h4>
             </div>
-
-            <div
+            <span
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider",
-                riskColors[move.risk],
+                "text-sm font-mono font-bold",
+                move.isPositive ? "text-[#00ff88]" : "text-[#ff4444]",
               )}
             >
-              <AlertCircle className="h-3 w-3" />
-              {move.risk} risk
-            </div>
+              {move.changePercent}
+            </span>
           </div>
 
-          <p className="text-gray-300 leading-relaxed">{move.insight}</p>
+          <p className="text-sm text-gray-200 mb-2">{move.company}</p>
+          <p className="text-sm text-gray-300 leading-relaxed line-clamp-2">{move.insight}</p>
         </div>
       ))}
     </div>
