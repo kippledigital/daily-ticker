@@ -101,6 +101,7 @@ export function HybridTicker() {
     month: 'long',
     day: 'numeric',
   })
+  const todayDateString = today.toISOString().split('T')[0] // YYYY-MM-DD for archive URL
 
   const topPick = dailyPicks[currentPickIndex]
 
@@ -130,8 +131,8 @@ export function HybridTicker() {
       </div>
 
       <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden shadow-2xl">
-        {/* Desktop Layout: Side-by-Side */}
-        <div className="hidden lg:grid lg:grid-cols-2 divide-x divide-[#1a3a52]">
+        {/* Desktop Layout: 1/3 Market Pulse, 2/3 Daily Picks */}
+        <div className="hidden lg:grid lg:grid-cols-[1fr,2fr] divide-x divide-[#1a3a52]">
           {/* Left: Market Pulse */}
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -176,7 +177,7 @@ export function HybridTicker() {
           </div>
 
           {/* Right: Today's Free Picks (Cycling) */}
-          <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent">
+          <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
@@ -198,14 +199,12 @@ export function HybridTicker() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div key={currentPickIndex} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <HyperText
-                    className="text-2xl font-bold text-white"
-                    text={topPick.ticker}
-                    duration={600}
-                  />
+                  <div className="text-2xl font-mono font-bold text-white">
+                    {topPick.ticker}
+                  </div>
                   <div className="text-sm text-gray-300 mt-1">{topPick.sector}</div>
                 </div>
                 <div className="text-right">
@@ -233,13 +232,15 @@ export function HybridTicker() {
                 </span>
               </div>
 
-              <a
-                href="#subscribe"
-                className="inline-flex items-center text-sm font-semibold text-[#00ff88] hover:text-[#00dd77] transition-colors group"
-              >
-                See Full Analysis
-                <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-              </a>
+              <div className="flex justify-end">
+                <a
+                  href={`/archive/${todayDateString}`}
+                  className="inline-flex items-center text-sm font-semibold text-[#00ff88] hover:text-[#00dd77] transition-colors group"
+                >
+                  See Full Analysis
+                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -278,7 +279,7 @@ export function HybridTicker() {
           </div>
 
           {/* Today's Free Picks (Cycling) - Mobile */}
-          <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent">
+          <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
@@ -300,14 +301,12 @@ export function HybridTicker() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div key={currentPickIndex} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <HyperText
-                    className="text-2xl font-bold text-white"
-                    text={topPick.ticker}
-                    duration={600}
-                  />
+                  <div className="text-2xl font-mono font-bold text-white">
+                    {topPick.ticker}
+                  </div>
                   <div className="text-sm text-gray-300 mt-1">{topPick.sector}</div>
                 </div>
                 <div className="text-right">
@@ -335,13 +334,15 @@ export function HybridTicker() {
                 </span>
               </div>
 
-              <a
-                href="#subscribe"
-                className="inline-flex items-center text-sm font-semibold text-[#00ff88] hover:text-[#00dd77] transition-colors group"
-              >
-                See Full Analysis
-                <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-              </a>
+              <div className="flex justify-end">
+                <a
+                  href={`/archive/${todayDateString}`}
+                  className="inline-flex items-center text-sm font-semibold text-[#00ff88] hover:text-[#00dd77] transition-colors group"
+                >
+                  See Full Analysis
+                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
