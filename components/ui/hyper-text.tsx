@@ -28,7 +28,7 @@ export default function HyperText({
   animateOnLoad = true,
 }: HyperTextProps) {
   const [displayText, setDisplayText] = useState(text.split(""));
-  const [trigger, setTrigger] = useState(false);
+  const [trigger, setTrigger] = useState(animateOnLoad);
   const interations = useRef(0);
   const isFirstRender = useRef(true);
 
