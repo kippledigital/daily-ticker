@@ -54,7 +54,9 @@ export default function BriefPage({ params }: BriefPageProps) {
     return null
   }
 
-  const formattedDate = new Date(brief.date).toLocaleDateString('en-US', {
+  // Parse date string to avoid timezone issues (brief.date is in YYYY-MM-DD format)
+  const [year, month, day] = brief.date.split('-').map(Number)
+  const formattedDate = new Date(year, month - 1, day).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
