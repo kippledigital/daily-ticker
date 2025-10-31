@@ -308,7 +308,7 @@ export default function Home() {
               {/* Launching Soon Badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <span className="inline-block px-4 py-1 bg-gradient-to-r from-[#00ff88] to-[#00dd77] text-[#0B1E32] text-sm font-bold rounded-full shadow-lg">
-                  LAUNCHING Q1 2026 🔜
+                  Launching Q1 2026
                 </span>
               </div>
 

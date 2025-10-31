@@ -32,7 +32,7 @@ export function ROICalculator() {
         <div className="text-center space-y-4 mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20">
             <DollarSign className="h-4 w-4 text-[#00ff88]" />
-            <span className="text-sm font-medium text-[#00ff88] uppercase tracking-wider">Value Calculator</span>
+            <span className="text-sm font-medium text-[#00ff88] tracking-wider">Value Calculator</span>
           </div>
           <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight">
             See Your Potential Returns
@@ -54,7 +54,7 @@ export function ROICalculator() {
             id="portfolio-size"
             value={portfolioSize}
             onChange={(e) => setPortfolioSize(Number(e.target.value))}
-            className="w-full px-5 py-4 bg-[#0B1E32] border-2 border-[#1a3a52] text-white rounded-xl text-xl font-bold focus:outline-none focus:ring-2 focus:ring-[#00ff88] focus:border-[#00ff88] transition-all cursor-pointer hover:border-[#00ff88]/40"
+            className="w-full pl-5 pr-12 py-4 bg-[#0B1E32] border-2 border-[#1a3a52] text-white rounded-xl text-xl font-bold focus:outline-none focus:ring-2 focus:ring-[#00ff88] focus:border-[#00ff88] transition-all cursor-pointer hover:border-[#00ff88]/40 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2300ff88%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E')] bg-[right_1rem_center] bg-no-repeat"
           >
             {portfolioOptions.map((option) => (
               <option key={option.value} value={option.value}>
