@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { TrendingUp, TrendingDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import HyperText from "@/components/ui/hyper-text"
 
 interface MarketIndex {
   symbol: string
@@ -11,13 +12,14 @@ interface MarketIndex {
   changePercent: number
 }
 
-interface TopPick {
-  symbol: string
-  company: string
-  price: number
-  changePercent: number
+interface DailyPick {
+  ticker: string
+  sector: string
+  entryPrice: number
   confidence: number
   summary: string
+  action: string
+  riskLevel: string
 }
 
 export function HybridTicker() {
@@ -27,61 +29,42 @@ export function HybridTicker() {
     { symbol: "DOW", price: 38240.10, change: 114.72, changePercent: 0.3 },
   ])
 
-  const dailyPicks: TopPick[] = [
-    {
-      symbol: "NVDA",
-      company: "NVIDIA",
-      price: 495.22,
-      changePercent: 2.58,
-      confidence: 87,
-      summary: "AI chip demand surge with record data center revenue",
-    },
-    {
-      symbol: "AMD",
-      company: "Advanced Micro Devices",
-      price: 142.85,
-      changePercent: 3.12,
-      confidence: 82,
-      summary: "Strong earnings beat on CPU and GPU sales momentum",
-    },
-    {
-      symbol: "MSFT",
-      company: "Microsoft",
-      price: 378.91,
-      changePercent: 1.45,
-      confidence: 85,
-      summary: "Azure cloud growth accelerating with enterprise AI adoption",
-    },
-  ]
-
+  const [dailyPicks, setDailyPicks] = useState<DailyPick[]>([])
+  const [loading, setLoading] = useState(true)
   const [currentPickIndex, setCurrentPickIndex] = useState(0)
-  const topPick = dailyPicks[currentPickIndex]
-
   const [isLive, setIsLive] = useState(false)
 
-  // Fetch real market data (placeholder for future API integration)
+  // Fetch today's actual brief data
   useEffect(() => {
-    const fetchMarketData = async () => {
+    const fetchTodaysBrief = async () => {
       try {
-        // Future: Replace with actual market index API
-        // const response = await fetch('/api/market-indices')
-        // const data = await response.json()
-        // setMarketData(data.indices)
-        setIsLive(true) // Set to true when real data is available
+        const today = new Date().toISOString().split('T')[0]
+        const response = await fetch(`/api/archive/${today}`)
+        const data = await response.json()
+
+        if (data.success && data.data.stocks) {
+          // Use the actual stocks from today's brief
+          setDailyPicks(data.data.stocks)
+          setLoading(false)
+          setIsLive(true)
+        }
       } catch (error) {
-        console.error("Failed to fetch market data:", error)
-        setIsLive(false) // Fallback to sample data
+        console.error("Failed to fetch today's brief:", error)
+        setLoading(false)
+        setIsLive(false)
       }
     }
 
-    fetchMarketData()
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchMarketData, 60000)
+    fetchTodaysBrief()
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchTodaysBrief, 300000)
     return () => clearInterval(interval)
   }, [])
 
   // Auto-cycle through daily picks every 5 seconds
   useEffect(() => {
+    if (dailyPicks.length === 0) return
+
     const interval = setInterval(() => {
       setCurrentPickIndex((prevIndex) => (prevIndex + 1) % dailyPicks.length)
     }, 5000)
@@ -96,6 +79,24 @@ export function HybridTicker() {
     month: 'long',
     day: 'numeric',
   })
+
+  const topPick = dailyPicks[currentPickIndex]
+
+  // Show loading state or fallback
+  if (loading || !topPick) {
+    return (
+      <div className="w-full max-w-6xl mx-auto space-y-4">
+        <div className="text-center">
+          <p className="text-sm font-mono text-gray-400 uppercase tracking-wider">
+            {formattedDate}
+          </p>
+        </div>
+        <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden shadow-2xl p-12">
+          <p className="text-center text-gray-400">Loading today&apos;s picks...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4">
@@ -175,17 +176,21 @@ export function HybridTicker() {
             <div className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-2xl font-mono font-bold text-white">{topPick.symbol}</div>
-                  <div className="text-sm text-gray-300">{topPick.company}</div>
+                  <HyperText
+                    className="text-2xl font-bold text-white"
+                    text={topPick.ticker}
+                    duration={600}
+                  />
+                  <div className="text-sm text-gray-300 mt-1">{topPick.sector}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-mono font-bold text-white">${topPick.price.toFixed(2)}</div>
+                  <div className="text-xl font-mono font-bold text-white">${topPick.entryPrice.toFixed(2)}</div>
                   <div className={cn(
-                    "text-sm font-mono font-bold flex items-center gap-1 justify-end",
-                    topPick.changePercent >= 0 ? "text-[#00ff88]" : "text-[#ff4444]"
+                    "text-sm font-mono font-bold flex items-center gap-1 justify-end mt-1",
+                    "text-[#00ff88]"
                   )}>
-                    {topPick.changePercent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {topPick.changePercent >= 0 ? "+" : ""}{topPick.changePercent.toFixed(2)}%
+                    <TrendingUp className="h-3 w-3" />
+                    {topPick.action}
                   </div>
                 </div>
               </div>
@@ -193,9 +198,8 @@ export function HybridTicker() {
               <div className="py-3 px-4 bg-[#1a3a52]/30 rounded-lg border border-[#1a3a52]">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">Confidence Score</span>
-                  <span className="text-sm font-mono font-bold text-white group">
+                  <span className="text-sm font-mono font-bold text-white">
                     {topPick.confidence}/100
-                    <span className="ml-2 text-xs text-gray-400">🔒 Premium</span>
                   </span>
                 </div>
                 <div className="w-full bg-[#0B1E32] rounded-full h-2 overflow-hidden">
@@ -207,6 +211,20 @@ export function HybridTicker() {
               </div>
 
               <p className="text-sm text-gray-300 leading-relaxed">{topPick.summary}</p>
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className={cn(
+                  "px-2 py-1 rounded-full font-mono font-semibold",
+                  topPick.riskLevel === "Low" ? "bg-[#00ff88]/10 text-[#00ff88]" :
+                  topPick.riskLevel === "Medium" ? "bg-yellow-500/10 text-yellow-400" :
+                  "bg-red-500/10 text-red-400"
+                )}>
+                  {topPick.riskLevel} Risk
+                </span>
+                <span className="px-2 py-1 rounded-full font-mono font-semibold bg-[#1a3a52] text-gray-300">
+                  {topPick.sector}
+                </span>
+              </div>
 
               <a
                 href="#subscribe"
@@ -277,17 +295,21 @@ export function HybridTicker() {
             <div className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-2xl font-mono font-bold text-white">{topPick.symbol}</div>
-                  <div className="text-sm text-gray-300">{topPick.company}</div>
+                  <HyperText
+                    className="text-2xl font-bold text-white"
+                    text={topPick.ticker}
+                    duration={600}
+                  />
+                  <div className="text-sm text-gray-300 mt-1">{topPick.sector}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-mono font-bold text-white">${topPick.price.toFixed(2)}</div>
+                  <div className="text-xl font-mono font-bold text-white">${topPick.entryPrice.toFixed(2)}</div>
                   <div className={cn(
-                    "text-sm font-mono font-bold flex items-center gap-1 justify-end",
-                    topPick.changePercent >= 0 ? "text-[#00ff88]" : "text-[#ff4444]"
+                    "text-sm font-mono font-bold flex items-center gap-1 justify-end mt-1",
+                    "text-[#00ff88]"
                   )}>
-                    {topPick.changePercent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {topPick.changePercent >= 0 ? "+" : ""}{topPick.changePercent.toFixed(2)}%
+                    <TrendingUp className="h-3 w-3" />
+                    {topPick.action}
                   </div>
                 </div>
               </div>
@@ -296,18 +318,32 @@ export function HybridTicker() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">Confidence</span>
                   <span className="text-sm font-mono font-bold text-white">
-                    8X/100 <span className="text-xs text-gray-400">🔒</span>
+                    {topPick.confidence}/100
                   </span>
                 </div>
                 <div className="w-full bg-[#0B1E32] rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-[#00ff88]/50 to-[#00dd77]/50 h-full rounded-full blur-sm"
-                    style={{ width: "85%" }}
+                    className="bg-gradient-to-r from-[#00ff88] to-[#00dd77] h-full rounded-full transition-all duration-500"
+                    style={{ width: `${topPick.confidence}%` }}
                   ></div>
                 </div>
               </div>
 
               <p className="text-sm text-gray-300 leading-relaxed">{topPick.summary}</p>
+
+              <div className="flex items-center gap-2 text-xs flex-wrap">
+                <span className={cn(
+                  "px-2 py-1 rounded-full font-mono font-semibold",
+                  topPick.riskLevel === "Low" ? "bg-[#00ff88]/10 text-[#00ff88]" :
+                  topPick.riskLevel === "Medium" ? "bg-yellow-500/10 text-yellow-400" :
+                  "bg-red-500/10 text-red-400"
+                )}>
+                  {topPick.riskLevel} Risk
+                </span>
+                <span className="px-2 py-1 rounded-full font-mono font-semibold bg-[#1a3a52] text-gray-300">
+                  {topPick.sector}
+                </span>
+              </div>
 
               <a
                 href="#subscribe"
