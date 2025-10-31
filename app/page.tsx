@@ -4,6 +4,7 @@ import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
 import { ROICalculator } from "@/components/roi-calculator"
+import { SectionDivider } from "@/components/section-divider"
 import { Mail, TrendingUp, Target, Zap, BookOpen } from "lucide-react"
 
 export default function Home() {
@@ -100,6 +101,8 @@ export default function Home() {
         <HybridTicker />
       </section>
 
+      <SectionDivider />
+
       {/* Features Section - REDESIGNED with specific value props */}
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
@@ -110,33 +113,92 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
-                <Target className="h-6 w-6 text-white" />
+            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#00ff88]/10 to-transparent border border-[#00ff88]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {/* Pulsing rings */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute h-5 w-5 rounded-full border-2 border-[#00ff88]/40 animate-ping" />
+                    <div className="absolute h-4 w-4 rounded-full border-2 border-[#00ff88]/60 animate-pulse" />
+                  </div>
+                  {/* Center dot */}
+                  <div className="relative h-1.5 w-1.5 rounded-full bg-[#00ff88] shadow-lg shadow-[#00ff88]/50" />
+                  {/* Crosshair lines */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute h-full w-[1px] bg-gradient-to-b from-transparent via-[#00ff88]/40 to-transparent" />
+                    <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-[#00ff88]/40 to-transparent" />
+                  </div>
+                </div>
+                <h4 className="text-xl font-bold text-white">Actionable Stock Picks</h4>
               </div>
-              <h4 className="text-xl font-bold text-white">Actionable Stock Picks</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
                 Not just &ldquo;what moved&rdquo; but <strong>when to enter</strong>, <strong>how much to allocate</strong>, and <strong>why it matters</strong>. Every pick includes entry zones and risk levels.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
+            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#00ff88]/10 to-transparent border border-[#00ff88]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {/* Clock face */}
+                  <div className="relative h-8 w-8 rounded-full border-2 border-[#00ff88]/40 flex items-center justify-center">
+                    {/* Clock markers */}
+                    <div className="absolute inset-0">
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-[1px] bg-[#00ff88]/60" />
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-[1px] bg-[#00ff88]/60" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-[1px] bg-[#00ff88]/60" />
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-[1px] bg-[#00ff88]/60" />
+                    </div>
+                    {/* Minute hand (animated) */}
+                    <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s' }}>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 h-3 w-[1px] bg-[#00ff88] origin-bottom -translate-y-full rounded-full" />
+                    </div>
+                    {/* Hour hand */}
+                    <div className="absolute inset-0 rotate-90">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 h-2 w-[1px] bg-[#00ff88]/60 origin-bottom -translate-y-full rounded-full" />
+                    </div>
+                    {/* Center dot */}
+                    <div className="absolute h-1 w-1 rounded-full bg-[#00ff88] shadow-lg shadow-[#00ff88]/50" />
+                  </div>
+                  {/* Speed lines */}
+                  <Zap className="absolute h-3 w-3 text-[#00ff88]/30 -right-0.5 -top-0.5 animate-pulse" />
+                </div>
+                <h4 className="text-xl font-bold text-white">5-Minute Read, Zero Fluff</h4>
               </div>
-              <h4 className="text-xl font-bold text-white">5-Minute Read, Zero Fluff</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
                 Your time is valuable. We cut through the noise and deliver <strong>only what you need</strong> to make decisions. No 50-page reports, just clear insights.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-4">
-              <div className="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-white" />
+            <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#00ff88]/10 to-transparent border border-[#00ff88]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {/* Stacked book pages */}
+                  <div className="relative">
+                    {/* Page 3 (back) */}
+                    <div className="absolute -right-0.5 top-0.5 h-6 w-5 bg-[#00ff88]/10 rounded-sm border border-[#00ff88]/20 transform rotate-6" />
+                    {/* Page 2 (middle) */}
+                    <div className="absolute -right-0.5 top-0.5 h-6 w-5 bg-[#00ff88]/15 rounded-sm border border-[#00ff88]/30 transform rotate-3" />
+                    {/* Page 1 (front) - animated flip */}
+                    <div className="relative h-6 w-5 bg-gradient-to-br from-[#00ff88]/20 to-[#00ff88]/10 rounded-sm border border-[#00ff88]/40 flex flex-col items-center justify-center gap-0.5 animate-pulse">
+                      {/* Text lines */}
+                      <div className="h-[1px] w-2.5 bg-[#00ff88]/60 rounded-full" />
+                      <div className="h-[1px] w-3 bg-[#00ff88]/50 rounded-full" />
+                      <div className="h-[1px] w-2.5 bg-[#00ff88]/40 rounded-full" />
+                      <div className="h-[1px] w-2 bg-[#00ff88]/30 rounded-full" />
+                    </div>
+                  </div>
+                  {/* Sparkle/learning icon */}
+                  <div className="absolute top-0.5 right-0.5">
+                    <div className="relative h-2 w-2">
+                      <div className="absolute inset-0 bg-[#00ff88] rounded-full animate-ping opacity-40" />
+                      <div className="absolute inset-0.5 bg-[#00ff88] rounded-full shadow-lg shadow-[#00ff88]/50" />
+                    </div>
+                  </div>
+                </div>
+                <h4 className="text-xl font-bold text-white">Learn While You Earn</h4>
               </div>
-              <h4 className="text-xl font-bold text-white">Learn While You Earn</h4>
               <p className="text-gray-300 leading-relaxed text-sm">
                 Premium subscribers get <strong>daily learning moments</strong> — investing concepts explained in plain English so you get smarter over time.
               </p>
@@ -145,9 +207,11 @@ export default function Home() {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* Email Preview - NEW: See what you'll get */}
-      <section className="container mx-auto px-4 py-16 bg-gradient-to-b from-transparent to-[#0a1929]/50">
-        <div className="max-w-7xl mx-auto">
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
               <span>📧</span> Live Preview
@@ -162,17 +226,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ROI Calculator - NEW per PM spec */}
-      <section className="container mx-auto px-4 py-16">
-        <ROICalculator />
-      </section>
+      <SectionDivider />
 
       {/* Pricing Section - REDESIGNED per PM spec */}
       <section className="container mx-auto px-4 py-16" id="pricing">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Choose Your Plan</h3>
-            <p className="text-gray-300 text-lg">Start free, upgrade when you&apos;re ready for advanced insights</p>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Choose Your Investment Edge</h3>
+            <p className="text-gray-300 text-lg max-w-3xl mx-auto">
+              Both tiers get the same daily stock picks (1-3 depending on market opportunities).
+              <br />
+              <strong className="text-white">Premium unlocks the data that turns picks into profits.</strong>
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -183,7 +248,7 @@ export default function Home() {
                   Available Now
                 </div>
                 <h4 className="text-2xl font-bold text-white mb-2">Free</h4>
-                <p className="text-gray-300">Core market insights</p>
+                <p className="text-gray-300">See what&apos;s moving</p>
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-white">$0</span>
                   <span className="text-gray-300">/month</span>
@@ -193,15 +258,11 @@ export default function Home() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span><strong>3 stock picks</strong> daily</span>
+                  <span><strong>1-3 stock picks daily</strong> (based on market opportunities)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span>Entry prices & ideal entry zones</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-200">
-                  <span className="text-gray-400 mt-1">✓</span>
-                  <span>Sector analysis & market context</span>
+                  <span>Entry prices & sector analysis</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
@@ -209,19 +270,27 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
+                  <span>Basic risk assessment</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-gray-400 mt-1">✓</span>
                   <span>7-day archive access</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-400">
+                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
                   <span className="text-gray-600 mt-1">✕</span>
                   <span>Confidence scores (blurred)</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-400">
+                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
                   <span className="text-gray-600 mt-1">✕</span>
-                  <span>Stop-loss levels & profit targets</span>
+                  <span>Stop-loss & profit targets</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-400">
+                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
                   <span className="text-gray-600 mt-1">✕</span>
-                  <span>Portfolio allocation guidance</span>
+                  <span>Portfolio allocation %</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
+                  <span className="text-gray-600 mt-1">✕</span>
+                  <span>Precise entry zones</span>
                 </li>
               </ul>
 
@@ -247,7 +316,7 @@ export default function Home() {
                   Early Bird: 50% Off First Year
                 </div>
                 <h4 className="text-2xl font-bold text-white mb-2">Premium</h4>
-                <p className="text-gray-300">Complete trading toolkit</p>
+                <p className="text-gray-300">Trade with precision</p>
                 <div className="mt-4">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-white">$96</span>
@@ -267,27 +336,31 @@ export default function Home() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span className="font-semibold">Everything in Free, plus:</span>
+                  <span className="font-semibold">Same 1-3 daily picks + the secret sauce:</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span><strong>5 stock picks</strong> daily (+2 more opportunities)</span>
+                  <span><strong>AI confidence scores</strong> (0-100 rating for conviction)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span><strong>AI confidence scores</strong> (0-100 rating)</span>
+                  <span><strong>Precise entry zones</strong> (save 3-5% on entries)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span><strong>Portfolio allocation %</strong> for each pick</span>
+                  <span><strong>Stop-loss levels</strong> (protect against losses)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span><strong>Stop-loss levels</strong> for risk management</span>
+                  <span><strong>Profit targets</strong> (2:1 reward-to-risk ratio)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span><strong>Profit targets</strong> (2:1 reward-to-risk)</span>
+                  <span><strong>Portfolio allocation %</strong> (optimize position sizing)</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-200">
+                  <span className="text-gray-400 mt-1">✓</span>
+                  <span><strong>Full risk breakdown</strong> (all caution notes)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
@@ -295,7 +368,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span>Daily learning moments (trading education)</span>
+                  <span>Daily learning moments (investing education)</span>
                 </li>
               </ul>
 
@@ -313,13 +386,19 @@ export default function Home() {
             <div className="inline-block px-6 py-4 bg-[#1a3a52]/30 border border-[#1a3a52] rounded-xl">
               <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
                 Compare to services like Motley Fool ($199/year for 2 picks/month). Daily Ticker delivers{" "}
-                <strong className="text-white">60 picks/month</strong> for just $96/year — that&apos;s{" "}
-                <strong className="text-[#00ff88]">30x more value</strong>.
+                <strong className="text-white">1-3 quality picks daily</strong> (40-60/month) for just $96/year — plus the trading toolkit to actually execute them.
               </p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ROI Calculator - Moved after pricing for better flow */}
+      <section className="container mx-auto px-4 py-12">
+        <ROICalculator />
+      </section>
+
+      <SectionDivider />
 
       {/* Final CTA Section */}
       <section className="container mx-auto px-4 py-16">
