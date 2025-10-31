@@ -82,10 +82,10 @@ export default function Home() {
           {/* Subtext - NEW: Clear value prop per PM spec */}
           <div className="space-y-3">
             <p className="text-xl md:text-2xl text-white font-semibold">
-              Get 3 actionable stock picks daily — FREE
+              Get up to 3 actionable stock picks daily — FREE
             </p>
             <p className="text-base md:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Premium tier launching Q1 2026 with 5 picks, portfolio allocation, and unlimited archive.
+              Premium tier launching Q1 2026 with confidence scores, stop-loss levels, and profit targets to maximize your trades.
             </p>
           </div>
 
