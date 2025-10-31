@@ -381,15 +381,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ROI Comparison - REPOSITIONED (was at bottom) */}
-          <div className="mt-12 text-center">
-            <div className="inline-block px-6 py-4 bg-[#1a3a52]/30 border border-[#1a3a52] rounded-xl">
-              <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                Compare to services like Motley Fool ($199/year for 2 picks/month). Daily Ticker delivers{" "}
-                <strong className="text-white">1-3 quality picks daily</strong> (40-60/month) for just $96/year — plus the trading toolkit to actually execute them.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
