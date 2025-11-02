@@ -63,17 +63,31 @@ export function HybridTicker() {
   useEffect(() => {
     const fetchTodaysBrief = async () => {
       try {
+        // Try today first
         const today = new Date().toISOString().split('T')[0]
-        const response = await fetch(`/api/archive/${today}`)
-        const data = await response.json()
+        let response = await fetch(`/api/archive/${today}`)
+        let data = await response.json()
 
-        if (data.success && data.data.stocks) {
-          // Use the actual stocks from today's brief
-          setDailyPicks(data.data.stocks)
-          setLoading(false)
+        // If today's brief doesn't exist, try yesterday
+        if (!data.success || !data.data?.stocks) {
+          console.log("Today's brief not available, trying yesterday...")
+          const yesterday = new Date()
+          yesterday.setDate(yesterday.getDate() - 1)
+          const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+          response = await fetch(`/api/archive/${yesterdayStr}`)
+          data = await response.json()
         }
+
+        if (data.success && data.data?.stocks) {
+          // Use the actual stocks from the brief
+          setDailyPicks(data.data.stocks)
+        }
+
+        // Always set loading to false, whether we found data or not
+        setLoading(false)
       } catch (error) {
-        console.error("Failed to fetch today's brief:", error)
+        console.error("Failed to fetch brief:", error)
         setLoading(false)
       }
     }
@@ -107,7 +121,7 @@ export function HybridTicker() {
   const topPick = dailyPicks[currentPickIndex]
 
   // Show loading state or fallback
-  if (loading || !topPick) {
+  if (loading) {
     return (
       <div className="w-full max-w-6xl mx-auto space-y-4">
         <div className="text-center">
@@ -117,6 +131,23 @@ export function HybridTicker() {
         </div>
         <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden shadow-2xl p-12">
           <p className="text-center text-gray-400">Loading today&apos;s picks...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show empty state if no picks available
+  if (!topPick) {
+    return (
+      <div className="w-full max-w-6xl mx-auto space-y-4">
+        <div className="text-center">
+          <p className="text-sm font-mono text-gray-400 uppercase tracking-wider">
+            {formattedDate}
+          </p>
+        </div>
+        <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden shadow-2xl p-12 text-center">
+          <p className="text-gray-300 mb-2">Today&apos;s picks haven&apos;t been published yet.</p>
+          <p className="text-sm text-gray-400">Check back soon or view the <a href="/archive" className="text-[#00ff88] hover:text-[#00dd77] underline">archive</a>.</p>
         </div>
       </div>
     )
