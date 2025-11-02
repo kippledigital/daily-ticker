@@ -83,7 +83,7 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
             </>
           ) : (
             <>
-              Join the Brief
+              Get Free Daily Picks
               <ArrowRight className="ml-2 h-4 w-4" />
             </>
           )}

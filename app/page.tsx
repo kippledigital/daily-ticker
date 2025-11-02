@@ -13,7 +13,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: "Daily Ticker - Market Insights That Make Sense",
-    description: "Get 3 actionable stock picks daily — FREE. Premium tier launching Q1 2026 with 5 picks, portfolio allocation, and unlimited archive.",
+    description: "Get up to 3 actionable stock picks daily — FREE. Premium tier launching Q1 2026 with confidence scores, stop-loss levels, and profit targets.",
     publisher: {
       "@type": "Organization",
       name: "Daily Ticker",
@@ -324,7 +324,7 @@ export default function Home() {
                     <span className="text-gray-300">/year</span>
                   </div>
                   <div className="mt-2 space-y-1">
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-gray-300">
                       or $10/month · billed monthly
                     </div>
                     <div className="text-sm text-yellow-400 font-semibold">
@@ -376,7 +376,7 @@ export default function Home() {
               <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
                 Join Premium Waitlist
               </Link>
-              <p className="text-xs text-center text-gray-400">
+              <p className="text-xs text-center text-gray-300">
                 Be first to know when premium launches • Lock in 50% off
               </p>
             </div>
@@ -400,7 +400,7 @@ export default function Home() {
             Join thousands of investors getting clear, actionable market insights delivered at 8 AM EST.
           </p>
           <SubscribeForm variant="large" />
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-300">
             No credit card required • Unsubscribe anytime • Early subscribers get 50% off premium
           </p>
         </div>
