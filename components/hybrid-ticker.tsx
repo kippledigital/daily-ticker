@@ -63,25 +63,31 @@ export function HybridTicker() {
   useEffect(() => {
     const fetchTodaysBrief = async () => {
       try {
-        // Try today first
-        const today = new Date().toISOString().split('T')[0]
-        let response = await fetch(`/api/archive/${today}`)
-        let data = await response.json()
+        // Try fetching briefs going back up to 7 days to cover weekends
+        const today = new Date()
+        let foundData = false
 
-        // If today's brief doesn't exist, try yesterday
-        if (!data.success || !data.data?.stocks) {
-          console.log("Today's brief not available, trying yesterday...")
-          const yesterday = new Date()
-          yesterday.setDate(yesterday.getDate() - 1)
-          const yesterdayStr = yesterday.toISOString().split('T')[0]
+        for (let daysBack = 0; daysBack <= 7; daysBack++) {
+          const targetDate = new Date(today)
+          targetDate.setDate(today.getDate() - daysBack)
+          const dateStr = targetDate.toISOString().split('T')[0]
 
-          response = await fetch(`/api/archive/${yesterdayStr}`)
-          data = await response.json()
+          const response = await fetch(`/api/archive/${dateStr}`)
+          const data = await response.json()
+
+          if (data.success && data.data?.stocks) {
+            // Found a brief! Use it
+            if (daysBack > 0) {
+              console.log(`Using brief from ${daysBack} day(s) ago (${dateStr})`)
+            }
+            setDailyPicks(data.data.stocks)
+            foundData = true
+            break
+          }
         }
 
-        if (data.success && data.data?.stocks) {
-          // Use the actual stocks from the brief
-          setDailyPicks(data.data.stocks)
+        if (!foundData) {
+          console.log("No briefs found in the last 7 days")
         }
 
         // Always set loading to false, whether we found data or not
