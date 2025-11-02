@@ -6,7 +6,7 @@ import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
 import { ROICalculator } from "@/components/roi-calculator"
 import { SectionDivider } from "@/components/section-divider"
-import { Mail, TrendingUp, Target, Zap, BookOpen } from "lucide-react"
+import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
 
 export default function Home() {
   const structuredData = {
@@ -51,13 +51,6 @@ export default function Home() {
             </a>
             <a href="/archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
               Archive
-            </a>
-            <a
-              href="mailto:brief@dailyticker.co"
-              className="hidden md:flex text-sm text-gray-300 hover:text-white transition-colors items-center gap-1"
-            >
-              <Mail className="h-4 w-4" />
-              Contact
             </a>
           </nav>
         </div>
