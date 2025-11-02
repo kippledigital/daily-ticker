@@ -1,7 +1,0 @@
-# robots.txt for Daily Ticker
-
-User-agent: *
-Allow: /
-Disallow: /api/
-
-Sitemap: https://dailyticker.co/sitemap.xml
