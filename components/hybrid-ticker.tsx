@@ -177,8 +177,8 @@ export function HybridTicker() {
           {/* Desktop Layout: 40/60 Market Pulse / Daily Picks */}
           <div className="hidden lg:grid lg:grid-cols-[2fr,3fr] divide-x divide-[#1a3a52]">
           {/* Left: Market Pulse */}
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-5 space-y-3">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>📊</span> Market Pulse
               </h3>
@@ -220,8 +220,8 @@ export function HybridTicker() {
           </div>
 
           {/* Right: Today's Free Picks (Cycling) */}
-          <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-5 space-y-3 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
               </h3>
@@ -242,7 +242,7 @@ export function HybridTicker() {
               </div>
             </div>
 
-            <div key={currentPickIndex} className="space-y-4">
+            <div key={currentPickIndex} className="space-y-3">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-2xl font-mono font-bold text-white">
@@ -291,8 +291,8 @@ export function HybridTicker() {
         {/* Mobile Layout: Stacked */}
         <div className="lg:hidden divide-y divide-[#1a3a52]">
           {/* Market Pulse */}
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-5 space-y-3">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>📊</span> Market Pulse
               </h3>
@@ -322,8 +322,8 @@ export function HybridTicker() {
           </div>
 
           {/* Today's Free Picks (Cycling) - Mobile */}
-          <div className="p-6 space-y-4 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-5 space-y-3 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
               </h3>
@@ -344,7 +344,7 @@ export function HybridTicker() {
               </div>
             </div>
 
-            <div key={currentPickIndex} className="space-y-4">
+            <div key={currentPickIndex} className="space-y-3">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-2xl font-mono font-bold text-white">
