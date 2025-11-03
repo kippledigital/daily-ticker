@@ -220,7 +220,7 @@ export function HybridTicker() {
           </div>
 
           {/* Right: Today's Free Picks (Cycling) */}
-          <div className="p-5 space-y-3 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
+          <div className="p-5 space-y-3 bg-gradient-to-br from-[#1a3a52]/20 to-transparent">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
@@ -322,7 +322,7 @@ export function HybridTicker() {
           </div>
 
           {/* Today's Free Picks (Cycling) - Mobile */}
-          <div className="p-5 space-y-3 bg-gradient-to-br from-[#1a3a52]/20 to-transparent min-h-[300px]">
+          <div className="p-5 space-y-3 bg-gradient-to-br from-[#1a3a52]/20 to-transparent">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
