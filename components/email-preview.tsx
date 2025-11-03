@@ -183,6 +183,11 @@ export function EmailPreview() {
                   </div>
                 </div>
 
+                <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
+                  <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
+                  <p className="text-lg font-mono font-bold text-white">$510-$515</p>
+                </div>
+
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
                   <p className="text-sm text-gray-300">
@@ -241,6 +246,11 @@ export function EmailPreview() {
                     <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
                     <p className="text-lg font-mono font-bold text-[#00ff88]">$171.00</p>
                   </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
+                  <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
+                  <p className="text-lg font-mono font-bold text-white">$142-$145</p>
                 </div>
 
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
@@ -303,6 +313,11 @@ export function EmailPreview() {
                   </div>
                 </div>
 
+                <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
+                  <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
+                  <p className="text-lg font-mono font-bold text-white">$375-$380</p>
+                </div>
+
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
                   <p className="text-sm text-gray-300">
@@ -346,15 +361,16 @@ export function EmailPreview() {
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
                 <span>📚</span> Learning Corner
               </h3>
-              <h4 className="text-sm font-semibold text-white mb-2">What is a &ldquo;Stop Loss&rdquo;?</h4>
+              <h4 className="text-sm font-semibold text-white mb-2">Today&apos;s Concept: Stop Loss</h4>
               <p className="text-sm text-gray-300 leading-relaxed mb-3">
                 A stop loss is a predetermined price level where you&apos;ll exit a position to limit losses. Think of it
                 as a safety net - if the stock drops to this price, you automatically sell to prevent bigger losses.
               </p>
               <p className="text-sm text-gray-300 leading-relaxed">
-                <strong className="text-white">Example:</strong> You buy NVDA at $520. You set a stop loss at $480.
-                If NVDA drops to $480, you sell automatically, limiting your loss to about 8%. This protects your
-                capital for other opportunities.
+                <strong className="text-white">Real Example from Today:</strong> NVDA is trading at $521. The stop loss
+                is set at $480. If NVDA drops to $480, you sell automatically, limiting your loss to about 8% ($41 per share).
+                With today&apos;s profit target at $604, that&apos;s a 2:1 reward-to-risk ratio - you stand to make $83 per share
+                while risking only $41. This protects your capital for other opportunities.
               </p>
             </div>
 
