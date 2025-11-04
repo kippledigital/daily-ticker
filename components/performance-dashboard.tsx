@@ -32,12 +32,11 @@ interface StockPick {
   outcome: 'win' | 'loss' | 'open'
   stocks: {
     ticker: string
-    company_name: string
     sector: string
-    current_price: number
     stop_loss: number
     profit_target: number
     confidence: number
+    entry_price: number
   }
 }
 
@@ -251,7 +250,7 @@ export function PerformanceDashboard() {
                     <td className="p-4">
                       <div>
                         <p className="text-sm font-mono font-bold text-white">{pick.stocks.ticker}</p>
-                        <p className="text-xs text-gray-400">{pick.stocks.company_name}</p>
+                        <p className="text-xs text-gray-400">{pick.stocks.sector}</p>
                       </div>
                     </td>
                     <td className="p-4">

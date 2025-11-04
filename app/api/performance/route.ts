@@ -47,12 +47,11 @@ export async function GET(request: Request) {
         *,
         stocks:stock_id (
           ticker,
-          company_name,
           sector,
-          current_price,
           stop_loss,
           profit_target,
-          confidence
+          confidence,
+          entry_price
         )
       `)
       .order('entry_date', { ascending: false })
