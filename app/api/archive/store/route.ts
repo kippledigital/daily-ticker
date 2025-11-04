@@ -116,9 +116,10 @@ export async function POST(request: NextRequest) {
       learning_moment: stock.learningMoment || null,
     }));
 
-    const { error: stocksError } = await supabase
+    const { data: insertedStocks, error: stocksError } = await supabase
       .from('stocks')
-      .insert(stocksToInsert);
+      .insert(stocksToInsert)
+      .select();
 
     if (stocksError) {
       console.error('Error inserting stocks:', JSON.stringify(stocksError, null, 2));
@@ -128,6 +129,28 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to store stock data', details: stocksError },
         { status: 500 }
       );
+    }
+
+    // Create performance tracking records for each stock
+    if (insertedStocks && insertedStocks.length > 0) {
+      const performanceRecords = insertedStocks.map((stock) => ({
+        stock_id: stock.id,
+        entry_date: data.date,
+        entry_price: stock.entry_price,
+        // exit_date, exit_price, exit_reason will be set by the update cron when targets are hit
+      }));
+
+      const { error: perfError } = await supabase
+        .from('stock_performance')
+        .insert(performanceRecords);
+
+      if (perfError) {
+        console.error('Error creating performance records:', perfError);
+        // Don't fail the entire operation, just log it
+        // The update cron can backfill missing records if needed
+      } else {
+        console.log(`✅ Created ${performanceRecords.length} performance tracking records`);
+      }
     }
 
     console.log(`✅ Stored brief for ${data.date} with ${data.stocks.length} stocks`);
