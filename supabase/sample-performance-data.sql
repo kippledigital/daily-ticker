@@ -2,11 +2,13 @@
 -- This creates a sample brief with 3 stocks and performance tracking data
 
 -- Step 1: Create a sample brief for testing
-INSERT INTO briefs (date, market_summary, market_pulse)
+INSERT INTO briefs (date, subject, html_content, tldr, actionable_count)
 VALUES (
   '2025-10-15',
-  'Tech sector showing strong momentum as AI stocks continue their rally. Market sentiment remains bullish despite volatility.',
-  'S&P 500: +1.2%, NASDAQ: +1.8%, DOW: +0.9%'
+  'Tech Rally Continues: AI Stocks Lead Market Higher',
+  '<html><body><h1>Daily Ticker Brief</h1><p>Tech sector showing strong momentum as AI stocks continue their rally. Market sentiment remains bullish despite volatility.</p></body></html>',
+  'AI stocks rally continues with NVDA, AMD, and MSFT showing strength',
+  3
 )
 ON CONFLICT (date) DO NOTHING
 RETURNING id;
