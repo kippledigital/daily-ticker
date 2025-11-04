@@ -157,30 +157,26 @@ SELECT
 FROM inserted_stocks s;
 
 -- Step 5: Verify the data was inserted correctly
-SELECT
-  'Performance Summary' as check_type,
-  total_closed_picks,
-  total_open_picks,
-  total_wins,
-  total_losses,
-  win_rate_percent,
-  avg_return_percent
-FROM performance_summary
+-- Check the performance summary
+SELECT * FROM performance_summary;
 
-UNION ALL
-
+-- Check the individual stock performance records
 SELECT
-  'Stock Performance Detail' as check_type,
-  COUNT(*)::text as total_closed_picks,
-  NULL as total_open_picks,
-  NULL as total_wins,
-  NULL as total_losses,
-  NULL as win_rate_percent,
-  NULL as avg_return_percent
-FROM stock_performance;
+  sp.*,
+  s.ticker,
+  s.sector
+FROM stock_performance sp
+JOIN stocks s ON s.id = sp.stock_id
+ORDER BY sp.entry_date DESC;
 
 -- Expected Results:
--- Win Rate: 50% (1 win out of 2 closed positions)
--- Avg Return: ~10.4% ((+22% NVDA + -1.3% MSFT) / 2)
--- Best Pick: NVDA +22%
--- Open Positions: 1 (AMD)
+-- Performance Summary:
+--   - Win Rate: 50% (1 win out of 2 closed positions)
+--   - Avg Return: ~10.4% ((+22% NVDA + -1.3% MSFT) / 2)
+--   - Best Pick: NVDA +22%
+--   - Total: 3 picks (2 closed, 1 open)
+--
+-- Stock Performance Detail:
+--   - NVDA: Closed via profit_target, +22% return
+--   - AMD: Open position
+--   - MSFT: Closed via stop_loss, -1.3% return
