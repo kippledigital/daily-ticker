@@ -6,6 +6,7 @@ import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
 import { ROICalculator } from "@/components/roi-calculator"
 import { SectionDivider } from "@/components/section-divider"
+import { PerformanceDashboard } from "@/components/performance-dashboard"
 import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
 
 export default function Home() {
@@ -93,6 +94,25 @@ export default function Home() {
       {/* Live Ticker - MOVED ABOVE THE FOLD: Market Pulse + Cycling Free Picks */}
       <section className="container mx-auto px-4 py-6">
         <HybridTicker />
+      </section>
+
+      <SectionDivider />
+
+      {/* Performance Dashboard - Proof our picks work */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
+              <span>📊</span> Track Record
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Our Picks, Your Proof</h3>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+              We track every pick we make. See our real win rate, average returns, and how our picks perform over time.
+            </p>
+          </div>
+
+          <PerformanceDashboard />
+        </div>
       </section>
 
       <SectionDivider />
