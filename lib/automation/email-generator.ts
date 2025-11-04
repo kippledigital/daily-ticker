@@ -152,6 +152,13 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
 
     let htmlContent = completion.choices[0]?.message?.content || '';
 
+    // Strip markdown code fences if OpenAI wrapped the response in them
+    if (htmlContent.startsWith('```html')) {
+      htmlContent = htmlContent.replace(/^```html\s*\n?/, '').replace(/\n?```\s*$/, '');
+    } else if (htmlContent.startsWith('```')) {
+      htmlContent = htmlContent.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
+    }
+
     // Check if response was truncated
     if (completion.choices[0]?.finish_reason === 'length') {
       console.warn('⚠️ Email generation was truncated due to token limit. Consider reducing template size or increasing max_tokens.');
