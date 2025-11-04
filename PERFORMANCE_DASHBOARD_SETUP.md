@@ -69,57 +69,25 @@ vercel env add CRON_SECRET
 
 This will let you see the dashboard in action before real picks are tracked.
 
-Run this SQL in your Supabase SQL Editor:
+**EASY METHOD:** I've created a complete SQL file for you at `supabase/sample-performance-data.sql`
 
-```sql
--- Insert some sample stocks (if they don't exist)
-INSERT INTO stocks (ticker, company_name, sector, current_price, stop_loss, profit_target, confidence, recommendation, risk_level, ideal_entry_zone, suggested_allocation)
-VALUES
-  ('NVDA', 'NVIDIA Corporation', 'Technology', 521.00, 480.00, 604.00, 87, 'BUY', 'Medium', '$510-$515', '8%'),
-  ('AMD', 'Advanced Micro Devices', 'Technology', 147.00, 135.00, 175.00, 82, 'BUY', 'Medium', '$142-$145', '6%'),
-  ('MSFT', 'Microsoft Corporation', 'Technology', 415.00, 385.00, 465.00, 91, 'HOLD', 'Low', '$375-$380', '10%')
-ON CONFLICT (ticker) DO NOTHING;
+Go to your Supabase SQL Editor: https://supabase.com/dashboard/project/dmnbqxbddtdfndvanxyv/editor
 
--- Get the stock IDs
-WITH stock_ids AS (
-  SELECT id, ticker FROM stocks WHERE ticker IN ('NVDA', 'AMD', 'MSFT')
-)
-
--- Insert sample performance data
-INSERT INTO stock_performance (stock_id, entry_date, entry_price, exit_date, exit_price, exit_reason)
-SELECT
-  s.id,
-  '2025-10-15'::date,
-  CASE
-    WHEN s.ticker = 'NVDA' THEN 495.00
-    WHEN s.ticker = 'AMD' THEN 140.00
-    WHEN s.ticker = 'MSFT' THEN 390.00
-  END,
-  '2025-10-30'::date,
-  CASE
-    WHEN s.ticker = 'NVDA' THEN 604.00  -- Hit profit target (win)
-    WHEN s.ticker = 'AMD' THEN 147.00   -- Still open
-    WHEN s.ticker = 'MSFT' THEN 385.00  -- Hit stop loss (loss)
-  END,
-  CASE
-    WHEN s.ticker = 'NVDA' THEN 'profit_target'
-    WHEN s.ticker = 'AMD' THEN NULL
-    WHEN s.ticker = 'MSFT' THEN 'stop_loss'
-  END
-FROM stock_ids s;
-
--- Verify the data
-SELECT * FROM performance_summary;
-SELECT * FROM stock_performance ORDER BY entry_date DESC;
-```
+Copy and paste the entire contents of `supabase/sample-performance-data.sql` and run it.
 
 This creates:
-- 1 winning pick (NVDA: +22% gain)
-- 1 open pick (AMD: currently tracking)
-- 1 losing pick (MSFT: -1.3% loss via stop-loss)
+- 1 sample brief dated 2025-10-15
+- 3 stocks (NVDA, AMD, MSFT) with full details
+- Performance tracking:
+  - NVDA: Closed position (hit profit target) → +22% WIN
+  - AMD: Still open position
+  - MSFT: Closed position (hit stop loss) → -1.3% LOSS
 
-**Win Rate:** 50% (1 win out of 2 closed)
-**Average Return:** ~10.4%
+**Expected Results:**
+- Win Rate: 50% (1 win out of 2 closed)
+- Avg Return: ~10.4%
+- Best Pick: NVDA +22%
+- Open Positions: 1 (AMD)
 
 ## Step 4: Set Up Vercel Cron Job
 
