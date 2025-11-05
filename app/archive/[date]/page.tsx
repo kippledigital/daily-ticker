@@ -7,6 +7,7 @@ import { TrendingUp, Calendar, Share2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BlurredPremium } from '@/components/blurred-premium'
 import { PremiumBadge } from '@/components/premium-badge'
+import { createClient } from '@/lib/supabase-auth'
 import type { BriefData } from '@/app/api/archive/store/route'
 
 interface BriefPageProps {
@@ -18,11 +19,9 @@ interface BriefPageProps {
 export default function BriefPage({ params }: BriefPageProps) {
   const [brief, setBrief] = useState<BriefData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [userTier, setUserTier] = useState<'free' | 'premium'>('free')
   const router = useRouter()
-
-  // TODO: Replace with actual tier detection from auth session
-  // For now, hardcoded to 'free' to demonstrate the blurring
-  const userTier: 'free' | 'premium' = 'free'
+  const supabase = createClient()
 
   useEffect(() => {
     async function fetchBrief() {
@@ -45,6 +44,28 @@ export default function BriefPage({ params }: BriefPageProps) {
 
     fetchBrief()
   }, [params.date, router])
+
+  // Fetch user tier from Supabase session
+  useEffect(() => {
+    async function getUserTier() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session?.user?.email) {
+        // Query subscribers table to get user's tier
+        const { data: subscriber, error } = await supabase
+          .from('subscribers')
+          .select('tier')
+          .eq('email', session.user.email)
+          .single()
+
+        if (!error && subscriber) {
+          setUserTier(subscriber.tier as 'free' | 'premium')
+        }
+      }
+    }
+
+    getUserTier()
+  }, [supabase])
 
   if (loading) {
     return (
