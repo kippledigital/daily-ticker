@@ -23,8 +23,12 @@ export interface StockRecommendation {
 
 export interface BriefData {
   date: string; // YYYY-MM-DD
-  subject: string;
-  htmlContent: string;
+  subject_free?: string; // Free tier subject
+  subject_premium?: string; // Premium tier subject
+  subject?: string; // Backwards compatibility
+  html_content_free?: string; // Free tier HTML
+  html_content_premium?: string; // Premium tier HTML
+  htmlContent?: string; // Backwards compatibility
   tldr?: string;
   actionableCount: number;
   stocks: StockRecommendation[];
@@ -34,10 +38,16 @@ export async function POST(request: NextRequest) {
   try {
     const data: BriefData = await request.json();
 
+    // Support both new (free/premium) and old (single) format
+    const subject_free = data.subject_free || data.subject;
+    const subject_premium = data.subject_premium || data.subject;
+    const html_content_free = data.html_content_free || data.htmlContent;
+    const html_content_premium = data.html_content_premium || data.htmlContent;
+
     // Validate required fields
-    if (!data.date || !data.subject || !data.htmlContent || !data.stocks) {
+    if (!data.date || !subject_free || !subject_premium || !html_content_free || !html_content_premium || !data.stocks) {
       return NextResponse.json(
-        { error: 'Missing required fields: date, subject, htmlContent, stocks' },
+        { error: 'Missing required fields: date, subject_free, subject_premium, html_content_free, html_content_premium, stocks' },
         { status: 400 }
       );
     }
@@ -73,13 +83,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert brief
+    // Insert brief with BOTH free and premium versions
     const { data: brief, error: briefError } = await supabase
       .from('briefs')
       .insert({
         date: data.date,
-        subject: data.subject,
-        html_content: data.htmlContent,
+        subject_free: subject_free,
+        subject_premium: subject_premium,
+        html_content_free: html_content_free,
+        html_content_premium: html_content_premium,
         tldr: data.tldr || null,
         actionable_count: data.actionableCount,
       })

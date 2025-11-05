@@ -6,6 +6,7 @@ import { analyzeStock } from './ai-analyzer';
 import { validateStockAnalysis } from './validator';
 import { injectTrendSymbol } from './trend-injector';
 import { generateEmailContent } from './email-generator';
+import { generateFreeEmail } from './email-generator-free';
 import { sendMorningBrief } from './email-sender';
 import { sendErrorNotification } from './error-notifier';
 
@@ -161,40 +162,64 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     console.log(`✅ Trend symbols added`);
     result.steps.trendInjection = true;
 
-    // Step 7: Generate email content
-    console.log('📧 Step 7: Generating email content...');
+    // Step 7: Generate BOTH free and premium email content
+    console.log('📧 Step 7: Generating email content (free + premium versions)...');
     const date = new Date().toISOString().split('T')[0];
 
-    const emailContent = await generateEmailContent({
+    // Generate premium email (full features)
+    const premiumEmail = await generateEmailContent({
       stocks: stocksWithTrends,
       date,
     });
 
-    console.log(`✅ Email generated with subject: "${emailContent.subject}"`);
-    result.steps.emailGeneration = true;
-
-    // Step 8: Send email to subscribers
-    console.log('📮 Step 8: Sending email to subscribers...');
-    const emailSent = await sendMorningBrief({
-      subject: emailContent.subject,
-      htmlContent: emailContent.htmlContent,
+    // Generate free email (stripped-down version)
+    const freeEmail = await generateFreeEmail({
+      stocks: stocksWithTrends,
+      date,
     });
 
+    console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
+    console.log(`✅ Free email generated: "${freeEmail.subject}"`);
+    result.steps.emailGeneration = true;
+
+    // Step 8: Send emails to BOTH free and premium subscribers
+    console.log('📮 Step 8: Sending emails to subscribers (segmented by tier)...');
+
+    // Send premium email to premium subscribers
+    const premiumEmailSent = await sendMorningBrief({
+      subject: premiumEmail.subject,
+      htmlContent: premiumEmail.htmlContent,
+      tier: 'premium',
+    });
+
+    // Send free email to free subscribers
+    const freeEmailSent = await sendMorningBrief({
+      subject: freeEmail.subject,
+      htmlContent: freeEmail.htmlContent,
+      tier: 'free',
+    });
+
+    const emailSent = premiumEmailSent && freeEmailSent;
+
     if (!emailSent) {
-      console.warn('⚠️  Email sending failed, continuing with other steps...');
+      console.warn('⚠️  One or both email sends failed');
+      console.warn(`  Premium: ${premiumEmailSent ? '✅' : '❌'}`);
+      console.warn(`  Free: ${freeEmailSent ? '✅' : '❌'}`);
     } else {
-      console.log(`✅ Email sent successfully`);
+      console.log(`✅ Emails sent successfully to both tiers`);
     }
 
     result.steps.emailSending = emailSent;
 
-    // Step 9: Store in archive (Supabase)
-    console.log('💾 Step 9: Storing in archive...');
+    // Step 9: Store BOTH versions in archive (Supabase)
+    console.log('💾 Step 9: Storing both versions in archive...');
     const archived = await storeInArchive({
       date,
-      subject: emailContent.subject,
-      htmlContent: emailContent.htmlContent,
-      tldr: emailContent.tldr,
+      subject_free: freeEmail.subject,
+      subject_premium: premiumEmail.subject,
+      html_content_free: freeEmail.htmlContent,
+      html_content_premium: premiumEmail.htmlContent,
+      tldr: premiumEmail.tldr,
       stocks: stocksWithTrends,
     });
 
@@ -210,9 +235,9 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     result.success = true;
     result.brief = {
       date,
-      subject: emailContent.subject,
-      htmlContent: emailContent.htmlContent,
-      tldr: emailContent.tldr,
+      subject: premiumEmail.subject, // Use premium subject for result
+      htmlContent: premiumEmail.htmlContent, // Use premium content for result
+      tldr: premiumEmail.tldr,
       actionableCount: stocksWithTrends.filter(s => {
         const action = s.actionable_insight.toLowerCase();
         return action.includes('buy') || action.includes('potential');
@@ -244,13 +269,15 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
 }
 
 /**
- * Stores brief in Supabase archive
+ * Stores BOTH free and premium brief versions in Supabase archive
  * Calls the existing /api/archive/store endpoint
  */
 async function storeInArchive(data: {
   date: string;
-  subject: string;
-  htmlContent: string;
+  subject_free: string;
+  subject_premium: string;
+  html_content_free: string;
+  html_content_premium: string;
   tldr: string;
   stocks: ValidatedStock[];
 }): Promise<boolean> {
@@ -291,8 +318,10 @@ async function storeInArchive(data: {
       },
       body: JSON.stringify({
         date: data.date,
-        subject: data.subject,
-        htmlContent: data.htmlContent,
+        subject_free: data.subject_free,
+        subject_premium: data.subject_premium,
+        html_content_free: data.html_content_free,
+        html_content_premium: data.html_content_premium,
         tldr: data.tldr,
         actionableCount: archiveStocks.filter(s => s.action === 'BUY').length,
         stocks: archiveStocks,

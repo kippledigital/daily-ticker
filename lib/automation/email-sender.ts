@@ -13,6 +13,7 @@ export interface SendEmailParams {
   subject: string;
   htmlContent: string;
   to?: string[]; // Optional override, defaults to subscriber list
+  tier?: 'free' | 'premium'; // Filter by tier
 }
 
 /**
@@ -20,11 +21,11 @@ export interface SendEmailParams {
  * Fetches subscribers from Supabase (replaces Beehiiv)
  */
 export async function sendMorningBrief(params: SendEmailParams): Promise<boolean> {
-  const { subject, htmlContent, to } = params;
+  const { subject, htmlContent, to, tier } = params;
 
   try {
     // Get recipient list from Supabase or use manual list
-    const recipients = to || await getSubscriberEmails();
+    const recipients = to || await getSubscriberEmails(tier);
 
     if (recipients.length === 0) {
       console.warn('No recipients to send email to');
@@ -83,16 +84,22 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
 }
 
 /**
- * Gets subscriber email list from Supabase
+ * Gets subscriber email list from Supabase by tier
  * Only returns active subscribers
  */
-async function getSubscriberEmails(): Promise<string[]> {
+async function getSubscriberEmails(tier?: 'free' | 'premium'): Promise<string[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('subscribers')
       .select('email')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false });
+      .eq('status', 'active');
+
+    // Filter by tier if specified
+    if (tier) {
+      query = query.eq('tier', tier);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching Supabase subscribers:', error);
