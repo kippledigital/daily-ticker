@@ -48,12 +48,12 @@ interface PerformanceData {
 export function PerformanceDashboard() {
   const [data, setData] = useState<PerformanceData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'win' | 'loss' | 'open'>('all')
+  const [filter, setFilter] = useState<'closed' | 'win' | 'loss'>('closed')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/performance?limit=10&status=${filter}`)
+        const response = await fetch(`/api/performance?limit=5&status=${filter}`)
         const result = await response.json()
 
         if (result.success) {
@@ -174,18 +174,18 @@ export function PerformanceDashboard() {
         {/* Header */}
         <div className="p-6 border-b border-[#1a3a52]">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-mono font-bold text-white">Recent Picks</h3>
+            <h3 className="text-lg font-mono font-bold text-white">Recent Closed Picks</h3>
             <div className="flex gap-2">
               <button
-                onClick={() => setFilter('all')}
+                onClick={() => setFilter('closed')}
                 className={cn(
                   "px-3 py-1 text-xs font-mono rounded-lg transition-colors",
-                  filter === 'all'
+                  filter === 'closed'
                     ? "bg-[#00ff88] text-[#0a1929] font-bold"
                     : "bg-[#1a3a52] text-gray-400 hover:text-gray-300"
                 )}
               >
-                All
+                All Closed
               </button>
               <button
                 onClick={() => setFilter('win')}
@@ -208,17 +208,6 @@ export function PerformanceDashboard() {
                 )}
               >
                 Losses
-              </button>
-              <button
-                onClick={() => setFilter('open')}
-                className={cn(
-                  "px-3 py-1 text-xs font-mono rounded-lg transition-colors",
-                  filter === 'open'
-                    ? "bg-[#00ff88] text-[#0a1929] font-bold"
-                    : "bg-[#1a3a52] text-gray-400 hover:text-gray-300"
-                )}
-              >
-                Open
               </button>
             </div>
           </div>

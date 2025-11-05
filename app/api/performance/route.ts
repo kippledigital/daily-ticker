@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic'
  * Returns performance summary and recent picks with outcomes
  *
  * Query params:
- * - limit: Number of recent picks to return (default: 10)
- * - status: Filter by outcome ('win', 'loss', 'open', or 'all')
+ * - limit: Number of recent picks to return (default: 5)
+ * - status: Filter by outcome ('win', 'loss', 'closed', or 'all')
  */
 export async function GET(request: Request) {
   try {
@@ -22,8 +22,8 @@ export async function GET(request: Request) {
     )
 
     const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
-    const status = searchParams.get('status') || 'all'
+    const limit = parseInt(searchParams.get('limit') || '5', 10)
+    const status = searchParams.get('status') || 'closed'
 
     // Fetch performance summary
     const { data: summary, error: summaryError } = await supabase
@@ -58,7 +58,11 @@ export async function GET(request: Request) {
       .limit(limit)
 
     // Filter by status if specified
-    if (status !== 'all') {
+    if (status === 'closed') {
+      // Show both wins and losses (exclude open positions)
+      query = query.in('outcome', ['win', 'loss'])
+    } else if (status !== 'all') {
+      // Show specific outcome (win or loss)
       query = query.eq('outcome', status)
     }
 
