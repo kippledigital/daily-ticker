@@ -1,6 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Client-side Supabase client with auth support
@@ -13,6 +12,7 @@ export function createClient() {
 
 // Server-side Supabase client for Server Components
 export async function createServerSupabaseClient() {
+  const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
 
   return createServerClient(
