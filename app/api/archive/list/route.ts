@@ -8,13 +8,13 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const ticker = searchParams.get('ticker')?.toUpperCase();
 
-    // Build query
+    // Build query (now using subject_premium for list view)
     let query = supabase
       .from('briefs')
       .select(`
         id,
         date,
-        subject,
+        subject_premium,
         tldr,
         actionable_count,
         stocks (
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 
       return {
         date: brief.date,
-        subject: brief.subject,
+        subject: brief.subject_premium, // Use premium subject for archive list
         tldr: brief.tldr,
         actionableCount: brief.actionable_count,
         stockCount: stocks.length,

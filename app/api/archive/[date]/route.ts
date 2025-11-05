@@ -36,10 +36,11 @@ export async function GET(
     }
 
     // Transform to BriefData format
+    // For now, show premium version in archive (will gate later with tier detection)
     const briefData: BriefData = {
       date: (brief as any).date,
-      subject: (brief as any).subject,
-      htmlContent: (brief as any).html_content,
+      subject: (brief as any).subject_premium || (brief as any).subject, // Backwards compatible
+      htmlContent: (brief as any).html_content_premium || (brief as any).html_content, // Backwards compatible
       tldr: (brief as any).tldr || undefined,
       actionableCount: (brief as any).actionable_count,
       stocks: ((brief as any).stocks as any[]).map((stock) => ({
