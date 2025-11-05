@@ -20,6 +20,10 @@ export default function BriefPage({ params }: BriefPageProps) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // TODO: Replace with actual tier detection from auth session
+  // For now, hardcoded to 'free' to demonstrate the blurring
+  const userTier: 'free' | 'premium' = 'free'
+
   useEffect(() => {
     async function fetchBrief() {
       try {
@@ -175,7 +179,9 @@ export default function BriefPage({ params }: BriefPageProps) {
                         <PremiumBadge size="sm" />
                       </div>
                       <p className="text-[#ff3366] text-xl font-bold font-mono">
-                        <BlurredPremium content={`$${stock.stopLoss?.toFixed(2)}`} tooltip="Upgrade to see stop-loss levels" />
+                        <BlurredPremium tier={userTier} feature="Stop Loss">
+                          ${stock.stopLoss?.toFixed(2)}
+                        </BlurredPremium>
                       </p>
                     </div>
                     <div className="bg-[#0a2a1a] border-2 border-[#00ff88] rounded-lg p-3">
@@ -184,7 +190,9 @@ export default function BriefPage({ params }: BriefPageProps) {
                         <PremiumBadge size="sm" />
                       </div>
                       <p className="text-[#00ff88] text-xl font-bold font-mono">
-                        <BlurredPremium content={`$${stock.profitTarget?.toFixed(2)}`} tooltip="Upgrade to see profit targets" />
+                        <BlurredPremium tier={userTier} feature="Profit Target">
+                          ${stock.profitTarget?.toFixed(2)}
+                        </BlurredPremium>
                       </p>
                     </div>
                   </div>
@@ -223,7 +231,9 @@ export default function BriefPage({ params }: BriefPageProps) {
                     <span className="flex items-center gap-1">
                       <strong>Confidence:</strong>
                       <PremiumBadge size="sm" />
-                      <BlurredPremium content={`${stock.confidence}%`} />
+                      <BlurredPremium tier={userTier} feature="Confidence Score">
+                        {stock.confidence}%
+                      </BlurredPremium>
                     </span>
                   </p>
                 </div>
