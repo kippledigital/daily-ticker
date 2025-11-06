@@ -113,7 +113,7 @@ export default function CheckoutSuccessPage() {
           <div className="bg-gradient-to-r from-[#00ff88]/10 to-[#00dd77]/10 border border-[#00ff88]/30 rounded-lg p-4 mb-8">
             <div className="flex items-center gap-2 mb-2">
               <Mail className="h-5 w-5 text-[#00ff88]" />
-              <p className="text-white font-semibold">What's Next?</p>
+              <p className="text-white font-semibold">What&apos;s Next?</p>
             </div>
             <p className="text-sm text-gray-300">
               Your first premium brief will arrive tomorrow morning at 8 AM EST.

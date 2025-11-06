@@ -117,7 +117,7 @@ export default function LoginPage() {
 
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-400">
-                    No password needed. We'll send you a secure login link.
+                    No password needed. We&apos;ll send you a secure login link.
                   </p>
                 </div>
               </>
@@ -137,7 +137,7 @@ export default function LoginPage() {
                     <ol className="text-gray-400 text-sm space-y-2 list-decimal list-inside">
                       <li>Open the email from Daily Ticker</li>
                       <li>Click the magic link button</li>
-                      <li>You'll be automatically logged in</li>
+                      <li>You&apos;ll be automatically logged in</li>
                     </ol>
                   </div>
 
@@ -162,7 +162,7 @@ export default function LoginPage() {
           {/* Help Text */}
           <div className="mt-8 text-center">
             <p className="text-gray-400 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/#pricing" className="text-[#00ff88] hover:text-[#00dd77] font-medium">
                 Subscribe to Daily Ticker
               </Link>
