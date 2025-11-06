@@ -12,7 +12,7 @@ const portfolioOptions = [
   { value: 500000, label: "$500,000" },
 ]
 
-export function ROICalculator() {
+export function ROICalculator({ isModal = false }: { isModal?: boolean }) {
   const [portfolioSize, setPortfolioSize] = useState(25000)
 
   // Calculation logic based on PM spec
@@ -26,10 +26,10 @@ export function ROICalculator() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-gradient-to-br from-[#1a3a52]/40 to-[#0B1E32] border-2 border-[#00ff88]/20 rounded-2xl p-8 md:p-10 lg:p-12">
+      <div className={`bg-gradient-to-br from-[#1a3a52]/40 to-[#0B1E32] border-2 border-[#00ff88]/20 rounded-2xl ${isModal ? 'p-6 md:p-8' : 'p-8 md:p-10 lg:p-12'}`}>
 
         {/* Header Section - Improved hierarchy and spacing */}
-        <div className="text-center space-y-4 mb-12">
+        <div className={`text-center space-y-3 ${isModal ? 'mb-6' : 'mb-12'}`}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20">
             <DollarSign className="h-4 w-4 text-[#00ff88]" />
             <span className="text-sm font-medium text-[#00ff88] tracking-wider">Value Calculator</span>
@@ -43,7 +43,7 @@ export function ROICalculator() {
         </div>
 
         {/* Portfolio Size Selector - Enhanced visual treatment */}
-        <div className="space-y-3 mb-10">
+        <div className={`space-y-3 ${isModal ? 'mb-6' : 'mb-10'}`}>
           <label
             htmlFor="portfolio-size"
             className="block text-xs font-bold text-gray-300 uppercase tracking-wider"
@@ -65,7 +65,7 @@ export function ROICalculator() {
         </div>
 
         {/* Benefit Cards Section - Improved alignment and spacing */}
-        <div className="space-y-6 mb-12">
+        <div className={`space-y-4 ${isModal ? 'mb-6' : 'mb-12'}`}>
           <p className="text-sm font-bold text-gray-300 uppercase tracking-wider">
             If Daily Ticker Premium helps you:
           </p>
