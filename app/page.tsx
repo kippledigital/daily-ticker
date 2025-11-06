@@ -290,19 +290,19 @@ export default function Home() {
                   <span className="text-gray-400 mt-1">✓</span>
                   <span>7-day archive access</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
+                <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
                   <span>Confidence scores (blurred)</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
+                <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
                   <span>Stop-loss & profit targets</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
+                <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
                   <span>Portfolio allocation %</span>
                 </li>
-                <li className="flex items-start gap-3 text-gray-500 italic text-sm">
+                <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
                   <span>Precise entry zones</span>
                 </li>
@@ -319,22 +319,16 @@ export default function Home() {
             {/* Premium Tier - UPDATED per PM spec */}
             <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl p-8 space-y-6 relative">
               <div>
-                <div className="inline-block px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-semibold mb-3 border border-yellow-500/30">
-                  Early Bird: 50% Off First Year
-                </div>
                 <h4 className="text-2xl font-bold text-white mb-2">Premium</h4>
                 <p className="text-gray-300">Trade with precision</p>
                 <div className="mt-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-white">$96</span>
+                    <span className="text-4xl font-bold text-white">$48</span>
                     <span className="text-gray-300">/year</span>
                   </div>
                   <div className="mt-2 space-y-1">
                     <div className="text-sm text-gray-300">
                       or $10/month · billed monthly
-                    </div>
-                    <div className="text-sm text-yellow-400 font-semibold">
-                      Early subscribers: $48 first year (then $96/year)
                     </div>
                   </div>
                 </div>
@@ -383,7 +377,7 @@ export default function Home() {
                 Upgrade to Premium
               </Link>
               <p className="text-xs text-center text-gray-300">
-                50% off early bird pricing • Cancel anytime
+                Cancel anytime • 60-day money-back guarantee
               </p>
             </div>
           </div>
