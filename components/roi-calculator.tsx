@@ -70,47 +70,47 @@ export function ROICalculator({ isModal = false }: { isModal?: boolean }) {
             If Daily Ticker Premium helps you:
           </p>
 
-          <div className="space-y-4">
+          <div className={isModal ? 'space-y-3' : 'space-y-4'}>
             {/* Extra Gain Card */}
-            <div className="group flex items-center gap-5 p-5 bg-[#00ff88]/5 rounded-xl border border-[#00ff88]/10 hover:bg-[#00ff88]/10 hover:border-[#00ff88]/30 transition-all duration-200">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#00ff88]/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors">
-                <TrendingUp className="h-6 w-6 text-[#00ff88]" />
+            <div className={`group flex items-center ${isModal ? 'gap-3 p-4' : 'gap-5 p-5'} bg-[#00ff88]/5 rounded-xl border border-[#00ff88]/10 hover:bg-[#00ff88]/10 hover:border-[#00ff88]/30 transition-all duration-200`}>
+              <div className={`flex-shrink-0 ${isModal ? 'w-10 h-10' : 'w-12 h-12'} rounded-full bg-[#00ff88]/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors`}>
+                <TrendingUp className={`${isModal ? 'h-5 w-5' : 'h-6 w-6'} text-[#00ff88]`} />
               </div>
-              <div className="flex-1 min-w-0 flex items-center justify-between gap-6">
-                <span className="text-gray-200 text-base md:text-lg">
+              <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                <span className={`text-gray-200 ${isModal ? 'text-sm' : 'text-base md:text-lg'}`}>
                   Catch just 1 extra 10% gain
                 </span>
-                <span className="text-2xl md:text-3xl font-bold text-[#00ff88] font-mono whitespace-nowrap">
+                <span className={`${isModal ? 'text-xl' : 'text-2xl md:text-3xl'} font-bold text-[#00ff88] font-mono whitespace-nowrap`}>
                   +${extraGainProfit.toLocaleString()}
                 </span>
               </div>
             </div>
 
             {/* Loss Avoided Card */}
-            <div className="group flex items-center gap-5 p-5 bg-[#00ff88]/5 rounded-xl border border-[#00ff88]/10 hover:bg-[#00ff88]/10 hover:border-[#00ff88]/30 transition-all duration-200">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#00ff88]/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors">
-                <Shield className="h-6 w-6 text-[#00ff88]" />
+            <div className={`group flex items-center ${isModal ? 'gap-3 p-4' : 'gap-5 p-5'} bg-[#00ff88]/5 rounded-xl border border-[#00ff88]/10 hover:bg-[#00ff88]/10 hover:border-[#00ff88]/30 transition-all duration-200`}>
+              <div className={`flex-shrink-0 ${isModal ? 'w-10 h-10' : 'w-12 h-12'} rounded-full bg-[#00ff88]/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors`}>
+                <Shield className={`${isModal ? 'h-5 w-5' : 'h-6 w-6'} text-[#00ff88]`} />
               </div>
-              <div className="flex-1 min-w-0 flex items-center justify-between gap-6">
-                <span className="text-gray-200 text-base md:text-lg">
+              <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                <span className={`text-gray-200 ${isModal ? 'text-sm' : 'text-base md:text-lg'}`}>
                   Avoid just 1 bad 15% loss
                 </span>
-                <span className="text-2xl md:text-3xl font-bold text-[#00ff88] font-mono whitespace-nowrap">
+                <span className={`${isModal ? 'text-xl' : 'text-2xl md:text-3xl'} font-bold text-[#00ff88] font-mono whitespace-nowrap`}>
                   +${lossAvoidedSavings.toLocaleString()}
                 </span>
               </div>
             </div>
 
             {/* Better Entries Card */}
-            <div className="group flex items-center gap-5 p-5 bg-[#00ff88]/5 rounded-xl border border-[#00ff88]/10 hover:bg-[#00ff88]/10 hover:border-[#00ff88]/30 transition-all duration-200">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#00ff88]/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors">
-                <Target className="h-6 w-6 text-[#00ff88]" />
+            <div className={`group flex items-center ${isModal ? 'gap-3 p-4' : 'gap-5 p-5'} bg-[#00ff88]/5 rounded-xl border border-[#00ff88]/10 hover:bg-[#00ff88]/10 hover:border-[#00ff88]/30 transition-all duration-200`}>
+              <div className={`flex-shrink-0 ${isModal ? 'w-10 h-10' : 'w-12 h-12'} rounded-full bg-[#00ff88]/10 flex items-center justify-center group-hover:bg-[#00ff88]/20 transition-colors`}>
+                <Target className={`${isModal ? 'h-5 w-5' : 'h-6 w-6'} text-[#00ff88]`} />
               </div>
-              <div className="flex-1 min-w-0 flex items-center justify-between gap-6">
-                <span className="text-gray-200 text-base md:text-lg">
+              <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                <span className={`text-gray-200 ${isModal ? 'text-sm' : 'text-base md:text-lg'}`}>
                   Improve entry timing by 3%
                 </span>
-                <span className="text-2xl md:text-3xl font-bold text-[#00ff88] font-mono whitespace-nowrap">
+                <span className={`${isModal ? 'text-xl' : 'text-2xl md:text-3xl'} font-bold text-[#00ff88] font-mono whitespace-nowrap`}>
                   +${betterEntries.toLocaleString()}
                 </span>
               </div>
@@ -119,8 +119,8 @@ export function ROICalculator({ isModal = false }: { isModal?: boolean }) {
         </div>
 
         {/* Results Section - Enhanced visual hierarchy */}
-        <div className="bg-[#0B1E32]/60 rounded-2xl p-8 mb-8">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+        <div className={`bg-[#0B1E32]/60 rounded-2xl ${isModal ? 'p-5 mb-5' : 'p-8 mb-8'}`}>
+          <div className={`grid md:grid-cols-3 ${isModal ? 'gap-6 mb-6' : 'gap-8 mb-8'}`}>
 
             {/* Total Value */}
             <div className="text-center space-y-3">
