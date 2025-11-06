@@ -4,7 +4,7 @@ import Link from "next/link"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
-import { ROICalculator } from "@/components/roi-calculator"
+import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { SectionDivider } from "@/components/section-divider"
 import { PerformanceDashboard } from "@/components/performance-dashboard"
 import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
@@ -289,7 +289,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
-                  <span>Confidence scores (blurred)</span>
+                  <span>Confidence scores</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
@@ -370,9 +370,16 @@ export default function Home() {
                 </li>
               </ul>
 
-              <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
-                Upgrade to Pro
-              </Link>
+              <div className="space-y-3">
+                <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
+                  Upgrade to Pro
+                </Link>
+                <ROICalculatorModal
+                  triggerText="See Value Calculator"
+                  triggerClassName="block w-full px-6 py-3 bg-[#1a3a52] text-white font-semibold rounded-lg hover:bg-[#244a62] transition-colors border border-[#00ff88]/20 text-center"
+                  showIcon={true}
+                />
+              </div>
               <p className="text-xs text-center text-gray-300">
                 Cancel anytime • 60-day money-back guarantee
               </p>
@@ -380,11 +387,6 @@ export default function Home() {
           </div>
 
         </div>
-      </section>
-
-      {/* ROI Calculator - Moved after pricing for better flow */}
-      <section className="container mx-auto px-4 py-12">
-        <ROICalculator />
       </section>
 
       <SectionDivider />
@@ -434,6 +436,11 @@ export default function Home() {
                 >
                   Email Us
                 </a>
+                <ROICalculatorModal
+                  triggerText="Value Calculator"
+                  triggerClassName="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors text-left"
+                  showIcon={false}
+                />
               </div>
             </div>
 
