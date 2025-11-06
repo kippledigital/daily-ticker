@@ -3,6 +3,7 @@ import { runDailyAutomation } from '@/lib/automation/orchestrator';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for cron jobs
 export const maxDuration = 300; // 5 minutes max (Vercel Pro allows up to 5 min)
+export const dynamic = 'force-dynamic'; // Prevent static rendering
 
 /**
  * Daily Brief Automation Cron Endpoint
