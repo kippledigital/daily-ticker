@@ -31,11 +31,11 @@ export function ROICalculatorModal({
       {/* Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative w-full max-w-3xl bg-[#0B1E32] border border-[#1a3a52] rounded-2xl shadow-2xl my-auto"
+            className="relative w-full max-w-3xl bg-[#0B1E32] border border-[#1a3a52] rounded-2xl shadow-2xl my-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}

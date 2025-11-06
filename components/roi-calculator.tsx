@@ -123,21 +123,21 @@ export function ROICalculator({ isModal = false }: { isModal?: boolean }) {
           <div className={`grid md:grid-cols-3 ${isModal ? 'gap-6 mb-6' : 'gap-8 mb-8'}`}>
 
             {/* Total Value */}
-            <div className="text-center space-y-3">
+            <div className={`text-center ${isModal ? 'space-y-1' : 'space-y-3'}`}>
               <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Total Annual Value
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-white font-mono">
+              <div className={`${isModal ? 'text-2xl' : 'text-3xl md:text-4xl'} font-bold text-white font-mono`}>
                 ${totalValue.toLocaleString()}
               </div>
             </div>
 
             {/* Premium Cost */}
-            <div className="text-center space-y-3">
+            <div className={`text-center ${isModal ? 'space-y-1' : 'space-y-3'}`}>
               <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Premium Cost
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-white font-mono">
+              <div className={`${isModal ? 'text-2xl' : 'text-3xl md:text-4xl'} font-bold text-white font-mono`}>
                 ${premiumCost}
               </div>
               <div className="text-sm text-gray-400 font-medium">
@@ -146,24 +146,24 @@ export function ROICalculator({ isModal = false }: { isModal?: boolean }) {
             </div>
 
             {/* ROI - Most prominent */}
-            <div className="text-center space-y-3 md:col-span-1 md:border-l-2 md:border-[#00ff88]/20">
+            <div className={`text-center ${isModal ? 'space-y-1' : 'space-y-3'} md:col-span-1 md:border-l-2 md:border-[#00ff88]/20`}>
               <div className="text-xs font-bold text-[#00ff88]/80 uppercase tracking-wider">
                 Your ROI
               </div>
-              <div className="text-5xl md:text-6xl font-bold text-[#00ff88] font-mono leading-none">
+              <div className={`${isModal ? 'text-4xl' : 'text-5xl md:text-6xl'} font-bold text-[#00ff88] font-mono leading-none`}>
                 {roi.toLocaleString()}%
               </div>
             </div>
           </div>
 
           {/* CTA Button */}
-          <div className="text-center space-y-4">
+          <div className={`text-center ${isModal ? 'space-y-2' : 'space-y-4'}`}>
             <a
               href="/premium"
-              className="inline-flex items-center gap-3 px-10 py-5 bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#00ff88]/30 hover:shadow-xl hover:shadow-[#00ff88]/50 hover:scale-[1.02] text-lg md:text-xl"
+              className={`inline-flex items-center gap-3 ${isModal ? 'px-6 py-3 text-base' : 'px-10 py-5 text-lg md:text-xl'} bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#00ff88]/30 hover:shadow-xl hover:shadow-[#00ff88]/50 hover:scale-[1.02]`}
             >
               Upgrade to Pro
-              <span className="text-2xl leading-none">→</span>
+              <span className={`${isModal ? 'text-xl' : 'text-2xl'} leading-none`}>→</span>
             </a>
             <p className="text-sm text-gray-400 font-medium">
               $96/year or $10/month · Cancel anytime
