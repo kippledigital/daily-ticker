@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
     const html_content_free = data.html_content_free || data.htmlContent;
     const html_content_premium = data.html_content_premium || data.htmlContent;
 
-    // Validate required fields
+    // Validate required fields (check the fallback variables, not the original data)
     if (!data.date || !subject_free || !subject_premium || !html_content_free || !html_content_premium || !data.stocks) {
       return NextResponse.json(
-        { error: 'Missing required fields: date, subject_free, subject_premium, html_content_free, html_content_premium, stocks' },
+        { error: 'Missing required fields: date, subject, htmlContent, stocks' },
         { status: 400 }
       );
     }
