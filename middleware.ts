@@ -9,6 +9,8 @@ export async function middleware(request: NextRequest) {
   await supabase.auth.getSession()
 
   // Optional: Protect specific routes
+  // TEMPORARILY DISABLED - Archive is public until Supabase Auth is configured
+  /*
   const protectedRoutes = ['/archive']
   const isProtectedRoute = protectedRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
@@ -26,6 +28,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
   }
+  */
 
   return response
 }
