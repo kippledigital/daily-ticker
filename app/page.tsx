@@ -14,7 +14,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: "Daily Ticker - Market Insights That Make Sense",
-    description: "Get up to 3 actionable stock picks daily — FREE. Premium tier launching Q1 2026 with confidence scores, stop-loss levels, and profit targets.",
+    description: "Get up to 3 actionable stock picks daily — FREE. Upgrade to Premium for confidence scores, stop-loss levels, and profit targets to maximize your trades.",
     publisher: {
       "@type": "Organization",
       name: "Daily Ticker",
@@ -80,7 +80,7 @@ export default function Home() {
               Get up to 3 actionable stock picks daily — FREE
             </p>
             <p className="text-base md:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Premium tier launching Q1 2026 with confidence scores, stop-loss levels, and profit targets to maximize your trades.
+              Upgrade to Premium for confidence scores, stop-loss levels, and profit targets that give you an edge on every trade.
             </p>
           </div>
 
@@ -318,14 +318,7 @@ export default function Home() {
 
             {/* Premium Tier - UPDATED per PM spec */}
             <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl p-8 space-y-6 relative">
-              {/* Launching Soon Badge */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="inline-block px-4 py-1 bg-gradient-to-r from-[#00ff88] to-[#00dd77] text-[#0B1E32] text-sm font-bold rounded-full shadow-lg">
-                  Launching Q1 2026
-                </span>
-              </div>
-
-              <div className="pt-4">
+              <div>
                 <div className="inline-block px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-semibold mb-3 border border-yellow-500/30">
                   Early Bird: 50% Off First Year
                 </div>
@@ -387,10 +380,10 @@ export default function Home() {
               </ul>
 
               <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
-                Join Premium Waitlist
+                Upgrade to Premium
               </Link>
               <p className="text-xs text-center text-gray-300">
-                Be first to know when premium launches • Lock in 50% off
+                50% off early bird pricing • Cancel anytime
               </p>
             </div>
           </div>

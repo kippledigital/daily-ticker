@@ -159,14 +159,14 @@ export function ROICalculator() {
           {/* CTA Button */}
           <div className="text-center space-y-4">
             <a
-              href="#pricing"
+              href="/premium"
               className="inline-flex items-center gap-3 px-10 py-5 bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#00ff88]/30 hover:shadow-xl hover:shadow-[#00ff88]/50 hover:scale-[1.02] text-lg md:text-xl"
             >
-              Join Waitlist - 50% Off First Year
+              Upgrade to Premium - 50% Off
               <span className="text-2xl leading-none">→</span>
             </a>
             <p className="text-sm text-gray-400 font-medium">
-              Early subscribers get 50% off ($48 first year, then $96/year)
+              Early bird pricing: $48/year (50% off regular $96/year)
             </p>
           </div>
         </div>
