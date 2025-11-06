@@ -370,17 +370,17 @@ export default function Home() {
                 </li>
               </ul>
 
-              <div className="space-y-3">
-                <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
-                  Upgrade to Pro
-                </Link>
-                <ROICalculatorModal
-                  triggerText="See Value Calculator"
-                  triggerClassName="block w-full px-6 py-3 bg-[#1a3a52] text-white font-semibold rounded-lg hover:bg-[#244a62] transition-colors border border-[#00ff88]/20 text-center"
-                  showIcon={true}
-                />
-              </div>
-              <p className="text-xs text-center text-gray-300">
+              <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
+                Upgrade to Pro
+              </Link>
+
+              <ROICalculatorModal
+                triggerText="See Value Calculator"
+                triggerClassName="flex items-center justify-center gap-2 w-full text-sm text-gray-300 hover:text-[#00ff88] transition-colors mt-3"
+                showIcon={true}
+              />
+
+              <p className="text-xs text-center text-gray-300 mt-4">
                 Cancel anytime • 60-day money-back guarantee
               </p>
             </div>

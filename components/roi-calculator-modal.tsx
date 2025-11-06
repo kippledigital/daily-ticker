@@ -30,8 +30,14 @@ export function ROICalculatorModal({
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#0B1E32] border border-[#1a3a52] rounded-2xl shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-3xl h-[85vh] bg-[#0B1E32] border border-[#1a3a52] rounded-2xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Close Button */}
             <button
               onClick={() => setIsOpen(false)}
@@ -41,8 +47,8 @@ export function ROICalculatorModal({
               <X className="h-5 w-5" />
             </button>
 
-            {/* Calculator Content */}
-            <div className="p-6 md:p-8">
+            {/* Calculator Content - Scrollable */}
+            <div className="h-full overflow-y-auto p-6 md:p-8">
               <ROICalculator />
             </div>
           </div>
