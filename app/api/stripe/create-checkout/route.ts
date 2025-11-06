@@ -21,13 +21,6 @@ export async function POST(request: NextRequest) {
     // Use session email or provided email
     const customerEmail = session?.user?.email || email
 
-    if (!customerEmail) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      )
-    }
-
     // Get the appropriate price ID
     const priceId = priceType === 'earlyBird'
       ? STRIPE_PRICES.earlyBird
@@ -40,29 +33,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if subscriber already exists
-    const { data: existingSubscriber } = await supabase
-      .from('subscribers')
-      .select('email, tier, stripe_customer_id')
-      .eq('email', customerEmail)
-      .single()
-
-    // Create or retrieve Stripe customer
-    let customerId = existingSubscriber?.stripe_customer_id
-
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: customerEmail,
-        metadata: {
-          supabase_email: customerEmail,
-        },
-      })
-      customerId = customer.id
-    }
-
-    // Create Checkout Session
-    const session_stripe = await stripe.checkout.sessions.create({
-      customer: customerId,
+    // Prepare checkout session config
+    const sessionConfig: any = {
       line_items: [
         {
           price: priceId,
@@ -71,23 +43,62 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'subscription',
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/premium?canceled=true`,
-      subscription_data: {
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/#pricing`,
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto',
+    }
+
+    // If we have an email, try to use existing customer or create new one
+    if (customerEmail) {
+      // Check if subscriber already exists
+      const { data: existingSubscriber } = await supabase
+        .from('subscribers')
+        .select('email, tier, stripe_customer_id')
+        .eq('email', customerEmail)
+        .single()
+
+      // Create or retrieve Stripe customer
+      let customerId = existingSubscriber?.stripe_customer_id
+
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: customerEmail,
+          metadata: {
+            supabase_email: customerEmail,
+          },
+        })
+        customerId = customer.id
+      }
+
+      sessionConfig.customer = customerId
+      sessionConfig.customer_update = {
+        address: 'auto',
+      }
+      sessionConfig.subscription_data = {
         metadata: {
           supabase_email: customerEmail,
           price_type: priceType,
         },
-      },
-      metadata: {
+      }
+      sessionConfig.metadata = {
         supabase_email: customerEmail,
         price_type: priceType,
-      },
-      allow_promotion_codes: true,
-      billing_address_collection: 'auto',
-      customer_update: {
-        address: 'auto',
-      },
-    })
+      }
+    } else {
+      // No email - let Stripe collect it during checkout
+      sessionConfig.customer_email = undefined // Stripe will prompt for email
+      sessionConfig.subscription_data = {
+        metadata: {
+          price_type: priceType,
+        },
+      }
+      sessionConfig.metadata = {
+        price_type: priceType,
+      }
+    }
+
+    // Create Checkout Session
+    const session_stripe = await stripe.checkout.sessions.create(sessionConfig)
 
     return NextResponse.json({
       success: true,
