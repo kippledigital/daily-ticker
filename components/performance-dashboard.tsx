@@ -230,7 +230,7 @@ export function PerformanceDashboard() {
               {picks.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-400">
-                    No {filter !== 'all' ? filter : ''} picks found
+                    No {filter !== 'closed' ? filter : ''} picks found
                   </td>
                 </tr>
               ) : (
