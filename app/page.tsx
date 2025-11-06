@@ -1,10 +1,10 @@
 "use client"
 
-import Link from "next/link"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
 import { ROICalculatorModal } from "@/components/roi-calculator-modal"
+import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
 import { PerformanceDashboard } from "@/components/performance-dashboard"
 import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
@@ -14,7 +14,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: "Daily Ticker - Market Insights That Make Sense",
-    description: "Get up to 3 actionable stock picks daily — FREE. Upgrade to Premium for confidence scores, stop-loss levels, and profit targets to maximize your trades.",
+    description: "Get up to 3 actionable stock picks daily — FREE. Upgrade to Pro for confidence scores, stop-loss levels, and profit targets to maximize your trades.",
     publisher: {
       "@type": "Organization",
       name: "Daily Ticker",
@@ -53,6 +53,9 @@ export default function Home() {
             <a href="/archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
               Archive
             </a>
+            <CheckoutButton className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] font-bold text-sm rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/20 hover:shadow-[#00ff88]/40">
+              Go Pro
+            </CheckoutButton>
           </nav>
         </div>
       </header>
@@ -370,9 +373,9 @@ export default function Home() {
                 </li>
               </ul>
 
-              <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
+              <CheckoutButton className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
                 Upgrade to Pro
-              </Link>
+              </CheckoutButton>
 
               <ROICalculatorModal
                 triggerText="See Value Calculator"
