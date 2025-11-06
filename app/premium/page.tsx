@@ -64,19 +64,19 @@ export default function PremiumPage() {
             <Sparkles className="h-8 w-8 text-[#00ff88]" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Upgrade to Premium
+            Upgrade to Pro
           </h1>
           <p className="text-xl text-gray-300 mb-2">
-            Get the complete trading toolkit for <strong className="text-white">$48/year</strong>
+            Get the complete trading toolkit for <strong className="text-white">$96/year</strong>
           </p>
           <p className="text-sm text-gray-400">
-            Early bird pricing — 50% off regular $96/year
+            or $10/month · billed monthly
           </p>
         </div>
 
         {/* Benefits */}
         <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#1a3a52] rounded-xl p-8 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">Premium includes:</h2>
+          <h2 className="text-xl font-bold text-white mb-6">Pro includes:</h2>
           <ul className="space-y-4">
             {[
               { title: 'AI Confidence Scores', desc: '0-100 rating for each pick' },
@@ -101,14 +101,11 @@ export default function PremiumPage() {
         {/* Pricing Card */}
         <div className="bg-[#1a3a52]/30 border-2 border-[#00ff88]/40 rounded-xl p-8 mb-8">
           <div className="text-center mb-6">
-            <div className="inline-block px-3 py-1 rounded-full bg-[#00ff88]/20 text-[#00ff88] text-xs font-semibold mb-3 border border-[#00ff88]/30">
-              Early Bird: 50% Off
-            </div>
             <div className="mb-2">
-              <span className="text-5xl font-bold text-white">$48</span>
+              <span className="text-5xl font-bold text-white">$96</span>
               <span className="text-xl text-gray-300">/year</span>
             </div>
-            <p className="text-sm text-gray-400 line-through">Regular price: $96/year</p>
+            <p className="text-sm text-gray-400">or $10/month · billed monthly</p>
           </div>
 
           {error && (

@@ -258,9 +258,6 @@ export default function Home() {
             {/* Free Tier */}
             <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-2xl p-8 space-y-6">
               <div>
-                <div className="inline-block px-3 py-1 rounded-full bg-[#1a3a52] text-gray-300 text-xs font-semibold mb-3">
-                  Available Now
-                </div>
                 <h4 className="text-2xl font-bold text-white mb-2">Free</h4>
                 <p className="text-gray-300">See what&apos;s moving</p>
                 <div className="mt-4">
@@ -316,14 +313,14 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Premium Tier - UPDATED per PM spec */}
+            {/* Pro Tier - UPDATED per PM spec */}
             <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl p-8 space-y-6 relative">
               <div>
-                <h4 className="text-2xl font-bold text-white mb-2">Premium</h4>
+                <h4 className="text-2xl font-bold text-white mb-2">Pro</h4>
                 <p className="text-gray-300">Trade with precision</p>
                 <div className="mt-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-white">$48</span>
+                    <span className="text-4xl font-bold text-white">$96</span>
                     <span className="text-gray-300">/year</span>
                   </div>
                   <div className="mt-2 space-y-1">
@@ -374,7 +371,7 @@ export default function Home() {
               </ul>
 
               <Link href="/premium" className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
-                Upgrade to Premium
+                Upgrade to Pro
               </Link>
               <p className="text-xs text-center text-gray-300">
                 Cancel anytime • 60-day money-back guarantee

@@ -5,7 +5,7 @@ interface BlurredPremiumProps {
   children: React.ReactNode
   tier: 'free' | 'premium'
   feature?: string // e.g., "Confidence Score", "Stop Loss", "Profit Target"
-  showCTA?: boolean // Show "Upgrade to Premium" button
+  showCTA?: boolean // Show "Upgrade to Pro" button
 }
 
 export function BlurredPremium({
@@ -46,7 +46,7 @@ export function BlurredPremium({
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-sm font-medium rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
           >
             <Lock className="h-4 w-4" />
-            Upgrade to Premium
+            Upgrade to Pro
           </Link>
         </div>
       )}
@@ -86,7 +86,7 @@ export function BlurredPremiumSection({
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-sm font-medium rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
           >
             <Lock className="h-4 w-4" />
-            Upgrade to Premium
+            Upgrade to Pro
           </Link>
         </div>
       </div>

@@ -162,11 +162,11 @@ export function ROICalculator() {
               href="/premium"
               className="inline-flex items-center gap-3 px-10 py-5 bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#00ff88]/30 hover:shadow-xl hover:shadow-[#00ff88]/50 hover:scale-[1.02] text-lg md:text-xl"
             >
-              Upgrade to Premium - 50% Off
+              Upgrade to Pro
               <span className="text-2xl leading-none">→</span>
             </a>
             <p className="text-sm text-gray-400 font-medium">
-              Early bird pricing: $48/year (50% off regular $96/year)
+              $96/year or $10/month · Cancel anytime
             </p>
           </div>
         </div>
