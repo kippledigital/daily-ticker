@@ -64,13 +64,13 @@ export async function sendErrorNotification(error: {
         <li style="margin-bottom: 8px;">Check Vercel logs for detailed error trace</li>
         <li style="margin-bottom: 8px;">Verify all API keys are valid (Alpha Vantage, Finnhub, Polygon, OpenAI)</li>
         <li style="margin-bottom: 8px;">Check API rate limits and quotas</li>
-        <li style="margin-bottom: 8px;">Manually trigger automation: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">curl https://daily-ticker.vercel.app/api/cron/daily-brief</code></li>
+        <li style="margin-bottom: 8px;">Manually trigger automation: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">curl https://www.dailyticker.co/api/cron/daily-brief</code></li>
       </ol>
     </div>
 
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 13px;">
       <p style="margin: 0;">Daily Ticker Automation System</p>
-      <p style="margin: 4px 0 0 0;"><a href="https://daily-ticker.vercel.app" style="color: #00ff88; text-decoration: none;">View Dashboard</a> • <a href="https://vercel.com/nikkikipple-gmailcoms-projects/daily-ticker" style="color: #00ff88; text-decoration: none;">Vercel Logs</a></p>
+      <p style="margin: 4px 0 0 0;"><a href="https://www.dailyticker.co" style="color: #00ff88; text-decoration: none;">View Dashboard</a> • <a href="https://vercel.com/nikkikipple-gmailcoms-projects/daily-ticker" style="color: #00ff88; text-decoration: none;">Vercel Logs</a></p>
     </div>
   </div>
 </body>
