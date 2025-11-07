@@ -3,10 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Initialize Supabase client
+// Initialize Supabase client with SERVICE ROLE KEY for server-side operations
+// This bypasses RLS and allows reading from subscribers table
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export interface SendEmailParams {
