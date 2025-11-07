@@ -33,6 +33,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get site URL from environment or fallback to dailyticker.co
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dailyticker.co'
+
+    console.log('[CHECKOUT] Site URL:', siteUrl)
+    console.log('[CHECKOUT] Env var:', process.env.NEXT_PUBLIC_SITE_URL)
+
     // Prepare checkout session config
     const sessionConfig: any = {
       line_items: [
@@ -42,8 +48,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/#pricing`,
+      success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/#pricing`,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
     }
