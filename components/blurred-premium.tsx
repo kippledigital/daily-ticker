@@ -1,4 +1,3 @@
-import { Lock } from 'lucide-react'
 import Link from 'next/link'
 
 interface BlurredPremiumProps {
@@ -19,46 +18,26 @@ export function BlurredPremium({
     return <>{children}</>
   }
 
-  // Free users see blurred content with lock overlay
+  // Free users see nothing (badge already indicates Pro feature)
   return (
-    <div className="relative inline-block group">
-      {/* Blurred content */}
-      <div className="blur-sm select-none pointer-events-none">
-        {children}
-      </div>
-
-      {/* Lock icon overlay */}
-      <Lock className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 text-yellow-400 z-10" />
-
-      {/* Hover tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20">
-        <div className="bg-[#1a3a52] border border-yellow-600/30 px-3 py-2 rounded text-xs text-gray-200 whitespace-nowrap">
-          <Lock className="inline h-3 w-3 mr-1" />
-          Premium: {feature}
-        </div>
-      </div>
-
-      {/* Optional CTA button below blurred content */}
+    <>
       {showCTA && (
-        <div className="mt-2">
-          <Link
-            href="/#pricing"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-sm font-medium rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
-          >
-            <Lock className="h-4 w-4" />
-            Upgrade to Pro
-          </Link>
-        </div>
+        <Link
+          href="/#pricing"
+          className="text-[#00ff88] hover:text-[#00dd77] transition-colors underline text-sm"
+        >
+          Upgrade
+        </Link>
       )}
-    </div>
+    </>
   )
 }
 
-// Convenience wrapper for blurring entire sections
+// Convenience wrapper for premium sections
 export function BlurredPremiumSection({
   children,
   tier,
-  title = 'Premium Feature'
+  title = 'Pro Feature'
 }: {
   children: React.ReactNode
   tier: 'free' | 'premium'
@@ -69,27 +48,14 @@ export function BlurredPremiumSection({
   }
 
   return (
-    <div className="relative">
-      {/* Blurred section */}
-      <div className="blur-md select-none pointer-events-none opacity-60">
-        {children}
-      </div>
-
-      {/* Centered overlay */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-[#1a3a52]/90 border border-yellow-600/30 px-6 py-4 rounded-lg text-center">
-          <Lock className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-          <p className="text-gray-200 font-medium mb-1">{title}</p>
-          <p className="text-gray-400 text-sm mb-3">Unlock premium data to see this</p>
-          <Link
-            href="/#pricing"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-sm font-medium rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
-          >
-            <Lock className="h-4 w-4" />
-            Upgrade to Pro
-          </Link>
-        </div>
-      </div>
+    <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-4 text-center">
+      <p className="text-sm text-gray-400 mb-2">{title}</p>
+      <Link
+        href="/#pricing"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] text-sm font-semibold rounded-lg transition-colors"
+      >
+        Upgrade to Pro
+      </Link>
     </div>
   )
 }

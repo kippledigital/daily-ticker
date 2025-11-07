@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
@@ -89,8 +90,14 @@ export default function Home() {
       <section id="performance" className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
-              <span>📊</span> Track Record
+            <div className="flex items-center justify-center mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
+                </span>
+                Live Performance
+              </div>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Our Picks, Your Proof</h3>
             <p className="text-gray-300 text-lg max-w-2xl mx-auto">
@@ -353,8 +360,10 @@ export default function Home() {
                   </div>
                   {isYearly && (
                     <div className="mt-2">
-                      <div className="text-sm text-gray-300">
-                        $8/month billed annually
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#00ff88]/10 border border-[#00ff88]/30 rounded-md">
+                        <span className="text-xs font-semibold text-[#00ff88]">
+                          Save $24/year
+                        </span>
                       </div>
                     </div>
                   )}
@@ -559,70 +568,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[#1a3a52] bg-[#0B1E32] mt-16">
-        <div className="container mx-auto px-4 py-12">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-[#00ff88]" />
-                <span className="font-bold text-white font-mono">Daily Ticker</span>
-              </div>
-              <p className="text-sm text-gray-200 leading-relaxed">
-                Market insights that make sense. Delivered daily at 8 AM EST.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <h5 className="font-semibold text-white">Connect</h5>
-              <div className="space-y-2">
-                <a
-                  href="https://twitter.com/GetDailyTicker"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors"
-                >
-                  Twitter
-                </a>
-                <a
-                  href="mailto:brief@dailyticker.co"
-                  className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors"
-                >
-                  Email Us
-                </a>
-                <ROICalculatorModal
-                  triggerText="Value Calculator"
-                  triggerClassName="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors text-left"
-                  showIcon={false}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h5 className="font-semibold text-white">Legal</h5>
-              <div className="space-y-2">
-                <a href="/privacy" className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors">
-                  Privacy Policy
-                </a>
-                <a href="/terms" className="block text-sm text-gray-200 hover:text-[#00ff88] transition-colors">
-                  Terms of Service
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-[#1a3a52]">
-            <p className="text-xs text-gray-300 leading-relaxed">
-              <strong>Disclaimer:</strong> Daily Ticker is for educational purposes only and does not provide financial
-              advice. All content is for informational purposes. Always consult with a qualified financial advisor
-              before making investment decisions.
-            </p>
-            <p className="text-xs text-gray-300 mt-4">
-              © {new Date().getFullYear()} Daily Ticker. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

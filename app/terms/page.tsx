@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 
 export const metadata = {
   title: "Terms of Service — Daily Ticker",
@@ -146,6 +147,8 @@ export default function TermsPage() {
           </div>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

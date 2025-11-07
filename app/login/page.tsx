@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Mail, ArrowLeft, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase-auth'
 import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -163,6 +164,8 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

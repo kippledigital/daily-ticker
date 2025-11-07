@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Mail, BookOpen, Loader2 } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams()
@@ -153,6 +154,8 @@ export default function CheckoutSuccessPage() {
           </p>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

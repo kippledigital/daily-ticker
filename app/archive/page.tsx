@@ -6,6 +6,7 @@ import { Calendar, Search, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 interface BriefMetadata {
   date: string
@@ -265,6 +266,8 @@ export default function ArchivePage() {
           </div>
         )}
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Mail } from 'lucide-react';
 import { SiteHeader } from '@/components/site-header';
+import { SiteFooter } from '@/components/site-footer';
 
 function UnsubscribeForm() {
   const searchParams = useSearchParams();
@@ -146,6 +147,8 @@ function UnsubscribeForm() {
         )}
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

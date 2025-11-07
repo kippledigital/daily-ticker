@@ -1,9 +1,11 @@
 "use client"
 
-import { Mail, Clock, ArrowRight, TrendingUp, BarChart3, Briefcase } from "lucide-react"
+import { useState } from "react"
+import { Mail, Clock, ArrowRight, TrendingUp, BarChart3, Briefcase, Lock } from "lucide-react"
 import Link from "next/link"
 
 export function EmailPreview() {
+  const [viewMode, setViewMode] = useState<'pro' | 'free'>('pro')
   const today = new Date()
   const formattedDate = today.toLocaleDateString('en-US', {
     month: 'short',
@@ -12,6 +14,29 @@ export function EmailPreview() {
 
   return (
     <div className="w-full max-w-7xl mx-auto">
+      {/* View Toggle */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        <button
+          onClick={() => setViewMode('free')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            viewMode === 'free'
+              ? 'bg-[#1a3a52] text-white border-2 border-[#00ff88]'
+              : 'bg-[#1a3a52]/30 text-gray-400 border-2 border-transparent hover:text-white'
+          }`}
+        >
+          Free View
+        </button>
+        <button
+          onClick={() => setViewMode('pro')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            viewMode === 'pro'
+              ? 'bg-[#00ff88] text-[#0B1E32] border-2 border-[#00ff88]'
+              : 'bg-[#1a3a52]/30 text-gray-400 border-2 border-transparent hover:text-white'
+          }`}
+        >
+          Pro View
+        </button>
+      </div>
       <div className="grid lg:grid-cols-[380px,1fr] gap-6">
         {/* Left: Inbox Preview */}
         <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden">
@@ -139,15 +164,22 @@ export function EmailPreview() {
                 <div>
                   <h3 className="text-xl font-mono font-bold text-white">NVDA</h3>
                   <p className="text-sm text-gray-400">NVIDIA Corporation</p>
-                  {/* Premium: Confidence Score */}
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
-                      <span className="text-xs font-mono font-bold text-[#00ff88]">87% Confidence</span>
+                  {/* Pro: Confidence Score */}
+                  {viewMode === 'pro' ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
+                        <span className="text-xs font-mono font-bold text-[#00ff88]">87% Confidence</span>
+                      </div>
+                      <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
+                        <span className="text-xs font-mono font-bold text-blue-400">Allocate 8%</span>
+                      </div>
                     </div>
-                    <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
-                      <span className="text-xs font-mono font-bold text-blue-400">Allocate 8%</span>
+                  ) : (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                      <Lock className="h-3 w-3" />
+                      <span>Pro feature</span>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-mono font-bold text-white">$521.45</p>
@@ -172,21 +204,32 @@ export function EmailPreview() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#2a1a1f] border border-[#FF3366]/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Stop Loss</p>
-                    <p className="text-lg font-mono font-bold text-[#FF3366]">$480.00</p>
-                  </div>
-                  <div className="bg-[#0a2a1a] border border-[#00ff88]/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
-                    <p className="text-lg font-mono font-bold text-[#00ff88]">$604.00</p>
-                  </div>
-                </div>
+                {viewMode === 'pro' ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-[#2a1a1f] border border-[#FF3366]/20 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Stop Loss</p>
+                        <p className="text-lg font-mono font-bold text-[#FF3366]">$480.00</p>
+                      </div>
+                      <div className="bg-[#0a2a1a] border border-[#00ff88]/20 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
+                        <p className="text-lg font-mono font-bold text-[#00ff88]">$604.00</p>
+                      </div>
+                    </div>
 
-                <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
-                  <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
-                  <p className="text-lg font-mono font-bold text-white">$510-$515</p>
-                </div>
+                    <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
+                      <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
+                      <p className="text-lg font-mono font-bold text-white">$510-$515</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Lock className="h-4 w-4 text-gray-400" />
+                      <p className="text-sm text-gray-400">Pro feature: Stop-loss & profit targets</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
@@ -204,15 +247,22 @@ export function EmailPreview() {
                 <div>
                   <h3 className="text-xl font-mono font-bold text-white">AMD</h3>
                   <p className="text-sm text-gray-400">Advanced Micro Devices</p>
-                  {/* Premium: Confidence Score */}
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
-                      <span className="text-xs font-mono font-bold text-[#00ff88]">82% Confidence</span>
+                  {/* Pro: Confidence Score */}
+                  {viewMode === 'pro' ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
+                        <span className="text-xs font-mono font-bold text-[#00ff88]">82% Confidence</span>
+                      </div>
+                      <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
+                        <span className="text-xs font-mono font-bold text-blue-400">Allocate 6%</span>
+                      </div>
                     </div>
-                    <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
-                      <span className="text-xs font-mono font-bold text-blue-400">Allocate 6%</span>
+                  ) : (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                      <Lock className="h-3 w-3" />
+                      <span>Pro feature</span>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-mono font-bold text-white">$147.32</p>
@@ -237,21 +287,32 @@ export function EmailPreview() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#2a1a1f] border border-[#FF3366]/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Stop Loss</p>
-                    <p className="text-lg font-mono font-bold text-[#FF3366]">$135.50</p>
-                  </div>
-                  <div className="bg-[#0a2a1a] border border-[#00ff88]/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
-                    <p className="text-lg font-mono font-bold text-[#00ff88]">$171.00</p>
-                  </div>
-                </div>
+                {viewMode === 'pro' ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-[#2a1a1f] border border-[#FF3366]/20 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Stop Loss</p>
+                        <p className="text-lg font-mono font-bold text-[#FF3366]">$135.50</p>
+                      </div>
+                      <div className="bg-[#0a2a1a] border border-[#00ff88]/20 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
+                        <p className="text-lg font-mono font-bold text-[#00ff88]">$171.00</p>
+                      </div>
+                    </div>
 
-                <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
-                  <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
-                  <p className="text-lg font-mono font-bold text-white">$142-$145</p>
-                </div>
+                    <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
+                      <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
+                      <p className="text-lg font-mono font-bold text-white">$142-$145</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Lock className="h-4 w-4 text-gray-400" />
+                      <p className="text-sm text-gray-400">Pro feature: Stop-loss & profit targets</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
@@ -269,15 +330,22 @@ export function EmailPreview() {
                 <div>
                   <h3 className="text-xl font-mono font-bold text-white">MSFT</h3>
                   <p className="text-sm text-gray-400">Microsoft Corporation</p>
-                  {/* Premium: Confidence Score */}
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
-                      <span className="text-xs font-mono font-bold text-[#00ff88]">91% Confidence</span>
+                  {/* Pro: Confidence Score */}
+                  {viewMode === 'pro' ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="px-2 py-1 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded">
+                        <span className="text-xs font-mono font-bold text-[#00ff88]">91% Confidence</span>
+                      </div>
+                      <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
+                        <span className="text-xs font-mono font-bold text-blue-400">Allocate 10%</span>
+                      </div>
                     </div>
-                    <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded">
-                      <span className="text-xs font-mono font-bold text-blue-400">Allocate 10%</span>
+                  ) : (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                      <Lock className="h-3 w-3" />
+                      <span>Pro feature</span>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-mono font-bold text-white">$385.67</p>
@@ -302,21 +370,32 @@ export function EmailPreview() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#2a1a1f] border border-[#FF3366]/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Stop Loss</p>
-                    <p className="text-lg font-mono font-bold text-[#FF3366]">$355.00</p>
-                  </div>
-                  <div className="bg-[#0a2a1a] border border-[#00ff88]/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
-                    <p className="text-lg font-mono font-bold text-[#00ff88]">$447.00</p>
-                  </div>
-                </div>
+                {viewMode === 'pro' ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-[#2a1a1f] border border-[#FF3366]/20 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Stop Loss</p>
+                        <p className="text-lg font-mono font-bold text-[#FF3366]">$355.00</p>
+                      </div>
+                      <div className="bg-[#0a2a1a] border border-[#00ff88]/20 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Profit Target</p>
+                        <p className="text-lg font-mono font-bold text-[#00ff88]">$447.00</p>
+                      </div>
+                    </div>
 
-                <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
-                  <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
-                  <p className="text-lg font-mono font-bold text-white">$375-$380</p>
-                </div>
+                    <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88] rounded-lg p-3">
+                      <p className="text-xs text-[#00ff88] uppercase tracking-wide font-semibold mb-1">💰 Ideal Entry Zone</p>
+                      <p className="text-lg font-mono font-bold text-white">$375-$380</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Lock className="h-4 w-4 text-gray-400" />
+                      <p className="text-sm text-gray-400">Pro feature: Stop-loss & profit targets</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
@@ -328,33 +407,61 @@ export function EmailPreview() {
               </div>
             </div>
 
-            {/* Premium Preview Callout */}
-            <div className="bg-gradient-to-br from-[#00ff88]/5 to-transparent border-2 border-[#00ff88]/20 rounded-lg p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#00ff88]/10 border-2 border-[#00ff88]/30">
-                    <span className="text-2xl">✨</span>
+            {/* Pro Preview Callout */}
+            {viewMode === 'free' && (
+              <div className="bg-gradient-to-br from-[#00ff88]/10 to-transparent border-2 border-[#00ff88]/40 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#00ff88]/20 border-2 border-[#00ff88]/50">
+                      <span className="text-2xl">✨</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-base font-bold text-white mb-2">
+                      See what you&apos;re missing
+                    </h4>
+                    <p className="text-sm text-gray-300 leading-relaxed mb-4">
+                      Switch to <strong className="text-white">Pro View</strong> above to see confidence scores, portfolio allocation %, stop-loss levels, and profit targets that turn analysis into action.
+                    </p>
+                    <a
+                      href="/#pricing"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
+                    >
+                      Upgrade to Pro
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-base font-bold text-white mb-2">
-                    This is what Premium looks like
-                  </h4>
-                  <p className="text-sm text-gray-300 leading-relaxed mb-4">
-                    You just saw a full premium email with confidence scores, portfolio allocation %, stop-loss levels,
-                    and profit targets. Free users get the same picks but <strong className="text-white">without the trading toolkit</strong> that
-                    turns analysis into action.
-                  </p>
-                  <a
-                    href="/#pricing"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
-                  >
-                    Upgrade to Pro
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
+              </div>
+            )}
+            {viewMode === 'pro' && (
+              <div className="bg-gradient-to-br from-[#00ff88]/5 to-transparent border-2 border-[#00ff88]/20 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#00ff88]/10 border-2 border-[#00ff88]/30">
+                      <span className="text-2xl">✨</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-base font-bold text-white mb-2">
+                      This is what Pro looks like
+                    </h4>
+                    <p className="text-sm text-gray-300 leading-relaxed mb-4">
+                      You&apos;re viewing the full Pro email with confidence scores, portfolio allocation %, stop-loss levels,
+                      and profit targets. Free users get the same picks but <strong className="text-white">without the trading toolkit</strong> that
+                      turns analysis into action.
+                    </p>
+                    <a
+                      href="/#pricing"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ff88] text-[#0B1E32] text-sm font-semibold rounded-lg hover:bg-[#00dd77] transition-colors"
+                    >
+                      Upgrade to Pro
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Learning Corner */}
             <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-4">

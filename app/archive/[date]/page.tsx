@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Share2, ArrowLeft } from 'lucide-react'
+import { Calendar, Share2, ArrowLeft, Mail, Sparkles, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BlurredPremium } from '@/components/blurred-premium'
 import { PremiumBadge } from '@/components/premium-badge'
 import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 import { createClient } from '@/lib/supabase-auth'
 import type { BriefData } from '@/app/api/archive/store/route'
 
@@ -256,76 +257,96 @@ export default function BriefPage({ params }: BriefPageProps) {
           </div>
         </div>
 
-        {/* Premium Upgrade CTA */}
-        <div className="mt-12 p-8 bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl text-center">
-          <h3 className="text-2xl font-bold text-white mb-3">
-            Unlock Full Analysis
-          </h3>
-          <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-            Upgrade to Pro to see confidence scores, stop-loss levels, profit targets, and complete position sizing recommendations
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/#pricing">
-              <Button className="bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold px-8">
-                Upgrade to Pro
+        {/* Pro Upgrade CTA */}
+        <div className="mt-16 p-8 md:p-12 bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Sparkles className="h-5 w-5 text-[#00ff88]" />
+              <span className="text-sm font-semibold text-[#00ff88] uppercase tracking-wider">Pro Features</span>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 text-center">
+              Unlock Full Analysis
+            </h3>
+            <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-center">
+              Upgrade to Pro to see confidence scores, stop-loss levels, profit targets, and complete position sizing recommendations
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+              <Link href="/#pricing">
+                <Button className="bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold px-8 py-6 text-lg">
+                  Upgrade to Pro
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
+              <span>Starting at $8/month</span>
+              <span>•</span>
+              <span>60-day guarantee</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Share & Subscribe Section */}
+        <div className="mt-12 grid md:grid-cols-2 gap-6">
+          {/* Share Section */}
+          <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Share2 className="h-5 w-5 text-[#00ff88]" />
+              <h3 className="text-lg font-semibold text-white">Share this brief</h3>
+            </div>
+            <p className="text-sm text-gray-400 mb-4">
+              Help others discover Daily Ticker
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors text-sm"
+              >
+                <Share2 className="h-4 w-4" />
+                Twitter
+              </a>
+              <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors text-sm"
+              >
+                <Share2 className="h-4 w-4" />
+                LinkedIn
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareUrl)
+                  alert('Link copied to clipboard!')
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors text-sm"
+              >
+                <Share2 className="h-4 w-4" />
+                Copy
+              </button>
+            </div>
+          </div>
+
+          {/* Subscribe CTA */}
+          <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Mail className="h-5 w-5 text-[#00ff88]" />
+              <h3 className="text-lg font-semibold text-white">Get daily briefs</h3>
+            </div>
+            <p className="text-sm text-gray-400 mb-4">
+              Receive market insights every morning at 8 AM EST
+            </p>
+            <Link href="/#subscribe">
+              <Button className="w-full bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold">
+                Subscribe Now
               </Button>
             </Link>
-            <p className="text-sm text-gray-400">
-              $10/month or $96/year
-            </p>
           </div>
-        </div>
-
-        {/* Share Section */}
-        <div className="mt-12 pt-8 border-t border-[#1a3a52]">
-          <h3 className="text-lg font-semibold text-white mb-4">Share this brief</h3>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors"
-            >
-              <Share2 className="h-4 w-4" />
-              Share on Twitter
-            </a>
-            <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors"
-            >
-              <Share2 className="h-4 w-4" />
-              Share on LinkedIn
-            </a>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(shareUrl)
-                alert('Link copied to clipboard!')
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a52] hover:bg-[#2a4a62] border border-[#2a4a62] rounded-lg text-white transition-colors"
-            >
-              <Share2 className="h-4 w-4" />
-              Copy Link
-            </button>
-          </div>
-        </div>
-
-        {/* Subscribe CTA */}
-        <div className="mt-12 p-8 bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg text-center">
-          <h3 className="text-2xl font-bold text-white mb-3">
-            Get Daily Briefs Like This
-          </h3>
-          <p className="text-gray-300 mb-6">
-            Subscribe to receive market insights and stock analysis every morning
-          </p>
-          <Link href="/#subscribe">
-            <Button className="bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold px-8">
-              Subscribe Now
-            </Button>
-          </Link>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

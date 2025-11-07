@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 export default function PremiumPage() {
   const [loading, setLoading] = useState(false)
@@ -156,6 +157,8 @@ export default function PremiumPage() {
 
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }
