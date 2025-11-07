@@ -278,7 +278,7 @@ export default function BriefPage({ params }: BriefPageProps) {
               </Button>
             </Link>
             <p className="text-sm text-gray-400">
-              $8/month or $96/year • 60 picks/month
+              $10/month or $96/year
             </p>
           </div>
         </div>
