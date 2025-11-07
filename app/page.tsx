@@ -8,7 +8,7 @@ import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
 import { PerformanceDashboard } from "@/components/performance-dashboard"
-import { Target, Zap, BookOpen } from "lucide-react"
+import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
 
 export default function Home() {
   const structuredData = {
