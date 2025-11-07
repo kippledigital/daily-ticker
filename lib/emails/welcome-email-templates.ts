@@ -88,7 +88,7 @@ export function generateFreeWelcomeEmail(params: WelcomeEmailParams): {
         <p style="font-size:15px; color:#d1d5db; margin:0 0 16px 0; line-height:1.7;">
           Pro subscribers get <strong style="color:#00ff88;">confidence scores</strong>, <strong style="color:#00ff88;">stop-loss levels</strong>, <strong style="color:#00ff88;">profit targets</strong>, and <strong style="color:#00ff88;">portfolio allocation guidance</strong> that turn analysis into action.
         </p>
-        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://daily-ticker.vercel.app'}/premium" style="display:inline-block; background:linear-gradient(135deg, #00ff88 0%, #00dd77 100%); color:#0B1E32; font-weight:700; font-size:15px; padding:14px 28px; border-radius:8px; text-decoration:none; box-shadow:0 4px 12px rgba(0,255,136,0.3); transition:all 0.2s;">
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://daily-ticker.vercel.app'}/#pricing" style="display:inline-block; background:linear-gradient(135deg, #00ff88 0%, #00dd77 100%); color:#0B1E32; font-weight:700; font-size:15px; padding:14px 28px; border-radius:8px; text-decoration:none; box-shadow:0 4px 12px rgba(0,255,136,0.3); transition:all 0.2s;">
           View Pro Pricing →
         </a>
       </div>

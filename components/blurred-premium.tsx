@@ -42,7 +42,7 @@ export function BlurredPremium({
       {showCTA && (
         <div className="mt-2">
           <Link
-            href="/premium"
+            href="/#pricing"
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-sm font-medium rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
           >
             <Lock className="h-4 w-4" />
@@ -82,7 +82,7 @@ export function BlurredPremiumSection({
           <p className="text-gray-200 font-medium mb-1">{title}</p>
           <p className="text-gray-400 text-sm mb-3">Unlock premium data to see this</p>
           <Link
-            href="/premium"
+            href="/#pricing"
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-sm font-medium rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
           >
             <Lock className="h-4 w-4" />

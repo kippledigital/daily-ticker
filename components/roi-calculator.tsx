@@ -159,7 +159,7 @@ export function ROICalculator({ isModal = false }: { isModal?: boolean }) {
           {/* CTA Button */}
           <div className={`text-center ${isModal ? 'space-y-2' : 'space-y-4'}`}>
             <a
-              href="/premium"
+              href="/#pricing"
               className={`inline-flex items-center gap-3 ${isModal ? 'px-6 py-3 text-base' : 'px-10 py-5 text-lg md:text-xl'} bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#00ff88]/30 hover:shadow-xl hover:shadow-[#00ff88]/50 hover:scale-[1.02]`}
             >
               Upgrade to Pro
