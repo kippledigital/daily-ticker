@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { TrendingUp, Mail, ArrowLeft, Loader2 } from 'lucide-react'
+import { Mail, ArrowLeft, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase-auth'
+import { SiteHeader } from '@/components/site-header'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -37,15 +38,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0B1E32] flex flex-col">
-      {/* Header */}
-      <header className="border-b border-[#1a3a52]">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="flex items-center gap-2 w-fit">
-            <TrendingUp className="h-6 w-6 text-[#00ff88]" />
-            <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">

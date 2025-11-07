@@ -9,7 +9,7 @@ import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
 import { PerformanceDashboard } from "@/components/performance-dashboard"
-import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
+import { TrendingUp, Target, Zap, BookOpen, Plus } from "lucide-react"
 
 export default function Home() {
   const [isYearly, setIsYearly] = useState(true) // Default to yearly
@@ -86,7 +86,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* Performance Dashboard - Proof our picks work */}
-      <section className="container mx-auto px-4 py-16">
+      <section id="performance" className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
@@ -332,6 +332,13 @@ export default function Home() {
 
             {/* Pro Tier - UPDATED per PM spec */}
             <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl p-8 space-y-6 relative">
+              {/* Most Popular Badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="px-4 py-1.5 bg-[#00ff88] text-[#0B1E32] text-xs font-bold rounded-full shadow-lg">
+                  Most Popular
+                </span>
+              </div>
+
               <div>
                 <h4 className="text-2xl font-bold text-white mb-2">Pro</h4>
                 <p className="text-gray-300">Trade with precision</p>
@@ -393,6 +400,23 @@ export default function Home() {
                 </li>
               </ul>
 
+              {/* Prominent Guarantee */}
+              <div className="bg-[#00ff88]/10 border border-[#00ff88]/30 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <span className="text-xl">🛡️</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white mb-1">
+                      60-Day Money-Back Guarantee
+                    </p>
+                    <p className="text-xs text-gray-300 leading-relaxed">
+                      Not satisfied? Get a full refund, no questions asked. We&apos;re that confident in our picks.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Payment Option */}
               <CheckoutButton 
                 priceType={isYearly ? 'standard' : 'monthly'}
@@ -408,8 +432,111 @@ export default function Home() {
               />
 
               <p className="text-xs text-center text-gray-300 mt-4">
-                Cancel anytime • 60-day money-back guarantee
+                Cancel anytime
               </p>
+            </div>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-12 pt-8 border-t border-[#1a3a52]">
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <svg className="h-4 w-4 text-[#00ff88]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              <span>SSL Secured</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <svg className="h-4 w-4 text-[#00ff88]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Secure Payment</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <span className="text-[#00ff88]">🛡️</span>
+              <span>60-Day Guarantee</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <span className="text-[#00ff88]">✓</span>
+              <span>Cancel Anytime</span>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="mt-16 max-w-3xl mx-auto">
+            <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
+              Frequently Asked Questions
+            </h3>
+            
+            <div className="space-y-4">
+              <details className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 group">
+                <summary className="cursor-pointer text-white font-semibold text-lg flex items-center justify-between">
+                  <span>What&apos;s the difference between Free and Pro?</span>
+                  <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                </summary>
+                <p className="text-gray-300 mt-4 leading-relaxed">
+                  Both tiers get the same 1-3 daily stock picks with entry prices, sector analysis, and market context. 
+                  Pro adds AI confidence scores, precise entry zones, stop-loss levels, profit targets, portfolio allocation percentages, 
+                  and full risk breakdowns. Think of Free as &quot;what to buy&quot; and Pro as &quot;exactly how to buy it.&quot;
+                </p>
+              </details>
+
+              <details className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 group">
+                <summary className="cursor-pointer text-white font-semibold text-lg flex items-center justify-between">
+                  <span>How do I know if Daily Ticker is worth it?</span>
+                  <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                </summary>
+                <p className="text-gray-300 mt-4 leading-relaxed">
+                  Check out our <a href="#performance" className="text-[#00ff88] hover:underline">Performance Dashboard</a> to see our 
+                  real track record. We track every pick we make, including win rate, average returns, and individual stock performance. 
+                  Plus, with our 60-day money-back guarantee, you can try Pro risk-free and see if it works for you.
+                </p>
+              </details>
+
+              <details className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 group">
+                <summary className="cursor-pointer text-white font-semibold text-lg flex items-center justify-between">
+                  <span>Can I cancel anytime?</span>
+                  <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                </summary>
+                <p className="text-gray-300 mt-4 leading-relaxed">
+                  Yes! You can cancel your Pro subscription at any time. If you cancel, you&apos;ll continue to have access until the 
+                  end of your billing period, then you&apos;ll automatically move to the Free tier. No questions asked, no hassle.
+                </p>
+              </details>
+
+              <details className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 group">
+                <summary className="cursor-pointer text-white font-semibold text-lg flex items-center justify-between">
+                  <span>What if I&apos;m not satisfied?</span>
+                  <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                </summary>
+                <p className="text-gray-300 mt-4 leading-relaxed">
+                  We offer a 60-day money-back guarantee. If you&apos;re not satisfied with Daily Ticker Pro for any reason within 
+                  60 days of your purchase, just email us at <a href="mailto:brief@dailyticker.co" className="text-[#00ff88] hover:underline">brief@dailyticker.co</a> 
+                  and we&apos;ll refund your full payment, no questions asked.
+                </p>
+              </details>
+
+              <details className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 group">
+                <summary className="cursor-pointer text-white font-semibold text-lg flex items-center justify-between">
+                  <span>When will I receive my daily brief?</span>
+                  <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                </summary>
+                <p className="text-gray-300 mt-4 leading-relaxed">
+                  Daily briefs are delivered every weekday (Monday-Friday) at 8 AM EST. You&apos;ll receive your first brief the 
+                  morning after you subscribe. If you subscribe on a weekend, you&apos;ll get your first brief on Monday morning.
+                </p>
+              </details>
+
+              <details className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 group">
+                <summary className="cursor-pointer text-white font-semibold text-lg flex items-center justify-between">
+                  <span>Is Daily Ticker financial advice?</span>
+                  <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                </summary>
+                <p className="text-gray-300 mt-4 leading-relaxed">
+                  No. Daily Ticker is for educational purposes only and does not provide financial, investment, tax, or legal advice. 
+                  All content is for informational purposes. You should always consult with a qualified financial advisor before making 
+                  any investment decisions. Past performance does not guarantee future results.
+                </p>
+              </details>
             </div>
           </div>
 

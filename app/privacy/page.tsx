@@ -1,5 +1,5 @@
-import { TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { SiteHeader } from "@/components/site-header"
 
 export const metadata = {
   title: "Privacy Policy — Daily Ticker",
@@ -9,15 +9,7 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[#0B1E32]">
-      {/* Header */}
-      <header className="border-b border-[#1a3a52] bg-[#0B1E32]/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="flex items-center gap-2 w-fit">
-            <TrendingUp className="h-6 w-6 text-[#00ff88]" />
-            <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <h1 className="text-4xl font-bold text-white mb-8">Privacy Policy</h1>

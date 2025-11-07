@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { CheckCircle, Mail } from 'lucide-react';
+import { SiteHeader } from '@/components/site-header';
 
 function UnsubscribeForm() {
   const searchParams = useSearchParams();
@@ -54,26 +56,17 @@ function UnsubscribeForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-gray-700">
+    <div className="min-h-screen bg-[#0B1E32]">
+      <SiteHeader />
+      
+      <div className="container mx-auto px-4 py-16 flex items-center justify-center">
+        <div className="max-w-md w-full bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#1a3a52] rounded-2xl shadow-xl p-8">
         {status === 'success' ? (
           // Success state
           <div className="text-center">
             <div className="mb-6">
-              <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+              <div className="mx-auto w-16 h-16 bg-[#00ff88]/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-[#00ff88]" />
               </div>
             </div>
             <h1 className="text-2xl font-bold text-white mb-4">Unsubscribed Successfully</h1>
@@ -84,7 +77,7 @@ function UnsubscribeForm() {
             <div className="space-y-4">
               <a
                 href="/"
-                className="block w-full bg-[#00ff88] hover:bg-[#00cc6a] text-black font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="block w-full bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold py-3 px-6 rounded-lg transition-colors shadow-lg shadow-[#00ff88]/30"
               >
                 Return to Homepage
               </a>
@@ -94,7 +87,7 @@ function UnsubscribeForm() {
                   setEmail('');
                   setMessage('');
                 }}
-                className="block w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="block w-full bg-[#1a3a52] hover:bg-[#244a62] text-white font-semibold py-3 px-6 rounded-lg transition-colors border border-[#00ff88]/20"
               >
                 Changed your mind? Resubscribe
               </button>
@@ -104,8 +97,11 @@ function UnsubscribeForm() {
           // Unsubscribe form
           <div>
             <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#00ff88]/10 border-2 border-[#00ff88] rounded-full mb-4">
+                <Mail className="h-8 w-8 text-[#00ff88]" />
+              </div>
               <h1 className="text-3xl font-bold text-white mb-2">Unsubscribe</h1>
-              <p className="text-gray-400">
+              <p className="text-gray-300">
                 We&apos;re sorry to see you go. Enter your email to unsubscribe from Daily Ticker.
               </p>
             </div>
@@ -122,7 +118,7 @@ function UnsubscribeForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00ff88] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-[#0B1E32] border border-[#2a4a62] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00ff88] focus:border-transparent"
                 />
               </div>
 
@@ -135,19 +131,20 @@ function UnsubscribeForm() {
               <button
                 type="submit"
                 disabled={status === 'loading' || !email}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-[#1a3a52] disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
                 {status === 'loading' ? 'Unsubscribing...' : 'Unsubscribe'}
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <a href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
+              <a href="/" className="text-sm text-gray-400 hover:text-[#00ff88] transition-colors">
                 ← Return to homepage
               </a>
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
@@ -156,8 +153,8 @@ function UnsubscribeForm() {
 export default function UnsubscribePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#0B1E32] flex items-center justify-center">
+        <div className="text-[#00ff88]">Loading...</div>
       </div>
     }>
       <UnsubscribeForm />

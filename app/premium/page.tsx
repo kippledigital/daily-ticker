@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { TrendingUp, CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react'
+import { CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react'
+import { SiteHeader } from '@/components/site-header'
 
 export default function PremiumPage() {
   const [loading, setLoading] = useState(false)
@@ -38,15 +39,7 @@ export default function PremiumPage() {
 
   return (
     <div className="min-h-screen bg-[#0B1E32]">
-      {/* Header */}
-      <header className="border-b border-[#1a3a52] bg-[#0B1E32]/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="flex items-center gap-2 w-fit">
-            <TrendingUp className="h-6 w-6 text-[#00ff88]" />
-            <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Back button */}
