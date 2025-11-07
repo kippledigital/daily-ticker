@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const { priceType, email } = await request.json()
 
     // Validate price type
-    if (!priceType || !['standard', 'earlyBird'].includes(priceType)) {
+    if (!priceType || !['standard', 'monthly', 'earlyBird'].includes(priceType)) {
       return NextResponse.json(
         { error: 'Invalid price type' },
         { status: 400 }
@@ -22,9 +22,17 @@ export async function POST(request: NextRequest) {
     const customerEmail = session?.user?.email || email
 
     // Get the appropriate price ID
-    const priceId = priceType === 'earlyBird'
-      ? STRIPE_PRICES.earlyBird
-      : STRIPE_PRICES.standard
+    let priceId: string
+    if (priceType === 'earlyBird') {
+      priceId = STRIPE_PRICES.earlyBird
+    } else if (priceType === 'monthly') {
+      priceId = STRIPE_PRICES.monthly
+    } else {
+      priceId = STRIPE_PRICES.standard
+    }
+
+    // Trim any whitespace/newlines (extra safety)
+    priceId = priceId.trim()
 
     if (!priceId) {
       return NextResponse.json(
@@ -33,8 +41,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate price ID format (should start with 'price_')
+    if (!priceId.startsWith('price_')) {
+      console.error('[CHECKOUT] Invalid price ID format:', priceId)
+      return NextResponse.json(
+        { error: 'Invalid price ID format. Please contact support.' },
+        { status: 500 }
+      )
+    }
+
+    console.log('[CHECKOUT] Using price ID:', priceId, '(length:', priceId.length, ')')
+
     // Get site URL from environment or fallback to dailyticker.co
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dailyticker.co'
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dailyticker.co'
+    
+    // Ensure siteUrl doesn't have trailing slash and is valid
+    siteUrl = siteUrl.replace(/\/$/, '')
+    
+    // Validate URL format
+    try {
+      new URL(siteUrl)
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid site URL configuration. Please contact support.' },
+        { status: 500 }
+      )
+    }
 
     console.log('[CHECKOUT] Site URL:', siteUrl)
     console.log('[CHECKOUT] Env var:', process.env.NEXT_PUBLIC_SITE_URL)
@@ -49,9 +81,15 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'subscription',
       success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/#pricing`,
+      cancel_url: `${siteUrl}/?canceled=true`, // Removed hash fragment - Stripe doesn't support it
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
+      // Customize the subscription description based on price type
+      subscription_data: {
+        description: priceType === 'monthly' 
+          ? 'Daily Ticker Pro - Monthly Subscription'
+          : 'Daily Ticker Pro - Annual Subscription',
+      },
     }
 
     // If we have an email, try to use existing customer or create new one
@@ -81,6 +119,9 @@ export async function POST(request: NextRequest) {
         address: 'auto',
       }
       sessionConfig.subscription_data = {
+        description: priceType === 'monthly' 
+          ? 'Daily Ticker Pro - Monthly Subscription'
+          : 'Daily Ticker Pro - Annual Subscription',
         metadata: {
           supabase_email: customerEmail,
           price_type: priceType,
@@ -94,6 +135,9 @@ export async function POST(request: NextRequest) {
       // No email - let Stripe collect it during checkout
       sessionConfig.customer_email = undefined // Stripe will prompt for email
       sessionConfig.subscription_data = {
+        description: priceType === 'monthly' 
+          ? 'Daily Ticker Pro - Monthly Subscription'
+          : 'Daily Ticker Pro - Annual Subscription',
         metadata: {
           price_type: priceType,
         },
@@ -112,6 +156,15 @@ export async function POST(request: NextRequest) {
     }))
 
     const session_stripe = await stripe.checkout.sessions.create(sessionConfig)
+
+    // Validate that we got a URL back from Stripe
+    if (!session_stripe.url) {
+      console.error('[CHECKOUT] Stripe session created but URL is null:', session_stripe.id)
+      return NextResponse.json(
+        { error: 'Failed to generate checkout URL. Please try again or contact support.' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,

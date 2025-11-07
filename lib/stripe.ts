@@ -31,6 +31,12 @@ export const PRICING = {
     interval: 'year' as const,
     description: 'Standard Annual',
   },
+  monthly: {
+    price: 1000, // $10.00 in cents
+    displayPrice: '$10',
+    interval: 'month' as const,
+    description: 'Monthly',
+  },
   earlyBird: {
     price: 4800, // $48.00 in cents (50% off)
     displayPrice: '$48',
@@ -40,12 +46,14 @@ export const PRICING = {
 }
 
 // Stripe product and price IDs (will be set after creating in Stripe Dashboard)
+// Trim whitespace/newlines that might be present in environment variables
 export const STRIPE_PRODUCTS = {
-  premium: process.env.STRIPE_PREMIUM_PRODUCT_ID || '',
-  earlyBird: process.env.STRIPE_EARLY_BIRD_PRODUCT_ID || '',
+  premium: (process.env.STRIPE_PREMIUM_PRODUCT_ID || '').trim(),
+  earlyBird: (process.env.STRIPE_EARLY_BIRD_PRODUCT_ID || '').trim(),
 }
 
 export const STRIPE_PRICES = {
-  standard: process.env.STRIPE_STANDARD_PRICE_ID || '',
-  earlyBird: process.env.STRIPE_EARLY_BIRD_PRICE_ID || '',
+  standard: (process.env.STRIPE_STANDARD_PRICE_ID || '').trim(),
+  monthly: (process.env.STRIPE_MONTHLY_PRICE_ID || '').trim(),
+  earlyBird: (process.env.STRIPE_EARLY_BIRD_PRICE_ID || '').trim(),
 }

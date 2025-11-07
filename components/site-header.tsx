@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { TrendingUp } from 'lucide-react'
-import { CheckoutButton } from '@/components/checkout-button'
 
 export function SiteHeader() {
   return (
@@ -19,9 +18,12 @@ export function SiteHeader() {
           <Link href="/archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
             Archive
           </Link>
-          <CheckoutButton className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] font-bold text-sm rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/20 hover:shadow-[#00ff88]/40">
+          <a
+            href="/#pricing"
+            className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] font-bold text-sm rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/20 hover:shadow-[#00ff88]/40"
+          >
             Go Pro
-          </CheckoutButton>
+          </a>
         </nav>
       </div>
     </header>

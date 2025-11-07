@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
@@ -11,6 +12,7 @@ import { PerformanceDashboard } from "@/components/performance-dashboard"
 import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
 
 export default function Home() {
+  const [isYearly, setIsYearly] = useState(true) // Default to yearly
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -239,6 +241,36 @@ export default function Home() {
             </p>
           </div>
 
+          {/* Billing Toggle - Only show for Pro tier */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-white' : 'text-gray-400'}`}>
+              Monthly
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isYearly}
+              onClick={() => setIsYearly(!isYearly)}
+              className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#00ff88] focus:ring-offset-2 focus:ring-offset-[#0B1E32] ${
+                isYearly ? 'bg-[#00ff88]' : 'bg-[#1a3a52]'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                  isYearly ? 'translate-x-8' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-white' : 'text-gray-400'}`}>
+              Yearly
+            </span>
+            {isYearly && (
+              <span className="px-2 py-1 text-xs font-semibold text-[#00ff88] bg-[#00ff88]/10 border border-[#00ff88]/20 rounded-full">
+                Save 20%
+              </span>
+            )}
+          </div>
+
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Free Tier */}
             <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-2xl p-8 space-y-6">
@@ -305,14 +337,20 @@ export default function Home() {
                 <p className="text-gray-300">Trade with precision</p>
                 <div className="mt-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-white">$96</span>
-                    <span className="text-gray-300">/year</span>
+                    <span className="text-4xl font-bold text-white">
+                      {isYearly ? '$96' : '$10'}
+                    </span>
+                    <span className="text-gray-300">
+                      {isYearly ? '/year' : '/month'}
+                    </span>
                   </div>
-                  <div className="mt-2 space-y-1">
-                    <div className="text-sm text-gray-300">
-                      or $10/month · billed monthly
+                  {isYearly && (
+                    <div className="mt-2">
+                      <div className="text-sm text-gray-300">
+                        $8/month billed annually
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -355,8 +393,12 @@ export default function Home() {
                 </li>
               </ul>
 
-              <CheckoutButton className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center">
-                Upgrade to Pro
+              {/* Payment Option */}
+              <CheckoutButton 
+                priceType={isYearly ? 'standard' : 'monthly'}
+                className="block w-full px-6 py-3 bg-[#00ff88] text-[#0B1E32] font-bold rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 text-center"
+              >
+                {isYearly ? '$96/year (Save 20%)' : '$10/month'}
               </CheckoutButton>
 
               <ROICalculatorModal
