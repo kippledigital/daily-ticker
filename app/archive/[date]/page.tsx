@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { TrendingUp, Calendar, Share2, ArrowLeft } from 'lucide-react'
+import { Calendar, Share2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BlurredPremium } from '@/components/blurred-premium'
 import { PremiumBadge } from '@/components/premium-badge'
+import { SiteHeader } from '@/components/site-header'
 import { createClient } from '@/lib/supabase-auth'
 import type { BriefData } from '@/app/api/archive/store/route'
 
@@ -92,15 +93,7 @@ export default function BriefPage({ params }: BriefPageProps) {
 
   return (
     <div className="min-h-screen bg-[#0B1E32]">
-      {/* Header */}
-      <header className="border-b border-[#1a3a52] bg-[#0B1E32]/95 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="flex items-center gap-2 w-fit">
-            <TrendingUp className="h-6 w-6 text-[#00ff88]" />
-            <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Back Button */}

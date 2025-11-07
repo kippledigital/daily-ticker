@@ -1,5 +1,6 @@
 "use client"
 
+import { SiteHeader } from "@/components/site-header"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
 import { EmailPreview } from "@/components/email-preview"
@@ -7,7 +8,7 @@ import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
 import { PerformanceDashboard } from "@/components/performance-dashboard"
-import { TrendingUp, Target, Zap, BookOpen } from "lucide-react"
+import { Target, Zap, BookOpen } from "lucide-react"
 
 export default function Home() {
   const structuredData = {
@@ -39,26 +40,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#0B1E32]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 
-      {/* Header */}
-      <header className="border-b border-[#1a3a52] bg-[#0B1E32]/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-6 w-6 text-[#00ff88]" />
-            <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
-          </div>
-          <nav className="flex items-center gap-4 md:gap-6">
-            <a href="#pricing" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
-              Pricing
-            </a>
-            <a href="/archive" className="hidden md:block text-sm text-gray-300 hover:text-white transition-colors">
-              Archive
-            </a>
-            <CheckoutButton className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] font-bold text-sm rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/20 hover:shadow-[#00ff88]/40">
-              Go Pro
-            </CheckoutButton>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section - REDESIGNED */}
       <section id="subscribe" className="container mx-auto px-4 py-12 md:py-16">
