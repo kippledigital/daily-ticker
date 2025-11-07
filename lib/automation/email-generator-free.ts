@@ -188,16 +188,16 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
     <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:0 0 32px 0;"></div>
 
     <!-- FREE TIER: Upgrade CTA -->
-    <div style="background:linear-gradient(135deg, #ffd700 0%, #ffb300 100%); border-radius:12px; padding:24px; text-align:center; margin-bottom:32px; box-shadow:0 4px 20px rgba(255,215,0,0.3);">
-      <h2 style="color:#0B1E32; font-size:24px; margin:0 0 12px 0; font-weight:700;">🚀 Upgrade to Premium</h2>
-      <p style="color:#1a3a52; font-size:16px; margin:0 0 20px 0; line-height:1.6;">
+    <div style="background:linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); border-radius:12px; padding:24px; text-align:center; margin-bottom:32px; box-shadow:0 4px 20px rgba(0,255,136,0.2); border: 2px solid #00ff88;">
+      <h2 style="color:#00ff88; font-size:24px; margin:0 0 12px 0; font-weight:700;">🚀 Upgrade to Pro</h2>
+      <p style="color:#e5e7eb; font-size:16px; margin:0 0 20px 0; line-height:1.6;">
         Get precise entry zones, stop-loss levels, profit targets, confidence scores, and portfolio allocation % for every pick.
       </p>
-      <a href="https://dailyticker.co/premium" style="display:inline-block; background:#0B1E32; color:#ffd700; padding:14px 32px; border-radius:8px; text-decoration:none; font-weight:700; font-size:16px;">
-        Upgrade Now — $8/month
+      <a href="https://daily-ticker.vercel.app/premium" style="display:inline-block; background:#00ff88; color:#0B1E32; padding:14px 32px; border-radius:8px; text-decoration:none; font-weight:700; font-size:18px;">
+        Upgrade Now — $96/year
       </a>
-      <p style="color:#1a3a52; font-size:13px; margin:12px 0 0 0;">
-        Cancel anytime • 30-day money-back guarantee
+      <p style="color:#9ca3af; font-size:13px; margin:12px 0 0 0;">
+        Cancel anytime • 60-day money-back guarantee
       </p>
     </div>
 
