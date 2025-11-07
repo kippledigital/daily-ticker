@@ -104,6 +104,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Checkout Session
+    console.log('[CHECKOUT] Creating Stripe session with config:', JSON.stringify({
+      line_items: sessionConfig.line_items,
+      mode: sessionConfig.mode,
+      success_url: sessionConfig.success_url,
+      cancel_url: sessionConfig.cancel_url,
+    }))
+
     const session_stripe = await stripe.checkout.sessions.create(sessionConfig)
 
     return NextResponse.json({
@@ -112,9 +119,16 @@ export async function POST(request: NextRequest) {
       url: session_stripe.url,
     })
   } catch (error: any) {
-    console.error('Error creating checkout session:', error)
+    console.error('[CHECKOUT] Full error:', error)
+    console.error('[CHECKOUT] Error message:', error.message)
+    console.error('[CHECKOUT] Error type:', error.type)
+    console.error('[CHECKOUT] Error code:', error.code)
     return NextResponse.json(
-      { error: error.message || 'Failed to create checkout session' },
+      {
+        error: error.message || 'Failed to create checkout session',
+        details: error.type || 'unknown',
+        code: error.code || 'unknown'
+      },
       { status: 500 }
     )
   }
