@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabase } from '@/lib/supabase'
 import Stripe from 'stripe'
+import { sendWelcomeEmail } from '@/lib/emails/send-welcome-email'
 
 // Disable body parsing so we can verify the webhook signature
 export const runtime = 'nodejs'
@@ -105,6 +106,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     .eq('email', email)
     .single()
 
+  let isNewPremiumSubscriber = false;
+
   if (existingSubscriber) {
     // Update existing subscriber to premium
     const { error } = await supabase
@@ -123,6 +126,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       console.error('Error updating subscriber:', error)
     } else {
       console.log(`✅ Updated ${email} to premium tier`)
+      // Only send welcome email if they were previously free (not already premium)
+      isNewPremiumSubscriber = existingSubscriber.tier !== 'premium';
     }
   } else {
     // Create new premium subscriber
@@ -143,7 +148,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       console.error('Error creating subscriber:', error)
     } else {
       console.log(`✅ Created premium subscriber: ${email}`)
+      isNewPremiumSubscriber = true;
     }
+  }
+
+  // Send welcome email for new premium subscribers (non-blocking)
+  if (isNewPremiumSubscriber) {
+    sendWelcomeEmail({ email, tier: 'premium' }).catch((err) => {
+      console.error('Failed to send premium welcome email:', err);
+      // Don't fail the webhook if email fails
+    });
   }
 }
 

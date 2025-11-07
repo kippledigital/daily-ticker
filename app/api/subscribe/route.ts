@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendWelcomeEmail } from '@/lib/emails/send-welcome-email';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -101,6 +102,13 @@ export async function POST(request: NextRequest) {
           }
 
           console.log('Reactivated subscription:', normalizedEmail);
+          
+          // Send welcome email (non-blocking)
+          sendWelcomeEmail({ email: normalizedEmail, tier: 'free' }).catch((err) => {
+            console.error('Failed to send welcome email to reactivated subscriber:', err);
+            // Don't fail the request if email fails
+          });
+
           return NextResponse.json(
             {
               success: true,
@@ -116,6 +124,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('New subscription successful:', normalizedEmail);
+
+    // Send welcome email (non-blocking - don't fail the request if email fails)
+    sendWelcomeEmail({ email: normalizedEmail, tier: 'free' }).catch((err) => {
+      console.error('Failed to send welcome email to new subscriber:', err);
+      // Don't fail the request if email fails
+    });
 
     return NextResponse.json(
       {

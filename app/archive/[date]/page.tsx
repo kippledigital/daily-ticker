@@ -269,12 +269,12 @@ export default function BriefPage({ params }: BriefPageProps) {
             Unlock Full Analysis
           </h3>
           <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-            Upgrade to Premium to see confidence scores, stop-loss levels, profit targets, and complete position sizing recommendations
+            Upgrade to Pro to see confidence scores, stop-loss levels, profit targets, and complete position sizing recommendations
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/#pricing">
               <Button className="bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-bold px-8">
-                Upgrade to Premium
+                Upgrade to Pro
               </Button>
             </Link>
             <p className="text-sm text-gray-400">

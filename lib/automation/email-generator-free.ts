@@ -12,7 +12,7 @@ export interface FreeEmailGenerationParams {
 
 /**
  * Generates FREE TIER email HTML content using AI
- * Removes premium features: stop-loss, profit targets, confidence scores, entry zones, allocation %
+ * Removes pro features: stop-loss, profit targets, confidence scores, entry zones, allocation %
  */
 export async function generateFreeEmail(params: FreeEmailGenerationParams): Promise<{
   subject: string;
@@ -21,7 +21,7 @@ export async function generateFreeEmail(params: FreeEmailGenerationParams): Prom
 }> {
   const { stocks, date } = params;
 
-  // Format stock data for AI prompt - EXCLUDE premium fields
+  // Format stock data for AI prompt - EXCLUDE pro fields
   const stockData = stocks
     .map(
       stock => `
@@ -40,7 +40,7 @@ Learning Moment: ${stock.mini_learning_moment}
     )
     .join('\n---\n');
 
-  // FREE TIER SYSTEM PROMPT - Removes premium features
+  // FREE TIER SYSTEM PROMPT - Removes pro features
   const systemPrompt = `You are Scout, a friendly investing coach who writes short, smart daily market briefs for beginner investors. You receive structured data about multiple tickers — including prices, summaries, and risk ratings.
 
 🎯 YOUR GOAL
@@ -53,7 +53,7 @@ What's moving
 
 Why it matters
 
-General guidance on what to watch (NO SPECIFIC ENTRY PRICES - that's premium only)
+General guidance on what to watch (NO SPECIFIC ENTRY PRICES - that's pro only)
 
 🧠 LOGIC RULES
 
@@ -144,9 +144,9 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
         <div style="font-size:20px; font-weight:700; color:#ffffff; font-family:'Space Mono',Consolas,monospace;">$[X.XX]</div>
       </div>
 
-      <!-- FREE TIER: Show "Upgrade to Premium" teaser for premium features -->
+      <!-- FREE TIER: Show "Upgrade to Pro" teaser for pro features -->
       <div style="background:linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,193,7,0.05) 100%); border:2px dashed #ffd700; border-radius:8px; padding:16px; margin-bottom:16px; text-align:center;">
-        <p style="margin:0; color:#ffd700; font-size:13px; font-weight:600; margin-bottom:8px;">🔒 PREMIUM FEATURE</p>
+        <p style="margin:0; color:#ffd700; font-size:13px; font-weight:600; margin-bottom:8px;">🔒 PRO FEATURE</p>
         <p style="margin:0; color:#d1d5db; font-size:14px; line-height:1.6;">
           Upgrade to see <strong style="color:#ffd700;">precise entry zones</strong>, <strong style="color:#ffd700;">stop-loss levels</strong>, <strong style="color:#ffd700;">profit targets</strong>, and <strong style="color:#ffd700;">portfolio allocation %</strong>
         </p>
@@ -215,13 +215,13 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
 
 Always show tickers if data exists. Never output "no new picks" if tickers are available.
 
-DO NOT include stop-loss, profit targets, entry zones, confidence scores, or allocation % — these are premium only.
+DO NOT include stop-loss, profit targets, entry zones, confidence scores, or allocation % — these are pro only.
 
 Use GENERAL guidance only (e.g., "Watch for pullbacks" not "Wait for dip to $620-630").
 
-Include "Upgrade to Premium" teaser box for each stock.
+Include "Upgrade to Pro" teaser box for each stock.
 
-Include prominent "Upgrade to Premium" CTA at the end.
+Include prominent "Upgrade to Pro" CTA at the end.
 
 Use simple words. Avoid any technical finance phrasing unless explained.
 
@@ -300,7 +300,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
 }
 
 /**
- * Generates email subject line (same as premium)
+ * Generates email subject line (same as pro)
  */
 async function generateSubjectLine(stocks: ValidatedStock[], briefContent: string): Promise<string> {
   const prompt = `Write one short, engaging subject line for today's Morning Brief email. It should summarize the main story or market theme in under 60 characters. Include one emoji at the start that matches the tone. Examples: • ☀️ Apple Holds Steady | Energy Cools Off • ⚡ Calm Market | Watchlist Focus Day • 📈 Tech Stocks Rebound | Tesla Earnings Ahead. Return plain text only. Here is today's brief to analyze: ${briefContent}`;
@@ -326,7 +326,7 @@ async function generateSubjectLine(stocks: ValidatedStock[], briefContent: strin
 }
 
 /**
- * Generates TL;DR summary (same as premium)
+ * Generates TL;DR summary (same as pro)
  */
 async function generateTLDR(stocks: ValidatedStock[]): Promise<string> {
   const stockSummaries = stocks.map(s => `${s.ticker}: ${s.actionable_insight}`).join('; ');

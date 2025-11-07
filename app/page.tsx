@@ -83,7 +83,7 @@ export default function Home() {
               Get up to 3 actionable stock picks daily — FREE
             </p>
             <p className="text-base md:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Upgrade to Premium for confidence scores, stop-loss levels, and profit targets that give you an edge on every trade.
+              Upgrade to Pro for confidence scores, stop-loss levels, and profit targets that give you an edge on every trade.
             </p>
           </div>
 
@@ -217,7 +217,7 @@ export default function Home() {
                 <h4 className="text-xl font-bold text-white">Learn While You Earn</h4>
               </div>
               <p className="text-gray-300 leading-relaxed text-sm">
-                Premium subscribers get <strong>daily learning moments</strong> — investing concepts explained in plain English so you get smarter over time.
+                pro subscribers get <strong>daily learning moments</strong> — investing concepts explained in plain English so you get smarter over time.
               </p>
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function Home() {
             <p className="text-gray-300 text-lg max-w-3xl mx-auto">
               Both tiers get the same daily stock picks (1-3 depending on market opportunities).
               <br />
-              <strong className="text-white">Premium unlocks the data that turns picks into profits.</strong>
+              <strong className="text-white">Pro unlocks the data that turns picks into profits.</strong>
             </p>
           </div>
 
@@ -403,7 +403,7 @@ export default function Home() {
           </p>
           <SubscribeForm variant="large" />
           <p className="text-sm text-gray-300">
-            No credit card required • Unsubscribe anytime • Early subscribers get 50% off premium
+            No credit card required • Unsubscribe anytime
           </p>
         </div>
       </section>
