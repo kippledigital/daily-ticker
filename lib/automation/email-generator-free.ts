@@ -193,7 +193,7 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
       <p style="color:#e5e7eb; font-size:16px; margin:0 0 20px 0; line-height:1.6;">
         Get precise entry zones, stop-loss levels, profit targets, confidence scores, and portfolio allocation % for every pick.
       </p>
-      <a href="https://daily-ticker.vercel.app/premium" style="display:inline-block; background:#00ff88; color:#0B1E32; padding:14px 32px; border-radius:8px; text-decoration:none; font-weight:700; font-size:18px;">
+      <a href="https://daily-ticker.vercel.app/#pricing" style="display:inline-block; background:#00ff88; color:#0B1E32; padding:14px 32px; border-radius:8px; text-decoration:none; font-weight:700; font-size:18px;">
         Upgrade Now — $96/year
       </a>
       <p style="color:#9ca3af; font-size:13px; margin:12px 0 0 0;">
