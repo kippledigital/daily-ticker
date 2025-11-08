@@ -23,6 +23,15 @@ export async function sendWelcomeEmail(
 ): Promise<SendWelcomeEmailResult> {
   const { email, tier } = params;
 
+  // Check if Resend API key is configured
+  if (!process.env.RESEND_API_KEY) {
+    console.error('❌ RESEND_API_KEY is not configured! Cannot send welcome email.');
+    return {
+      success: false,
+      error: 'Email service not configured',
+    };
+  }
+
   try {
     // Generate email content based on tier
     const emailContent =
@@ -32,6 +41,8 @@ export async function sendWelcomeEmail(
 
     // Determine from address
     const fromAddress = process.env.RESEND_FROM_EMAIL || 'brief@dailyticker.co';
+    
+    console.log(`📧 Attempting to send welcome email to ${email} (${tier} tier) from ${fromAddress}`);
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
@@ -56,7 +67,7 @@ export async function sendWelcomeEmail(
     });
 
     if (error) {
-      console.error('Error sending welcome email via Resend:', error);
+      console.error('❌ Error sending welcome email via Resend:', JSON.stringify(error, null, 2));
       return {
         success: false,
         error: error.message || 'Failed to send welcome email',
@@ -69,8 +80,9 @@ export async function sendWelcomeEmail(
       emailId: data?.id,
     };
   } catch (error) {
-    console.error('Exception in sendWelcomeEmail:', error);
+    console.error('❌ Exception in sendWelcomeEmail:', error);
     if (error instanceof Error) {
+      console.error('Error details:', error.message, error.stack);
       return {
         success: false,
         error: error.message,
