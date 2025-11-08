@@ -26,50 +26,77 @@ export async function GET() {
   }
 
   try {
-    // Polygon.io ticker symbols for indices:
-    // SPX = S&P 500, NDX = NASDAQ 100, DJI = Dow Jones
-    const indices = ['I:SPX', 'I:NDX', 'I:DJI'];
+    // Try index symbols first, then fall back to ETF proxies for free tier
+    // Index symbols: I:SPX, I:NDX, I:DJI (may require paid tier)
+    // ETF proxies: SPY (S&P 500), QQQ (NASDAQ 100), DIA (Dow Jones) - work on free tier
+    const indexConfig = [
+      { index: 'I:SPX', etf: 'SPY', name: 'S&P 500' },
+      { index: 'I:NDX', etf: 'QQQ', name: 'NASDAQ' },
+      { index: 'I:DJI', etf: 'DIA', name: 'DOW' },
+    ];
     const results: MarketIndex[] = [];
 
-    for (const ticker of indices) {
+    for (const config of indexConfig) {
+      let success = false;
+      
+      // Try index symbol first
       try {
         const response = await fetch(
-          `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${apiKey}`,
+          `https://api.polygon.io/v2/aggs/ticker/${config.index}/prev?adjusted=true&apiKey=${apiKey}`,
           {
-            next: { revalidate: 60 }, // Cache for 1 minute (indices update frequently)
+            next: { revalidate: 60 },
           }
         );
 
-        if (!response.ok) {
-          console.warn(`Polygon API error for ${ticker}: ${response.status}`);
-          continue;
-        }
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            const result = data.results[0];
+            const closePrice = result.c;
+            const openPrice = result.o;
+            const change = closePrice - openPrice;
+            const changePercent = (change / openPrice) * 100;
 
-        const data = await response.json();
+            results.push({
+              symbol: config.name,
+              price: closePrice,
+              change: change,
+              changePercent: changePercent,
+            });
+            success = true;
+          }
+        } else if (response.status === 403) {
+          // Index not available on free tier, try ETF proxy
+          const etfResponse = await fetch(
+            `https://api.polygon.io/v2/aggs/ticker/${config.etf}/prev?adjusted=true&apiKey=${apiKey}`,
+            {
+              next: { revalidate: 60 },
+            }
+          );
 
-        if (data.status === 'OK' && data.results && data.results.length > 0) {
-          const result = data.results[0];
-          const closePrice = result.c;
-          const openPrice = result.o;
-          const change = closePrice - openPrice;
-          const changePercent = (change / openPrice) * 100;
+          if (etfResponse.ok) {
+            const etfData = await etfResponse.json();
+            if (etfData.status === 'OK' && etfData.results && etfData.results.length > 0) {
+              const result = etfData.results[0];
+              const closePrice = result.c;
+              const openPrice = result.o;
+              const change = closePrice - openPrice;
+              const changePercent = (change / openPrice) * 100;
 
-          // Map ticker symbol to display name
-          const symbolMap: Record<string, string> = {
-            'I:SPX': 'S&P 500',
-            'I:NDX': 'NASDAQ',
-            'I:DJI': 'DOW',
-          };
-
-          results.push({
-            symbol: symbolMap[ticker] || ticker,
-            price: closePrice,
-            change: change,
-            changePercent: changePercent,
-          });
+              results.push({
+                symbol: config.name,
+                price: closePrice,
+                change: change,
+                changePercent: changePercent,
+              });
+              success = true;
+            }
+          }
+        } else if (response.status !== 403) {
+          console.warn(`Polygon API error for ${config.index}: ${response.status}`);
         }
       } catch (error) {
-        console.error(`Error fetching ${ticker}:`, error);
+        console.error(`Error fetching ${config.index}:`, error);
       }
     }
 

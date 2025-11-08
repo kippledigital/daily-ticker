@@ -48,8 +48,8 @@ export const PRICING = {
 // Stripe product and price IDs (will be set after creating in Stripe Dashboard)
 // Trim whitespace/newlines that might be present in environment variables
 export const STRIPE_PRODUCTS = {
-  premium: (process.env.STRIPE_PREMIUM_PRODUCT_ID || '').trim(),
-  earlyBird: (process.env.STRIPE_EARLY_BIRD_PRODUCT_ID || '').trim(),
+  pro: (process.env.STRIPE_PREMIUM_PRODUCT_ID || '').trim(), // Note: env var name kept for backwards compatibility
+  earlyBird: (process.env.STRIPE_EARLY_BIRD_PRODUCT_ID || '').trim(), // Optional - can be empty
 }
 
 export const STRIPE_PRICES = {

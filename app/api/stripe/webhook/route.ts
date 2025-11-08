@@ -99,6 +99,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   console.log(`Checkout completed for ${email}`)
 
+  // Get subscription details to get period dates
+  let currentPeriodStart: string | undefined
+  let currentPeriodEnd: string | undefined
+  
+  if (subscriptionId) {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+      currentPeriodStart = new Date(subscription.current_period_start * 1000).toISOString()
+      currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString()
+    } catch (err) {
+      console.error('Error fetching subscription details:', err)
+    }
+  }
+
   // Check if subscriber exists
   const { data: existingSubscriber } = await supabase
     .from('subscribers')
@@ -110,16 +124,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   if (existingSubscriber) {
     // Update existing subscriber to premium
+    const updateData: any = {
+      tier: 'premium',
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      subscription_status: 'active',
+      updated_at: new Date().toISOString(),
+    }
+    
+    if (currentPeriodStart) updateData.current_period_start = currentPeriodStart
+    if (currentPeriodEnd) updateData.current_period_end = currentPeriodEnd
+
     const { error } = await supabase
       .from('subscribers')
-      .update({
-        tier: 'premium',
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        stripe_subscription_status: 'active',
-        subscription_start_date: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('email', email)
 
     if (error) {
@@ -131,18 +149,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
   } else {
     // Create new premium subscriber
+    const insertData: any = {
+      email,
+      tier: 'premium',
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      subscription_status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    
+    if (currentPeriodStart) insertData.current_period_start = currentPeriodStart
+    if (currentPeriodEnd) insertData.current_period_end = currentPeriodEnd
+
     const { error } = await supabase
       .from('subscribers')
-      .insert({
-        email,
-        tier: 'premium',
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        stripe_subscription_status: 'active',
-        subscription_start_date: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .insert(insertData)
 
     if (error) {
       console.error('Error creating subscriber:', error)
@@ -180,14 +202,26 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return
   }
 
-  // Update subscription status
+  // Update subscription status with period dates
+  const updateData: any = {
+    subscription_status: status,
+    tier: status === 'active' || status === 'trialing' ? 'premium' : 'free',
+    updated_at: new Date().toISOString(),
+  }
+
+  if (subscription.current_period_start) {
+    updateData.current_period_start = new Date(subscription.current_period_start * 1000).toISOString()
+  }
+  if (subscription.current_period_end) {
+    updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString()
+  }
+  if (subscription.cancel_at_period_end !== undefined) {
+    updateData.cancel_at_period_end = subscription.cancel_at_period_end
+  }
+
   const { error } = await supabase
     .from('subscribers')
-    .update({
-      stripe_subscription_status: status,
-      tier: status === 'active' || status === 'trialing' ? 'premium' : 'free',
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('stripe_customer_id', customerId)
 
   if (error) {
@@ -215,14 +249,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return
   }
 
+  const updateData: any = {
+    tier: 'free',
+    subscription_status: 'canceled',
+    updated_at: new Date().toISOString(),
+  }
+
+  if (subscription.current_period_end) {
+    updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString()
+  }
+
   const { error } = await supabase
     .from('subscribers')
-    .update({
-      tier: 'free',
-      stripe_subscription_status: 'canceled',
-      subscription_end_date: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('stripe_customer_id', customerId)
 
   if (error) {
@@ -240,7 +279,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   const { error } = await supabase
     .from('subscribers')
     .update({
-      stripe_subscription_status: 'active',
+      subscription_status: 'active',
       tier: 'premium',
       updated_at: new Date().toISOString(),
     })
@@ -259,7 +298,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const { error } = await supabase
     .from('subscribers')
     .update({
-      stripe_subscription_status: 'past_due',
+      subscription_status: 'past_due',
       updated_at: new Date().toISOString(),
     })
     .eq('stripe_customer_id', customerId)
