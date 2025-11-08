@@ -105,7 +105,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   
   if (subscriptionId) {
     try {
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+      const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(subscriptionId)
       currentPeriodStart = new Date(subscription.current_period_start * 1000).toISOString()
       currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString()
     } catch (err) {
