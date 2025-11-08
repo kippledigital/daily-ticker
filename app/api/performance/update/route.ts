@@ -24,20 +24,14 @@ export async function POST(request: Request) {
     )
 
     // Verify authorization
-    // Vercel cron jobs don't send auth headers, so we check for Vercel-specific headers
-    // or allow if no auth header is present (Vercel cron) or if auth matches
+    // Vercel cron jobs don't send auth headers, so we allow requests without auth header
+    // If auth header IS present, we validate it (for manual testing)
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
-    const userAgent = request.headers.get('user-agent') || ''
     
-    // Check if this is a Vercel cron request (no user-agent or Vercel-specific)
-    const isVercelCron = !userAgent || userAgent.includes('vercel') || !authHeader
-    
-    // Require auth only if:
-    // 1. CRON_SECRET is set AND
-    // 2. This is NOT a Vercel cron request AND
-    // 3. Auth header doesn't match
-    if (cronSecret && !isVercelCron && authHeader !== `Bearer ${cronSecret}`) {
+    // If auth header is provided, validate it
+    // If no auth header, assume it's Vercel cron (allow it)
+    if (authHeader && cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({
         success: false,
         error: 'Unauthorized',
