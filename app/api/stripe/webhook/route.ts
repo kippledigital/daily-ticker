@@ -207,20 +207,22 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   // Update subscription status with period dates
+  // Use type assertion to access period dates
+  const sub = subscription as any
   const updateData: any = {
     subscription_status: status,
     tier: status === 'active' || status === 'trialing' ? 'premium' : 'free',
     updated_at: new Date().toISOString(),
   }
 
-  if (subscription.current_period_start) {
-    updateData.current_period_start = new Date(subscription.current_period_start * 1000).toISOString()
+  if (sub.current_period_start) {
+    updateData.current_period_start = new Date(sub.current_period_start * 1000).toISOString()
   }
-  if (subscription.current_period_end) {
-    updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString()
+  if (sub.current_period_end) {
+    updateData.current_period_end = new Date(sub.current_period_end * 1000).toISOString()
   }
-  if (subscription.cancel_at_period_end !== undefined) {
-    updateData.cancel_at_period_end = subscription.cancel_at_period_end
+  if (sub.cancel_at_period_end !== undefined) {
+    updateData.cancel_at_period_end = sub.cancel_at_period_end
   }
 
   const { error } = await supabase
@@ -253,14 +255,16 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return
   }
 
+  // Use type assertion to access period dates
+  const sub = subscription as any
   const updateData: any = {
     tier: 'free',
     subscription_status: 'canceled',
     updated_at: new Date().toISOString(),
   }
 
-  if (subscription.current_period_end) {
-    updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString()
+  if (sub.current_period_end) {
+    updateData.current_period_end = new Date(sub.current_period_end * 1000).toISOString()
   }
 
   const { error } = await supabase
