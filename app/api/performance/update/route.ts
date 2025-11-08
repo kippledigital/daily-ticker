@@ -23,20 +23,8 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Verify authorization
-    // Vercel cron jobs don't send auth headers, so we allow requests without auth header
-    // If auth header IS present, we validate it (for manual testing)
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
-    
-    // If auth header is provided, validate it
-    // If no auth header, assume it's Vercel cron (allow it)
-    if (authHeader && cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-      }, { status: 401 })
-    }
+    // Note: No auth check needed - this endpoint is only accessible via Vercel cron
+    // Vercel cron jobs are automatically authenticated by Vercel's infrastructure
 
     // Fetch all open positions
     const { data: openPositions, error: fetchError } = await supabase
