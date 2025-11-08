@@ -1,14 +1,8 @@
 import { Resend } from 'resend';
 import { generateFreeWelcomeEmail, generatePremiumWelcomeEmail } from './welcome-email-templates';
 
-// Initialize Resend client lazily to ensure env vars are loaded
-function getResendClient() {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error('RESEND_API_KEY is not configured');
-  }
-  return new Resend(apiKey);
-}
+// Initialize Resend client (same pattern as other email modules)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface SendWelcomeEmailParams {
   email: string;
@@ -61,9 +55,6 @@ export async function sendWelcomeEmail(
     
     console.log(`📧 Attempting to send welcome email to ${email} (${tier} tier) from ${fromAddress}`);
     console.log(`🔑 API Key present: ${apiKey.substring(0, 7)}...`);
-
-    // Create Resend client with fresh instance
-    const resend = getResendClient();
 
     // Send email via Resend with retry logic
     let lastError: any = null;
