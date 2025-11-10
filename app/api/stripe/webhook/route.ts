@@ -178,12 +178,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
   }
 
-  // Send welcome email for new premium subscribers (non-blocking)
+  // Send welcome email for new premium subscribers (await to catch errors)
   if (isNewPremiumSubscriber) {
-    sendWelcomeEmail({ email, tier: 'premium' }).catch((err) => {
-      console.error('Failed to send premium welcome email:', err);
+    try {
+      const emailResult = await sendWelcomeEmail({ email, tier: 'premium' });
+      if (emailResult.success) {
+        console.log(`✅ Premium welcome email sent successfully to ${email} (ID: ${emailResult.emailId})`);
+      } else {
+        console.error(`❌ Failed to send premium welcome email to ${email}:`, emailResult.error);
+      }
+    } catch (err) {
+      console.error('❌ Exception sending premium welcome email:', err);
       // Don't fail the webhook if email fails
-    });
+    }
   }
 }
 

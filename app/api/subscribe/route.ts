@@ -126,11 +126,18 @@ export async function POST(request: NextRequest) {
 
           console.log('Reactivated subscription:', normalizedEmail);
           
-          // Send welcome email (non-blocking)
-          sendWelcomeEmail({ email: normalizedEmail, tier: 'free' }).catch((err) => {
-            console.error('Failed to send welcome email to reactivated subscriber:', err);
+          // Send welcome email (await to catch errors)
+          try {
+            const emailResult = await sendWelcomeEmail({ email: normalizedEmail, tier: 'free' });
+            if (emailResult.success) {
+              console.log(`✅ Welcome email sent to reactivated subscriber ${normalizedEmail} (ID: ${emailResult.emailId})`);
+            } else {
+              console.error(`❌ Failed to send welcome email to reactivated subscriber ${normalizedEmail}:`, emailResult.error);
+            }
+          } catch (err) {
+            console.error('❌ Exception sending welcome email to reactivated subscriber:', err);
             // Don't fail the request if email fails
-          });
+          }
 
           return NextResponse.json(
             {
