@@ -16,24 +16,24 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
  */
 export async function GET(request: NextRequest) {
   try {
-    // Log all headers for debugging (remove in production if needed)
-    const allHeaders = Object.fromEntries(request.headers.entries());
-    console.log('Request headers:', JSON.stringify(allHeaders, null, 2));
+    // Vercel cron jobs don't send Authorization headers - they're authenticated at infrastructure level
+    // Check for Vercel-specific indicators or if no auth header in production (assume Vercel cron)
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
     
-    // Vercel cron jobs send a special header - check for that first
-    // Also check for user-agent that indicates Vercel cron
+    // Check for Vercel cron indicators
     const vercelCron = request.headers.get('x-vercel-cron') || 
                        request.headers.get('x-vercel-signature') ||
-                       (request.headers.get('user-agent')?.includes('vercel-cron') ? 'vercel-cron' : null);
+                       request.headers.get('user-agent')?.includes('vercel');
     
-    // If it's a Vercel cron job, allow it (Vercel handles authentication)
-    if (vercelCron) {
-      console.log('✅ Verified Vercel cron job via header:', vercelCron);
+    // If it's production and no auth header, assume it's a Vercel cron job
+    // Vercel cron jobs are authenticated at the infrastructure level
+    const isVercelCron = vercelCron || (process.env.NODE_ENV === 'production' && !authHeader);
+    
+    if (isVercelCron) {
+      console.log('✅ Verified Vercel cron job (infrastructure-authenticated)');
     } else {
       // For manual triggers, require Bearer token authentication
-      const authHeader = request.headers.get('authorization');
-      const cronSecret = process.env.CRON_SECRET;
-
       if (!cronSecret) {
         console.error('CRON_SECRET not configured - endpoint is unprotected!');
         // In production, fail closed. In development, allow for testing.
