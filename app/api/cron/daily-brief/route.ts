@@ -16,42 +16,49 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret to prevent unauthorized access
-    // Use timing-safe comparison to prevent timing attacks
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (!cronSecret) {
-      console.error('CRON_SECRET not configured - endpoint is unprotected!');
-      // In production, fail closed. In development, allow for testing.
-      if (process.env.NODE_ENV === 'production') {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    // Vercel cron jobs send a special header - check for that first
+    const vercelCron = request.headers.get('x-vercel-cron') || request.headers.get('x-vercel-signature');
+    
+    // If it's a Vercel cron job, allow it (Vercel handles authentication)
+    if (vercelCron) {
+      console.log('✅ Verified Vercel cron job');
     } else {
-      // Timing-safe comparison to prevent timing attacks
-      const expectedHeader = `Bearer ${cronSecret}`;
-      
-      if (!authHeader || authHeader.length !== expectedHeader.length) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+      // For manual triggers, require Bearer token authentication
+      const authHeader = request.headers.get('authorization');
+      const cronSecret = process.env.CRON_SECRET;
 
-      // Use Node.js crypto.timingSafeEqual for constant-time comparison
-      try {
-        const authBuffer = Buffer.from(authHeader, 'utf8');
-        const expectedBuffer = Buffer.from(expectedHeader, 'utf8');
+      if (!cronSecret) {
+        console.error('CRON_SECRET not configured - endpoint is unprotected!');
+        // In production, fail closed. In development, allow for testing.
+        if (process.env.NODE_ENV === 'production') {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+      } else {
+        // Timing-safe comparison to prevent timing attacks
+        const expectedHeader = `Bearer ${cronSecret}`;
         
-        // timingSafeEqual requires buffers of same length (we already checked)
-        if (authBuffer.length !== expectedBuffer.length) {
+        if (!authHeader || authHeader.length !== expectedHeader.length) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Constant-time comparison to prevent timing attacks
-        if (!timingSafeEqual(authBuffer, expectedBuffer)) {
+        // Use Node.js crypto.timingSafeEqual for constant-time comparison
+        try {
+          const authBuffer = Buffer.from(authHeader, 'utf8');
+          const expectedBuffer = Buffer.from(expectedHeader, 'utf8');
+          
+          // timingSafeEqual requires buffers of same length (we already checked)
+          if (authBuffer.length !== expectedBuffer.length) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+          }
+
+          // Constant-time comparison to prevent timing attacks
+          if (!timingSafeEqual(authBuffer, expectedBuffer)) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+          }
+        } catch (err) {
+          console.error('Error in timing-safe comparison:', err);
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-      } catch (err) {
-        console.error('Error in timing-safe comparison:', err);
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 
