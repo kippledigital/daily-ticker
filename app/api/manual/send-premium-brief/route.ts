@@ -7,9 +7,13 @@ export const runtime = 'nodejs';
 /**
  * Manual endpoint to send today's premium brief to premium subscribers
  * 
- * Usage: GET /api/manual/send-premium-brief
+ * Usage: 
+ * - GET /api/manual/send-premium-brief (sends to all premium subscribers)
+ * - GET /api/manual/send-premium-brief?email=your@email.com (sends to specific email)
  */
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const specificEmail = searchParams.get('email');
   try {
     console.log('📧 Manual premium brief send triggered');
 
@@ -93,10 +97,13 @@ export async function GET(request: NextRequest) {
     console.log(`Found ${premiumCount} premium subscribers`);
 
     // Send premium email using today's brief
+    // If specific email provided, send directly to that email
+    // Otherwise, send to all premium subscribers
     const premiumEmailSent = await sendMorningBrief({
       subject: archiveData.subject_premium || archiveData.subject_free,
       htmlContent: archiveData.html_content_premium || archiveData.html_content_free,
-      tier: 'premium',
+      tier: specificEmail ? undefined : 'premium', // Don't filter by tier if specific email
+      to: specificEmail ? [specificEmail] : undefined, // Send to specific email if provided
     });
 
     if (!premiumEmailSent) {
