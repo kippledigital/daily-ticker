@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMorningBrief } from '@/lib/automation/email-sender';
-import { generateEmailContent } from '@/lib/automation/email-generator';
-import { getHistoricalWatchlistData } from '@/lib/automation/historical-data';
-import { gatherFinancialDataBatch, getRawAggregatedData } from '@/lib/automation/news-gatherer';
-import { analyzeStock } from '@/lib/automation/ai-analyzer';
-import { validateStockAnalysis } from '@/lib/automation/validator';
-import { injectTrendSymbol } from '@/lib/automation/trend-injector';
-import type { ValidatedStock } from '@/types/automation';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 /**
  * Manual endpoint to send today's premium brief to premium subscribers
