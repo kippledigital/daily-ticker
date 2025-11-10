@@ -31,10 +31,14 @@ export async function GET(request: NextRequest) {
     if (vercelCron) {
       console.log('✅ Verified Vercel cron job (infrastructure-authenticated)');
     } else if (process.env.NODE_ENV === 'production' && !authHeader) {
-      // In production, if no auth header, it might be Vercel cron (they don't send auth headers)
-      // Log for monitoring but allow it (Vercel infrastructure handles auth)
-      console.log('⚠️  Production request without auth header - assuming Vercel cron');
-      console.log('Request headers:', JSON.stringify(Object.fromEntries(request.headers.entries())));
+      // TEMPORARY FIX: Allow production requests without auth header
+      // Vercel cron jobs don't send Authorization headers
+      // This allows both Vercel cron and manual triggers to work
+      // TODO: After verifying Vercel cron headers, tighten security
+      console.log('⚠️  Production request without auth header - allowing (Vercel cron workaround)');
+      const headers = Object.fromEntries(request.headers.entries());
+      console.log('Request headers:', JSON.stringify(headers, null, 2));
+      // Allow it - proceed to automation
     } else {
       // For manual triggers, require Bearer token authentication
       if (!cronSecret) {
