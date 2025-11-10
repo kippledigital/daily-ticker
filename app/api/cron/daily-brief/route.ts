@@ -16,12 +16,19 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
  */
 export async function GET(request: NextRequest) {
   try {
+    // Log all headers for debugging (remove in production if needed)
+    const allHeaders = Object.fromEntries(request.headers.entries());
+    console.log('Request headers:', JSON.stringify(allHeaders, null, 2));
+    
     // Vercel cron jobs send a special header - check for that first
-    const vercelCron = request.headers.get('x-vercel-cron') || request.headers.get('x-vercel-signature');
+    // Also check for user-agent that indicates Vercel cron
+    const vercelCron = request.headers.get('x-vercel-cron') || 
+                       request.headers.get('x-vercel-signature') ||
+                       (request.headers.get('user-agent')?.includes('vercel-cron') ? 'vercel-cron' : null);
     
     // If it's a Vercel cron job, allow it (Vercel handles authentication)
     if (vercelCron) {
-      console.log('✅ Verified Vercel cron job');
+      console.log('✅ Verified Vercel cron job via header:', vercelCron);
     } else {
       // For manual triggers, require Bearer token authentication
       const authHeader = request.headers.get('authorization');
