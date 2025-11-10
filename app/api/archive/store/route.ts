@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if brief already exists
+    // Check if brief already exists - if so, delete it first (allow overwriting)
     const { data: existingBrief } = await supabase
       .from('briefs')
       .select('id')
@@ -77,10 +77,37 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (existingBrief) {
-      return NextResponse.json(
-        { error: `Brief for ${data.date} already exists` },
-        { status: 409 }
-      );
+      console.log(`⚠️  Brief for ${data.date} already exists. Deleting to allow overwrite...`);
+      
+      // Delete associated stocks first (foreign key constraint)
+      const { error: stocksError } = await supabase
+        .from('stocks')
+        .delete()
+        .eq('brief_id', existingBrief.id);
+
+      if (stocksError) {
+        console.error('Error deleting existing stocks:', stocksError);
+        return NextResponse.json(
+          { error: 'Failed to delete existing stocks', details: stocksError },
+          { status: 500 }
+        );
+      }
+
+      // Delete the existing brief
+      const { error: deleteError } = await supabase
+        .from('briefs')
+        .delete()
+        .eq('id', existingBrief.id);
+
+      if (deleteError) {
+        console.error('Error deleting existing brief:', deleteError);
+        return NextResponse.json(
+          { error: 'Failed to delete existing brief', details: deleteError },
+          { status: 500 }
+        );
+      }
+
+      console.log(`✅ Deleted existing brief for ${data.date}, proceeding with new brief...`);
     }
 
     // Insert brief with BOTH free and premium versions
