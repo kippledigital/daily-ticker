@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRawAggregatedData } from '@/lib/automation/news-gatherer';
 import { analyzeStock } from '@/lib/automation/ai-analyzer';
 
+// Mark as dynamic route (uses request.url)
+export const dynamic = 'force-dynamic';
+
 /**
  * Test endpoint for AI validation layer
  *

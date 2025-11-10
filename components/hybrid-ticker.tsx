@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { TrendingUp, TrendingDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import HyperText from "@/components/ui/hyper-text"
@@ -36,16 +36,17 @@ export function HybridTicker() {
   const [currentPickIndex, setCurrentPickIndex] = useState(0)
   const [isLive, setIsLive] = useState(false)
   const [marketLoading, setMarketLoading] = useState(true)
+  const cacheTimestampRef = useRef(0)
+  const hasInitialDataRef = useRef(false)
 
   // Fetch live market indices data with caching
   useEffect(() => {
-    let cacheTimestamp = 0
     const CACHE_DURATION = 60000 // 60 seconds
 
     const fetchMarketData = async () => {
       // Skip if cached data is still fresh
       const now = Date.now()
-      if (now - cacheTimestamp < CACHE_DURATION && marketData.length > 0) {
+      if (now - cacheTimestampRef.current < CACHE_DURATION && hasInitialDataRef.current) {
         return
       }
 
@@ -60,7 +61,8 @@ export function HybridTicker() {
         if (data.success && data.data) {
           setMarketData(data.data)
           setIsLive(true)
-          cacheTimestamp = now
+          cacheTimestampRef.current = now
+          hasInitialDataRef.current = true
         }
       } catch (error) {
         console.error("Failed to fetch market indices:", error)
@@ -74,6 +76,7 @@ export function HybridTicker() {
     // Refresh every 60 seconds for live updates (matches cache duration)
     const interval = setInterval(fetchMarketData, 60000)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Fetch today's actual brief data

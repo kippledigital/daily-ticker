@@ -106,7 +106,9 @@ console.log('Metadata Object:');
 console.log(JSON.stringify(metadata, null, 2));
 console.log(`✅ ${metadata.title === title ? 'PASS (title matches)' : 'FAIL'}`);
 console.log(`✅ ${metadata.description === description ? 'PASS (description matches)' : 'FAIL'}`);
-console.log(`✅ ${metadata.openGraph?.type === 'article' ? 'PASS (OpenGraph type)' : 'FAIL'}`);
+// Check OpenGraph type (it's a string in the metadata object)
+const ogType = (metadata.openGraph as any)?.type;
+console.log(`✅ ${ogType === 'article' ? 'PASS (OpenGraph type)' : 'FAIL'}`);
 console.log(`✅ ${metadata.twitter?.card === 'summary_large_image' ? 'PASS (Twitter card)' : 'FAIL'}`);
 
 // Test 5: Edge Cases
