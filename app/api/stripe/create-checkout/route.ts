@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, STRIPE_PRICES } from '@/lib/stripe'
 import { createServerSupabaseClient } from '@/lib/supabase-auth'
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = getClientIP(request)
+    const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.checkout)
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': RATE_LIMITS.checkout.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          }
+        }
+      )
+    }
+
     const { priceType, email } = await request.json()
 
     // Validate price type
@@ -166,11 +189,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       sessionId: session_stripe.id,
       url: session_stripe.url,
     })
+
+    // Add rate limit headers
+    response.headers.set('X-RateLimit-Limit', RATE_LIMITS.checkout.maxRequests.toString())
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString())
+
+    return response
   } catch (error: any) {
     console.error('[CHECKOUT] Full error:', error)
     console.error('[CHECKOUT] Error message:', error.message)

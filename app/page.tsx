@@ -1,51 +1,124 @@
 "use client"
 
-import { useState } from "react"
+import { useState, lazy, Suspense, useEffect } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { HybridTicker } from "@/components/hybrid-ticker"
 import { SubscribeForm } from "@/components/subscribe-form"
-import { EmailPreview } from "@/components/email-preview"
 import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
-import { PerformanceDashboard } from "@/components/performance-dashboard"
 import { TrendingUp, Target, Zap, BookOpen, Plus } from "lucide-react"
+import { trackPerformanceDashboardView } from "@/lib/analytics"
+
+// Lazy load below-fold components  
+const PerformanceDashboard = lazy(() => import("@/components/performance-dashboard").then(mod => ({ default: mod.PerformanceDashboard })))
+const EmailPreview = lazy(() => import("@/components/email-preview").then(mod => ({ default: mod.EmailPreview })))
+
+// Skeleton loaders
+function DashboardSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="grid md:grid-cols-4 gap-4 mb-8">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 h-24" />
+        ))}
+      </div>
+      <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6 h-96" />
+    </div>
+  )
+}
+
+function EmailPreviewSkeleton() {
+  return (
+    <div className="animate-pulse bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-8 h-96" />
+  )
+}
+
+// Wrapper component to track performance dashboard views
+function PerformanceDashboardWithTracking() {
+  useEffect(() => {
+    trackPerformanceDashboardView()
+  }, [])
+  
+  return <PerformanceDashboard />
+}
 
 export default function Home() {
   const [isYearly, setIsYearly] = useState(true) // Default to yearly
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: "Daily Ticker - Market Insights That Make Sense",
-    description: "Get up to 3 actionable stock picks daily — FREE. Upgrade to Pro for confidence scores, stop-loss levels, and profit targets to maximize your trades.",
-    publisher: {
-      "@type": "Organization",
-      name: "Daily Ticker",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://dailyticker.co/logo.png",
-      },
+    "@type": "Organization",
+    name: "Daily Ticker",
+    url: "https://dailyticker.co",
+    logo: "https://dailyticker.co/logo.png",
+    description: "A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research. Get up to 3 actionable stock picks daily — FREE.",
+    sameAs: [
+      "https://twitter.com/GetDailyTicker"
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "brief@dailyticker.co",
+      contactType: "Customer Service"
     },
-    datePublished: new Date().toISOString(),
-    dateModified: new Date().toISOString(),
-    author: {
-      "@type": "Organization",
-      name: "Daily Ticker",
+    offers: {
+      "@type": "Offer",
+      name: "Daily Ticker Pro",
+      description: "Get AI confidence scores, stop-loss levels, profit targets, and portfolio allocation guidance",
+      price: "10",
+      priceCurrency: "USD",
+      priceValidUntil: "2026-12-31",
+      availability: "https://schema.org/InStock",
+      url: "https://dailyticker.co/premium"
     },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": "https://dailyticker.co",
-    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Daily Ticker Services",
+      itemListElement: [
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Free Daily Stock Picks",
+            description: "Get 1-3 actionable stock picks daily with entry prices, sector analysis, and market context",
+            provider: {
+              "@type": "Organization",
+              name: "Daily Ticker"
+            }
+          }
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Daily Ticker Pro",
+            description: "Premium service with AI confidence scores, stop-loss levels, profit targets, and portfolio allocation guidance",
+            provider: {
+              "@type": "Organization",
+              name: "Daily Ticker"
+            }
+          }
+        }
+      ]
+    }
   }
 
   return (
     <div className="min-h-screen bg-[#0B1E32]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 
+      {/* Skip links for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#00ff88] focus:text-[#0B1E32] focus:font-bold focus:rounded-lg focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       <SiteHeader />
 
       {/* Hero Section - REDESIGNED */}
+      <main id="main-content">
       <section id="subscribe" className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-5xl mx-auto text-center space-y-6">
           {/* Live Indicator */}
@@ -105,7 +178,9 @@ export default function Home() {
             </p>
           </div>
 
-          <PerformanceDashboard />
+          <Suspense fallback={<DashboardSkeleton />}>
+            <PerformanceDashboardWithTracking />
+          </Suspense>
         </div>
       </section>
 
@@ -230,7 +305,9 @@ export default function Home() {
             </p>
           </div>
 
-          <EmailPreview />
+          <Suspense fallback={<EmailPreviewSkeleton />}>
+            <EmailPreview />
+          </Suspense>
         </div>
       </section>
 
@@ -567,6 +644,7 @@ export default function Home() {
           </p>
         </div>
       </section>
+      </main>
 
       <SiteFooter />
     </div>

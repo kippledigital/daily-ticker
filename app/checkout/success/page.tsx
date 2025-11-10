@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { CheckCircle, Mail, BookOpen, Loader2 } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
+import { trackCheckoutComplete } from '@/lib/analytics'
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams()
@@ -14,14 +15,15 @@ export default function CheckoutSuccessPage() {
 
   useEffect(() => {
     const id = searchParams.get('session_id')
+    const priceType = searchParams.get('price_type') as 'monthly' | 'standard' | null
+    
     if (id) {
       setSessionId(id)
-      setLoading(false)
-    } else {
-      // Allow viewing without session_id for testing/development
-      // In production, you can add a redirect here if needed
-      setLoading(false)
+      // Track checkout completion
+      trackCheckoutComplete(id, priceType || 'standard')
     }
+    
+    setLoading(false)
   }, [searchParams])
 
   if (loading) {
@@ -42,10 +44,16 @@ export default function CheckoutSuccessPage() {
       {/* Success Content */}
       <div className="container mx-auto px-4 py-16 max-w-2xl">
         <div className="bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl p-8 md:p-12 text-center shadow-lg shadow-[#00ff88]/10">
-          {/* Success Icon */}
+          {/* Success Icon with Animation */}
           <div className="flex justify-center mb-6">
-            <div className="bg-[#00ff88]/10 rounded-full p-6">
-              <CheckCircle className="h-16 w-16 text-[#00ff88]" />
+            <div className="relative">
+              <div className="bg-[#00ff88]/10 rounded-full p-6 animate-in zoom-in duration-500">
+                <CheckCircle className="h-16 w-16 text-[#00ff88]" />
+              </div>
+              {/* Pulsing ring effect */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-20 w-20 rounded-full border-2 border-[#00ff88]/30 animate-ping" />
+              </div>
             </div>
           </div>
 

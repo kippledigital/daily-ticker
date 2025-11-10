@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { X, Calculator } from 'lucide-react'
 import { ROICalculator } from './roi-calculator'
+import { trackROICalculatorOpen } from '@/lib/analytics'
 
 interface ROICalculatorModalProps {
   triggerText?: string
@@ -21,7 +22,10 @@ export function ROICalculatorModal({
     <>
       {/* Trigger Button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          trackROICalculatorOpen()
+          setIsOpen(true)
+        }}
         className={triggerClassName || "inline-flex items-center gap-2 text-[#00ff88] hover:text-[#00dd77] transition-colors"}
       >
         {showIcon && <Calculator className="h-4 w-4" />}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { trackCheckoutStart } from '@/lib/analytics'
 
 interface CheckoutButtonProps {
   className?: string
@@ -15,6 +16,9 @@ export function CheckoutButton({ className, children, priceType = 'standard', on
 
   const handleCheckout = async () => {
     setLoading(true)
+    
+    // Track checkout start
+    trackCheckoutStart(priceType === 'monthly' ? 'monthly' : 'standard')
     
     // Call optional onClick callback (e.g., to close dropdown)
     if (onClick) {

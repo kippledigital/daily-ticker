@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,6 +19,28 @@ const supabase = createClient(
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.unsubscribe);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': RATE_LIMITS.unsubscribe.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          }
+        }
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email) {
@@ -27,7 +50,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return await unsubscribeUser(email);
+    return await unsubscribeUser(email, rateLimitResult);
   } catch (error) {
     console.error('Error in unsubscribe POST:', error);
     return NextResponse.json(
@@ -42,6 +65,28 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.unsubscribe);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': RATE_LIMITS.unsubscribe.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          }
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email');
 
@@ -52,7 +97,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return await unsubscribeUser(email);
+    return await unsubscribeUser(email, rateLimitResult);
   } catch (error) {
     console.error('Error in unsubscribe GET:', error);
     return NextResponse.json(
@@ -64,51 +109,56 @@ export async function GET(request: NextRequest) {
 
 /**
  * Unsubscribe user from email list
+ * SECURITY: Always returns same success message to prevent email enumeration
  */
-async function unsubscribeUser(email: string): Promise<NextResponse> {
+async function unsubscribeUser(email: string, rateLimitResult: { remaining: number; resetTime: number }): Promise<NextResponse> {
   const normalizedEmail = email.trim().toLowerCase();
 
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(normalizedEmail)) {
-    return NextResponse.json(
-      { error: 'Invalid email format' },
-      { status: 400 }
-    );
+    // Return generic success message even for invalid format (prevents enumeration)
+    const response = NextResponse.json({
+      success: true,
+      message: 'If this email was subscribed, it has been unsubscribed.'
+    });
+    response.headers.set('X-RateLimit-Limit', RATE_LIMITS.unsubscribe.maxRequests.toString());
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString());
+    return response;
   }
 
-  // Update subscriber status to unsubscribed
-  const { data, error } = await supabase
+  // Attempt to unsubscribe (silently handle errors to prevent enumeration)
+  const { error } = await supabase
     .from('subscribers')
     .update({
       status: 'unsubscribed',
       unsubscribed_at: new Date().toISOString(),
     })
-    .eq('email', normalizedEmail)
-    .select()
-    .single();
+    .eq('email', normalizedEmail);
 
+  // Log for internal tracking (not exposed to user)
   if (error) {
-    // Check if email doesn't exist
     if (error.code === 'PGRST116') {
-      return NextResponse.json(
-        { error: 'Email not found in subscriber list' },
-        { status: 404 }
-      );
+      // Email not found - log but don't reveal to user
+      console.log(`Unsubscribe attempted for non-existent email: ${normalizedEmail}`);
+    } else {
+      console.error('Error unsubscribing user:', error);
     }
-
-    console.error('Error unsubscribing user:', error);
-    return NextResponse.json(
-      { error: 'Failed to unsubscribe. Please try again.' },
-      { status: 500 }
-    );
+  } else {
+    console.log(`User unsubscribed: ${normalizedEmail}`);
   }
 
-  console.log(`User unsubscribed: ${normalizedEmail}`);
-
-  return NextResponse.json({
+  // Always return same success message regardless of email existence (prevents enumeration)
+  const response = NextResponse.json({
     success: true,
-    message: 'Successfully unsubscribed. We\'re sorry to see you go!',
-    email: normalizedEmail,
+    message: 'If this email was subscribed, it has been unsubscribed.'
   });
+
+  // Add rate limit headers
+  response.headers.set('X-RateLimit-Limit', RATE_LIMITS.unsubscribe.maxRequests.toString());
+  response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+  response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString());
+
+  return response;
 }

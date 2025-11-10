@@ -95,7 +95,7 @@ export function PerformanceDashboard() {
         {/* Win Rate */}
         <div className="bg-[#0a1929] border border-[#1a3a52] rounded-xl p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-[#00ff88]/10 rounded-lg">
+            <div className="p-2 bg-[#00ff88]/10 rounded-lg" aria-hidden="true">
               <Award className="h-5 w-5 text-[#00ff88]" />
             </div>
             <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">Win Rate</span>
@@ -113,7 +113,7 @@ export function PerformanceDashboard() {
         {/* Average Return */}
         <div className="bg-[#0a1929] border border-[#1a3a52] rounded-xl p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-[#00ff88]/10 rounded-lg">
+            <div className="p-2 bg-[#00ff88]/10 rounded-lg" aria-hidden="true">
               <BarChart3 className="h-5 w-5 text-[#00ff88]" />
             </div>
             <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">Avg Return</span>
@@ -135,7 +135,7 @@ export function PerformanceDashboard() {
         {/* Best Pick */}
         <div className="bg-[#0a1929] border border-[#1a3a52] rounded-xl p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-[#00ff88]/10 rounded-lg">
+            <div className="p-2 bg-[#00ff88]/10 rounded-lg" aria-hidden="true">
               <TrendingUp className="h-5 w-5 text-[#00ff88]" />
             </div>
             <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">Best Pick</span>
@@ -153,7 +153,7 @@ export function PerformanceDashboard() {
         {/* Avg Hold Time */}
         <div className="bg-[#0a1929] border border-[#1a3a52] rounded-xl p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-[#00ff88]/10 rounded-lg">
+            <div className="p-2 bg-[#00ff88]/10 rounded-lg" aria-hidden="true">
               <Calendar className="h-5 w-5 text-[#00ff88]" />
             </div>
             <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">Avg Hold</span>
@@ -174,7 +174,7 @@ export function PerformanceDashboard() {
         {/* Header */}
         <div className="p-6 border-b border-[#1a3a52]">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-mono font-bold text-white">Recent Closed Picks</h3>
+            <h3 className="text-lg font-mono font-bold text-white" id="picks-table">Recent Closed Picks</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => setFilter('closed')}
@@ -262,9 +262,9 @@ export function PerformanceDashboard() {
                       {pick.return_percent !== null ? (
                         <div className="flex items-center gap-1">
                           {pick.return_percent >= 0 ? (
-                            <TrendingUp className="h-4 w-4 text-[#00ff88]" />
+                            <TrendingUp className="h-4 w-4 text-[#00ff88]" aria-hidden="true" />
                           ) : (
-                            <TrendingDown className="h-4 w-4 text-[#ff4444]" />
+                            <TrendingDown className="h-4 w-4 text-[#ff4444]" aria-hidden="true" />
                           )}
                           <p className={cn(
                             "text-sm font-mono font-bold",

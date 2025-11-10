@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Analytics } from "@/components/analytics";
 
+// Get Google Search Console verification code from environment
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   title: "Daily Ticker — Clear & Actionable Market Briefs for Busy Investors",
   description: "A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research. Sent Mon–Fri at 8 AM.",
@@ -10,6 +13,14 @@ export const metadata: Metadata = {
   creator: "Daily Ticker",
   publisher: "Daily Ticker",
   metadataBase: new URL('https://dailyticker.co'),
+  alternates: {
+    canonical: 'https://dailyticker.co',
+  },
+  ...(googleSiteVerification && {
+    verification: {
+      google: googleSiteVerification,
+    },
+  }),
   openGraph: {
     title: "Daily Ticker — Clear & Actionable Market Briefs",
     description: "A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research.",

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendWelcomeEmail } from '@/lib/emails/send-welcome-email';
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,6 +15,28 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.subscribe);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': RATE_LIMITS.subscribe.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          }
+        }
+      );
+    }
+
     const { email } = await request.json();
 
     // Validate email format
@@ -139,13 +162,20 @@ export async function POST(request: NextRequest) {
         // Don't fail the request if email fails
       });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         message: 'Successfully subscribed! Check your email.'
       },
       { status: 200 }
     );
+
+    // Add rate limit headers
+    response.headers.set('X-RateLimit-Limit', RATE_LIMITS.subscribe.maxRequests.toString());
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+    response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString());
+
+    return response;
   } catch (error) {
     console.error('Subscription error:', error);
     return NextResponse.json(

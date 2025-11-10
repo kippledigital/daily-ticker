@@ -10,7 +10,7 @@ export function SiteFooter() {
           {/* Brand Column */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-[#00ff88]" />
+              <TrendingUp className="h-5 w-5 text-[#00ff88]" aria-hidden="true" />
               <span className="font-bold text-white font-mono">Daily Ticker</span>
             </div>
             <p className="text-sm text-gray-200 leading-relaxed">

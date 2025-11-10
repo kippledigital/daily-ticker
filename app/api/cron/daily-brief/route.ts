@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runDailyAutomation } from '@/lib/automation/orchestrator';
+import { timingSafeEqual } from 'crypto';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for cron jobs
 export const maxDuration = 300; // 5 minutes max (Vercel Pro allows up to 5 min)
@@ -16,11 +17,42 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret to prevent unauthorized access
+    // Use timing-safe comparison to prevent timing attacks
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!cronSecret) {
+      console.error('CRON_SECRET not configured - endpoint is unprotected!');
+      // In production, fail closed. In development, allow for testing.
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    } else {
+      // Timing-safe comparison to prevent timing attacks
+      const expectedHeader = `Bearer ${cronSecret}`;
+      
+      if (!authHeader || authHeader.length !== expectedHeader.length) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Use Node.js crypto.timingSafeEqual for constant-time comparison
+      try {
+        const authBuffer = Buffer.from(authHeader, 'utf8');
+        const expectedBuffer = Buffer.from(expectedHeader, 'utf8');
+        
+        // timingSafeEqual requires buffers of same length (we already checked)
+        if (authBuffer.length !== expectedBuffer.length) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Constant-time comparison to prevent timing attacks
+        if (!timingSafeEqual(authBuffer, expectedBuffer)) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+      } catch (err) {
+        console.error('Error in timing-safe comparison:', err);
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     console.log('🚀 Daily automation triggered via cron');

@@ -1,3 +1,4 @@
+/* Font loading optimized with display=swap for better performance */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;

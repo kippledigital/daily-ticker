@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
+// Cache for 60 seconds - market data doesn't need to be real-time
+export const revalidate = 60;
 
 interface MarketIndex {
   symbol: string;
@@ -115,7 +116,11 @@ export async function GET() {
       return NextResponse.json({
         success: true,
         data: results,
-        cached: false,
+        cached: true,
+      }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
       });
     }
 

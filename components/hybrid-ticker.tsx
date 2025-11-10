@@ -35,26 +35,43 @@ export function HybridTicker() {
   const [loading, setLoading] = useState(true)
   const [currentPickIndex, setCurrentPickIndex] = useState(0)
   const [isLive, setIsLive] = useState(false)
+  const [marketLoading, setMarketLoading] = useState(true)
 
-  // Fetch live market indices data
+  // Fetch live market indices data with caching
   useEffect(() => {
+    let cacheTimestamp = 0
+    const CACHE_DURATION = 60000 // 60 seconds
+
     const fetchMarketData = async () => {
+      // Skip if cached data is still fresh
+      const now = Date.now()
+      if (now - cacheTimestamp < CACHE_DURATION && marketData.length > 0) {
+        return
+      }
+
+      setMarketLoading(true)
       try {
-        const response = await fetch('/api/market-indices')
+        const response = await fetch('/api/market-indices', {
+          // Browser will respect Cache-Control headers from API
+          cache: 'default',
+        })
         const data = await response.json()
 
         if (data.success && data.data) {
           setMarketData(data.data)
           setIsLive(true)
+          cacheTimestamp = now
         }
       } catch (error) {
         console.error("Failed to fetch market indices:", error)
         setIsLive(false)
+      } finally {
+        setMarketLoading(false)
       }
     }
 
     fetchMarketData()
-    // Refresh every 60 seconds for live updates
+    // Refresh every 60 seconds for live updates (matches cache duration)
     const interval = setInterval(fetchMarketData, 60000)
     return () => clearInterval(interval)
   }, [])
@@ -192,30 +209,40 @@ export function HybridTicker() {
             </div>
 
             <div className="space-y-3">
-              {marketData.map((index, idx) => (
-                <div key={index.symbol} className="flex items-center justify-between py-2 border-b border-[#1a3a52]/50 last:border-0">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-mono text-gray-200">{index.symbol}</span>
-                    <span className="text-xs font-mono text-gray-400">
-                      <NumberTicker value={index.price} delay={idx * 0.1} decimalPlaces={2} />
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "text-lg font-mono font-bold flex items-center gap-1",
-                      index.changePercent >= 0 ? "text-[#00ff88]" : "text-[#ff4444]"
-                    )}>
-                      {index.changePercent >= 0 ? (
-                        <TrendingUp className="h-4 w-4" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4" />
-                      )}
-                      {index.changePercent >= 0 ? "+" : ""}
-                      <NumberTicker value={index.changePercent} delay={idx * 0.1} decimalPlaces={1} />%
-                    </span>
+              {marketLoading && marketData.length === 0 ? (
+                <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-[#00ff88] border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                    <span className="text-xs text-gray-400">Loading market data...</span>
+                    <span className="sr-only">Loading live market data, please wait.</span>
                   </div>
                 </div>
-              ))}
+              ) : (
+                marketData.map((index, idx) => (
+                  <div key={index.symbol} className="flex items-center justify-between py-2 border-b border-[#1a3a52]/50 last:border-0">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-mono text-gray-200">{index.symbol}</span>
+                      <span className="text-xs font-mono text-gray-400">
+                        <NumberTicker value={index.price} delay={idx * 0.1} decimalPlaces={2} />
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "text-lg font-mono font-bold flex items-center gap-1",
+                        index.changePercent >= 0 ? "text-[#00ff88]" : "text-[#ff4444]"
+                      )}>
+                      {index.changePercent >= 0 ? (
+                        <TrendingUp className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4" aria-hidden="true" />
+                      )}
+                        {index.changePercent >= 0 ? "+" : ""}
+                        <NumberTicker value={index.changePercent} delay={idx * 0.1} decimalPlaces={1} />%
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -225,6 +252,9 @@ export function HybridTicker() {
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
               </h3>
+              {loading && dailyPicks.length === 0 ? (
+                <div className="h-1.5 w-1.5 rounded-full bg-[#00ff88] animate-pulse" />
+              ) : (
               <div className="flex gap-1.5">
                 {dailyPicks.map((_, index) => (
                   <button
@@ -240,6 +270,7 @@ export function HybridTicker() {
                   />
                 ))}
               </div>
+              )}
             </div>
 
             <div key={currentPickIndex} className="space-y-3">
@@ -256,7 +287,7 @@ export function HybridTicker() {
                     "text-sm font-mono font-bold flex items-center gap-1 justify-end mt-1",
                     "text-[#00ff88]"
                   )}>
-                    <TrendingUp className="h-3 w-3" />
+                    <TrendingUp className="h-3 w-3" aria-hidden="true" />
                     {topPick.action}
                   </div>
                 </div>
@@ -327,6 +358,9 @@ export function HybridTicker() {
               <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span> Today&apos;s Free Picks
               </h3>
+              {loading && dailyPicks.length === 0 ? (
+                <div className="h-1.5 w-1.5 rounded-full bg-[#00ff88] animate-pulse" />
+              ) : (
               <div className="flex gap-1.5">
                 {dailyPicks.map((_, index) => (
                   <button
@@ -342,6 +376,7 @@ export function HybridTicker() {
                   />
                 ))}
               </div>
+              )}
             </div>
 
             <div key={currentPickIndex} className="space-y-3">
@@ -358,7 +393,7 @@ export function HybridTicker() {
                     "text-sm font-mono font-bold flex items-center gap-1 justify-end mt-1",
                     "text-[#00ff88]"
                   )}>
-                    <TrendingUp className="h-3 w-3" />
+                    <TrendingUp className="h-3 w-3" aria-hidden="true" />
                     {topPick.action}
                   </div>
                 </div>

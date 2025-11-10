@@ -10,8 +10,8 @@ export function SiteHeader() {
   return (
     <header className="border-b border-[#1a3a52] bg-[#0B1E32]/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <TrendingUp className="h-6 w-6 text-[#00ff88]" />
+        <Link href="/" className="flex items-center gap-2" aria-label="Daily Ticker home">
+          <TrendingUp className="h-6 w-6 text-[#00ff88]" aria-hidden="true" />
           <h1 className="text-xl font-bold text-white font-mono">Daily Ticker</h1>
         </Link>
         
@@ -35,19 +35,20 @@ export function SiteHeader() {
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 text-gray-300 hover:text-white transition-colors"
-          aria-label="Toggle menu"
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileMenuOpen}
         >
           {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6" aria-hidden="true" />
           ) : (
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6" aria-hidden="true" />
           )}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#1a3a52] bg-[#0B1E32]">
+        <div className="md:hidden border-t border-[#1a3a52] bg-[#0B1E32]" role="navigation" aria-label="Mobile navigation">
           <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
             <a
               href="/#pricing"
