@@ -32,7 +32,33 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
   };
 
   try {
-    console.log('🚀 Starting daily automation...');
+    const date = new Date().toISOString().split('T')[0];
+    console.log(`🚀 Starting daily automation for ${date}...`);
+
+    // Check if brief already exists for today (prevent duplicate runs)
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: existingBrief } = await supabase
+      .from('briefs')
+      .select('id, date')
+      .eq('date', date)
+      .single();
+
+    if (existingBrief) {
+      console.warn(`⚠️  Brief for ${date} already exists. Skipping automation to prevent duplicates.`);
+      console.warn(`   If you need to regenerate, delete the existing brief first.`);
+      return {
+        success: false,
+        error: `Brief for ${date} already exists. Automation skipped to prevent duplicates.`,
+        steps: {},
+      };
+    }
+
+    console.log(`✅ No existing brief found for ${date}, proceeding with automation...`);
 
     // Step 1: Discover trending stocks
     console.log('📊 Step 1: Discovering trending stocks...');
@@ -164,7 +190,6 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
 
     // Step 7: Generate BOTH free and premium email content
     console.log('📧 Step 7: Generating email content (free + premium versions)...');
-    // date is already set at the beginning of the function
 
     // Generate premium email (full features)
     const premiumEmail = await generateEmailContent({
