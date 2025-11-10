@@ -96,7 +96,7 @@ async function getSubscriberEmails(tier?: 'free' | 'premium'): Promise<string[]>
   try {
     let query = supabase
       .from('subscribers')
-      .select('email')
+      .select('email, tier, status')
       .eq('status', 'active');
 
     // Filter by tier if specified
