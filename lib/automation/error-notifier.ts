@@ -12,7 +12,7 @@ export async function sendErrorNotification(error: {
   details?: any;
   timestamp: Date;
 }) {
-  const adminEmail = process.env.ADMIN_EMAIL || 'nikki.kipple@gmail.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'brief@dailyticker.co';
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'brief@dailyticker.co';
 
   try {
@@ -103,7 +103,7 @@ export async function sendSuccessNotification(stats: {
   executionTime: number;
   tickers: string[];
 }) {
-  const adminEmail = process.env.ADMIN_EMAIL || 'nikki.kipple@gmail.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'brief@dailyticker.co';
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'brief@dailyticker.co';
 
   // Only send success notifications if explicitly enabled
