@@ -63,7 +63,8 @@ export async function GET(request: NextRequest) {
       const premiumEmailSent = await sendMorningBrief({
         subject: briefToUse.subject_premium || briefToUse.subject_free || briefToUse.subject,
         htmlContent: briefToUse.html_content_premium || briefToUse.html_content_free || briefToUse.html_content,
-        tier: 'premium',
+        tier: specificEmail ? undefined : 'premium',
+        to: specificEmail ? [specificEmail] : undefined,
       });
 
       if (!premiumEmailSent) {
