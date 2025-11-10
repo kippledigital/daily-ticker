@@ -49,16 +49,42 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
       .single();
 
     if (existingBrief) {
-      console.warn(`⚠️  Brief for ${date} already exists. Skipping automation to prevent duplicates.`);
-      console.warn(`   If you need to regenerate, delete the existing brief first.`);
-      return {
-        success: false,
-        error: `Brief for ${date} already exists. Automation skipped to prevent duplicates.`,
-        steps: {},
-      };
-    }
+      console.warn(`⚠️  Brief for ${date} already exists. Deleting to allow regeneration...`);
+      
+      // Delete associated stocks first (foreign key constraint)
+      const { error: stocksError } = await supabase
+        .from('stocks')
+        .delete()
+        .eq('brief_id', existingBrief.id);
 
-    console.log(`✅ No existing brief found for ${date}, proceeding with automation...`);
+      if (stocksError) {
+        console.error('Error deleting existing stocks:', stocksError);
+        return {
+          success: false,
+          error: `Failed to delete existing stocks: ${stocksError.message}`,
+          steps: {},
+        };
+      }
+
+      // Delete the existing brief
+      const { error: deleteError } = await supabase
+        .from('briefs')
+        .delete()
+        .eq('id', existingBrief.id);
+
+      if (deleteError) {
+        console.error('Error deleting existing brief:', deleteError);
+        return {
+          success: false,
+          error: `Failed to delete existing brief: ${deleteError.message}`,
+          steps: {},
+        };
+      }
+
+      console.log(`✅ Deleted existing brief for ${date}, proceeding with new automation...`);
+    } else {
+      console.log(`✅ No existing brief found for ${date}, proceeding with automation...`);
+    }
 
     // Step 1: Discover trending stocks
     console.log('📊 Step 1: Discovering trending stocks...');
