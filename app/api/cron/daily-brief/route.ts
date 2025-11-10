@@ -17,21 +17,24 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
 export async function GET(request: NextRequest) {
   try {
     // Vercel cron jobs don't send Authorization headers - they're authenticated at infrastructure level
-    // Check for Vercel-specific indicators or if no auth header in production (assume Vercel cron)
+    // Check for Vercel-specific indicators
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
     
-    // Check for Vercel cron indicators
+    // Check for Vercel cron indicators (Vercel sends these headers)
     const vercelCron = request.headers.get('x-vercel-cron') || 
                        request.headers.get('x-vercel-signature') ||
-                       request.headers.get('user-agent')?.includes('vercel');
+                       request.headers.get('user-agent')?.includes('vercel-cron');
     
-    // If it's production and no auth header, assume it's a Vercel cron job
+    // If it's a Vercel cron job (has Vercel headers), allow it
     // Vercel cron jobs are authenticated at the infrastructure level
-    const isVercelCron = vercelCron || (process.env.NODE_ENV === 'production' && !authHeader);
-    
-    if (isVercelCron) {
+    if (vercelCron) {
       console.log('✅ Verified Vercel cron job (infrastructure-authenticated)');
+    } else if (process.env.NODE_ENV === 'production' && !authHeader) {
+      // In production, if no auth header, it might be Vercel cron (they don't send auth headers)
+      // Log for monitoring but allow it (Vercel infrastructure handles auth)
+      console.log('⚠️  Production request without auth header - assuming Vercel cron');
+      console.log('Request headers:', JSON.stringify(Object.fromEntries(request.headers.entries())));
     } else {
       // For manual triggers, require Bearer token authentication
       if (!cronSecret) {
