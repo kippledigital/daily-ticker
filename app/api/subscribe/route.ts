@@ -148,19 +148,19 @@ export async function POST(request: NextRequest) {
 
     console.log('New subscription successful:', normalizedEmail);
 
-    // Send welcome email (non-blocking - don't fail the request if email fails)
-    sendWelcomeEmail({ email: normalizedEmail, tier: 'free' })
-      .then((result) => {
-        if (result.success) {
-          console.log(`✅ Welcome email queued for ${normalizedEmail}`);
-        } else {
-          console.error(`❌ Failed to send welcome email to ${normalizedEmail}:`, result.error);
-        }
-      })
-      .catch((err) => {
-        console.error('❌ Exception sending welcome email to new subscriber:', err);
-        // Don't fail the request if email fails
-      });
+    // Send welcome email (await to catch errors, but don't fail the request)
+    try {
+      const emailResult = await sendWelcomeEmail({ email: normalizedEmail, tier: 'free' });
+      if (emailResult.success) {
+        console.log(`✅ Welcome email sent successfully to ${normalizedEmail} (ID: ${emailResult.emailId})`);
+      } else {
+        console.error(`❌ Failed to send welcome email to ${normalizedEmail}:`, emailResult.error);
+        // Log to monitoring/alerting system if available
+      }
+    } catch (err) {
+      console.error('❌ Exception sending welcome email to new subscriber:', err);
+      // Don't fail the request if email fails, but log the error
+    }
 
     const response = NextResponse.json(
       {
