@@ -23,20 +23,63 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // Try to find today's brief
     const { data: archiveData, error: archiveError } = await supabase
       .from('briefs')
       .select('*')
       .eq('date', date)
       .single();
 
+    // If not found, try to get the most recent brief
     if (archiveError || !archiveData) {
-      return NextResponse.json(
-        {
-          error: 'No brief found for today. Please run the automation first.',
-          date,
-        },
-        { status: 404 }
-      );
+      console.log('No brief found for today, checking for most recent brief...');
+      const { data: recentBrief } = await supabase
+        .from('briefs')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!recentBrief) {
+        return NextResponse.json(
+          {
+            error: 'No brief found in archive. Please run the automation first.',
+            date,
+            archiveError: archiveError?.message,
+          },
+          { status: 404 }
+        );
+      }
+
+      // Use the most recent brief
+      console.log(`Using most recent brief from ${recentBrief.date}`);
+      const briefToUse = recentBrief;
+      
+      // Send premium email using the most recent brief
+      const premiumEmailSent = await sendMorningBrief({
+        subject: briefToUse.subject_premium || briefToUse.subject_free || briefToUse.subject,
+        htmlContent: briefToUse.html_content_premium || briefToUse.html_content_free || briefToUse.html_content,
+        tier: 'premium',
+      });
+
+      if (!premiumEmailSent) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Failed to send premium email. Check logs for details.',
+            message: 'This could mean there are no premium subscribers, or there was an error sending.',
+            briefDate: briefToUse.date,
+          },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Premium brief sent successfully',
+        briefDate: briefToUse.date,
+        note: `Sent brief from ${briefToUse.date} (today's brief not found)`,
+      });
     }
 
     // Send premium email using today's brief
