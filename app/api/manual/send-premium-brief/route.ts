@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     );
 
     const { data: archiveData, error: archiveError } = await supabase
-      .from('archive')
+      .from('briefs')
       .select('*')
       .eq('date', date)
       .single();
