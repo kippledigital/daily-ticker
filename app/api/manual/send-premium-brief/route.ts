@@ -82,6 +82,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Check how many premium subscribers exist
+    const { data: premiumSubscribers } = await supabase
+      .from('subscribers')
+      .select('email')
+      .eq('status', 'active')
+      .eq('tier', 'premium');
+
+    const premiumCount = premiumSubscribers?.length || 0;
+    console.log(`Found ${premiumCount} premium subscribers`);
+
     // Send premium email using today's brief
     const premiumEmailSent = await sendMorningBrief({
       subject: archiveData.subject_premium || archiveData.subject_free,
@@ -95,6 +105,7 @@ export async function GET(request: NextRequest) {
           success: false,
           error: 'Failed to send premium email. Check logs for details.',
           message: 'This could mean there are no premium subscribers, or there was an error sending.',
+          premiumSubscriberCount: premiumCount,
         },
         { status: 500 }
       );
