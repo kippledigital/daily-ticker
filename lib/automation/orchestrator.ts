@@ -164,7 +164,7 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
 
     // Step 7: Generate BOTH free and premium email content
     console.log('📧 Step 7: Generating email content (free + premium versions)...');
-    const date = new Date().toISOString().split('T')[0];
+    // date is already set at the beginning of the function
 
     // Generate premium email (full features)
     const premiumEmail = await generateEmailContent({

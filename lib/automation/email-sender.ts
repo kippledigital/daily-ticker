@@ -29,11 +29,15 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
     const recipients = to || await getSubscriberEmails(tier);
 
     if (recipients.length === 0) {
-      console.warn('No recipients to send email to');
+      const tierLabel = tier ? `${tier} tier` : 'specified';
+      console.warn(`⚠️  No recipients to send ${tierLabel} email to`);
+      console.warn(`   Subject: ${subject}`);
       return false;
     }
 
-    console.log(`Sending to ${recipients.length} subscribers...`);
+    const tierLabel = tier ? `${tier} tier` : 'custom';
+    console.log(`📧 Sending ${tierLabel} email to ${recipients.length} subscriber(s):`, recipients);
+    console.log(`   Subject: ${subject}`);
 
     // Determine from address
     const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
