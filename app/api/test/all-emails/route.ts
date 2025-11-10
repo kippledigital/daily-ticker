@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
       environment: {
         RESEND_API_KEY: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.substring(0, 7)}...` : 'NOT SET',
         RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL || 'NOT SET',
-        ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'NOT SET',
+        ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'brief@dailyticker.co (default)',
         SEND_SUCCESS_NOTIFICATIONS: process.env.SEND_SUCCESS_NOTIFICATIONS || 'NOT SET',
       },
       message: allSuccess

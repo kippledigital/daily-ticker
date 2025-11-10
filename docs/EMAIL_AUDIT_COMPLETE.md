@@ -26,7 +26,7 @@
 5. **✅ Error Notification Email**
    - **Location:** `lib/automation/error-notifier.ts` → `sendErrorNotification()`
    - **Status:** ✅ Already properly configured with try/catch
-   - **Sends to:** `ADMIN_EMAIL` env var (defaults to `nikki.kipple@gmail.com`)
+   - **Sends to:** `ADMIN_EMAIL` env var (defaults to `brief@dailyticker.co`)
 
 6. **✅ Success Notification Email**
    - **Location:** `lib/automation/error-notifier.ts` → `sendSuccessNotification()`
@@ -75,7 +75,7 @@ curl 'https://dailyticker.co/api/manual/send-both-emails'
 ### ✅ Environment Variables Required:
 - `RESEND_API_KEY` - Resend API key (starts with `re_`)
 - `RESEND_FROM_EMAIL` - From address (e.g., `brief@dailyticker.co`)
-- `ADMIN_EMAIL` - Admin email for notifications (defaults to `nikki.kipple@gmail.com`)
+- `ADMIN_EMAIL` - Admin email for notifications (defaults to `brief@dailyticker.co`)
 - `SEND_SUCCESS_NOTIFICATIONS` - Optional, enables success notifications
 
 ### ✅ Domain Verification:
