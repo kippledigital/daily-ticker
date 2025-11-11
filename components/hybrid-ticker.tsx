@@ -261,7 +261,7 @@ export function HybridTicker() {
                         <TrendingDown className="h-4 w-4" aria-hidden="true" />
                       )}
                         {index.changePercent >= 0 ? "+" : ""}
-                        <NumberTicker value={index.changePercent} delay={idx * 0.1} decimalPlaces={1} />%
+                        <NumberTicker value={index.changePercent} delay={idx * 0.1} decimalPlaces={2} />%
                       </span>
                     </div>
                   </div>
@@ -386,7 +386,7 @@ export function HybridTicker() {
                     index.changePercent >= 0 ? "text-[#00ff88]" : "text-[#ff4444]"
                   )}>
                     {index.changePercent >= 0 ? "+" : ""}
-                    <NumberTicker value={index.changePercent} delay={idx * 0.1} decimalPlaces={1} />%
+                    <NumberTicker value={index.changePercent} delay={idx * 0.1} decimalPlaces={2} />%
                   </div>
                 </div>
               ))}
