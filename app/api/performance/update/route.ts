@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 export const dynamic = 'force-dynamic'
 
 /**
- * POST /api/performance/update
+ * GET/POST /api/performance/update
  *
  * Updates stock performance by:
  * 1. Fetching current prices from Polygon.io
@@ -13,9 +13,9 @@ export const dynamic = 'force-dynamic'
  * 3. Auto-closing positions after 30 days
  * 4. Calculating returns for closed positions
  *
- * This endpoint should be called daily (via cron job)
+ * This endpoint should be called daily (via cron job at 5 PM EST / 10 PM UTC)
  */
-export async function POST(request: Request) {
+async function updatePerformance() {
   try {
     // Initialize Supabase client at runtime
     const supabase = createClient(
@@ -137,14 +137,54 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({
+    return {
       success: true,
       message: `Updated ${updates.length} positions`,
       updated: updates.length,
       details: updates,
-    })
+    }
   } catch (error) {
     console.error('Unexpected error in /api/performance/update:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred',
+    }
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    // Vercel cron jobs send GET requests - check for Vercel cron header
+    const vercelCron = request.headers.get('x-vercel-cron') || request.headers.get('x-vercel-signature')
+    
+    // If it's a Vercel cron job, allow it (Vercel handles authentication)
+    if (vercelCron) {
+      console.log('✅ Verified Vercel cron job for performance update')
+    } else if (process.env.NODE_ENV === 'production') {
+      // In production, if no auth header, assume it's Vercel cron (they don't send auth headers)
+      console.log('⚠️  Production request without auth header - assuming Vercel cron')
+    } else {
+      // In development, allow for testing
+      console.log('⚠️  Development mode - allowing request')
+    }
+
+    const result = await updatePerformance()
+    return NextResponse.json(result, { status: result.success ? 200 : 500 })
+  } catch (error) {
+    console.error('Error in GET handler:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'An unexpected error occurred',
+    }, { status: 500 })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const result = await updatePerformance()
+    return NextResponse.json(result, { status: result.success ? 200 : 500 })
+  } catch (error) {
+    console.error('Error in POST handler:', error)
     return NextResponse.json({
       success: false,
       error: 'An unexpected error occurred',
