@@ -59,9 +59,24 @@ export async function GET() {
             
             if (config) {
               // Extract price and change data
-              const currentPrice = ticker.day?.c || ticker.lastQuote?.p || ticker.close || 0;
+              // Prioritize lastQuote (real-time) over day.close (previous close)
+              // lastQuote.p is the most recent trade price (real-time when market is open)
+              // day.c is the previous day's close
+              const currentPrice = ticker.lastQuote?.p || ticker.day?.c || ticker.close || 0;
               let todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
               let todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? null;
+              
+              // If we have lastQuote (real-time) but todaysChange/todaysChangePerc are missing, calculate from day data
+              // Only recalculate if both are missing (null), not if they're legitimately 0
+              if (ticker.lastQuote?.p && ticker.day?.c && 
+                  (ticker.todaysChange === null || ticker.todaysChange === undefined) &&
+                  (ticker.todaysChangePerc === null || ticker.todaysChangePerc === undefined)) {
+                const prevClose = ticker.day.c;
+                todaysChange = ticker.lastQuote.p - prevClose;
+                if (prevClose > 0) {
+                  todaysChangePerc = (todaysChange / prevClose) * 100;
+                }
+              }
 
               // If changePercent is missing (null/undefined) but we have change and price, calculate it
               // Note: We use ?? instead of || to preserve 0 and negative values
@@ -122,9 +137,22 @@ export async function GET() {
             
             if (snapshotData.status === 'OK' && snapshotData.ticker) {
               const ticker = snapshotData.ticker;
-              const currentPrice = ticker.day?.c || ticker.lastQuote?.p || ticker.close || 0;
+              // Prioritize lastQuote (real-time) over day.close (previous close)
+              const currentPrice = ticker.lastQuote?.p || ticker.day?.c || ticker.close || 0;
               let todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
               let todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? null;
+              
+              // If we have lastQuote (real-time) but todaysChange/todaysChangePerc are missing, calculate from day data
+              // Only recalculate if both are missing (null), not if they're legitimately 0
+              if (ticker.lastQuote?.p && ticker.day?.c && 
+                  (ticker.todaysChange === null || ticker.todaysChange === undefined) &&
+                  (ticker.todaysChangePerc === null || ticker.todaysChangePerc === undefined)) {
+                const prevClose = ticker.day.c;
+                todaysChange = ticker.lastQuote.p - prevClose;
+                if (prevClose > 0) {
+                  todaysChangePerc = (todaysChange / prevClose) * 100;
+                }
+              }
 
               // If changePercent is missing (null/undefined) but we have change and price, calculate it
               // Note: We use ?? instead of || to preserve 0 and negative values
