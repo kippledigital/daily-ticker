@@ -57,15 +57,16 @@ export async function GET() {
       { etf: 'DIA', name: 'DOW', actualSymbol: '^DJI', conversionFactor: 100 },
     ];
 
-    // Get today's and yesterday's date for the grouped daily bars endpoint
+    // IMPORTANT: Polygon free tier doesn't allow requesting today's data until market close
+    // We need to request yesterday's completed data instead
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    const todayStr = today.toISOString().split('T')[0];
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-    // Use grouped daily bars - this works on free tier (15min delayed data)
+    // Use grouped daily bars with YESTERDAY'S date - free tier only allows completed days
     // This gives us all tickers in one request, minimizing API calls
-    const groupedBarsUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${todayStr}?adjusted=true&apiKey=${apiKey}`;
+    const groupedBarsUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${yesterdayStr}?adjusted=true&apiKey=${apiKey}`;
 
     console.log('Fetching grouped daily bars for market indices...');
     const response = await fetch(groupedBarsUrl, {
