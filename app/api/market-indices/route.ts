@@ -60,10 +60,27 @@ export async function GET() {
             if (config) {
               // Extract price and change data
               const currentPrice = ticker.day?.c || ticker.lastQuote?.p || ticker.close || 0;
-              const todaysChange = ticker.todaysChange || ticker.change || 0;
-              const todaysChangePerc = ticker.todaysChangePerc || ticker.changePercent || 0;
+              let todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
+              let todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? null;
 
-              if (currentPrice > 0 && typeof currentPrice === 'number') {
+              // If changePercent is missing (null/undefined) but we have change and price, calculate it
+              // Note: We use ?? instead of || to preserve 0 and negative values
+              if (todaysChangePerc === null && currentPrice > 0 && todaysChange !== 0) {
+                const prevPrice = currentPrice - todaysChange;
+                if (prevPrice > 0) {
+                  todaysChangePerc = (todaysChange / prevPrice) * 100;
+                } else {
+                  todaysChangePerc = 0;
+                }
+              } else if (todaysChangePerc === null) {
+                todaysChangePerc = 0;
+              }
+
+              // Ensure all values are valid numbers (not NaN)
+              if (currentPrice > 0 && 
+                  typeof currentPrice === 'number' && !isNaN(currentPrice) &&
+                  typeof todaysChange === 'number' && !isNaN(todaysChange) &&
+                  typeof todaysChangePerc === 'number' && !isNaN(todaysChangePerc)) {
                 // Scale ETF price to actual index value
                 const scaledPrice = currentPrice * config.conversionFactor;
                 const scaledChange = todaysChange * config.conversionFactor;
@@ -106,10 +123,27 @@ export async function GET() {
             if (snapshotData.status === 'OK' && snapshotData.ticker) {
               const ticker = snapshotData.ticker;
               const currentPrice = ticker.day?.c || ticker.lastQuote?.p || ticker.close || 0;
-              const todaysChange = ticker.todaysChange || ticker.change || 0;
-              const todaysChangePerc = ticker.todaysChangePerc || ticker.changePercent || 0;
+              let todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
+              let todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? null;
 
-              if (currentPrice > 0 && typeof currentPrice === 'number') {
+              // If changePercent is missing (null/undefined) but we have change and price, calculate it
+              // Note: We use ?? instead of || to preserve 0 and negative values
+              if (todaysChangePerc === null && currentPrice > 0 && todaysChange !== 0) {
+                const prevPrice = currentPrice - todaysChange;
+                if (prevPrice > 0) {
+                  todaysChangePerc = (todaysChange / prevPrice) * 100;
+                } else {
+                  todaysChangePerc = 0;
+                }
+              } else if (todaysChangePerc === null) {
+                todaysChangePerc = 0;
+              }
+
+              // Ensure all values are valid numbers (not NaN)
+              if (currentPrice > 0 && 
+                  typeof currentPrice === 'number' && !isNaN(currentPrice) &&
+                  typeof todaysChange === 'number' && !isNaN(todaysChange) &&
+                  typeof todaysChangePerc === 'number' && !isNaN(todaysChangePerc)) {
                 const scaledPrice = currentPrice * config.conversionFactor;
                 const scaledChange = todaysChange * config.conversionFactor;
                 
@@ -124,7 +158,7 @@ export async function GET() {
             }
           }
 
-          // Final fallback: Use /prev endpoint
+          // Final fallback: Use /prev endpoint and try to get today's data
           const prevResponse = await fetch(
             `https://api.polygon.io/v2/aggs/ticker/${config.etf}/prev?adjusted=true&apiKey=${apiKey}`,
             {
@@ -135,16 +169,44 @@ export async function GET() {
           if (prevResponse.ok) {
             const prevData = await prevResponse.json();
             if (prevData.status === 'OK' && prevData.results && prevData.results.length > 0) {
-              const result = prevData.results[0];
-              const closePrice = result.c;
+              const prevResult = prevData.results[0];
+              const prevClose = prevResult.c;
               
-              if (closePrice > 0) {
-                const scaledPrice = closePrice * config.conversionFactor;
+              // Try to get today's close to calculate change
+              const today = new Date();
+              const todayStr = today.toISOString().split('T')[0];
+              const todayResponse = await fetch(
+                `https://api.polygon.io/v2/aggs/ticker/${config.etf}/range/1/day/${todayStr}/${todayStr}?adjusted=true&apiKey=${apiKey}`,
+                {
+                  next: { revalidate: 60 },
+                }
+              );
+
+              let currentPrice = prevClose;
+              let change = 0;
+              let changePercent = 0;
+
+              if (todayResponse.ok) {
+                const todayData = await todayResponse.json();
+                if (todayData.status === 'OK' && todayData.results && todayData.results.length > 0) {
+                  const todayResult = todayData.results[0];
+                  currentPrice = todayResult.c || prevClose;
+                  change = currentPrice - prevClose;
+                  if (prevClose > 0) {
+                    changePercent = (change / prevClose) * 100;
+                  }
+                }
+              }
+              
+              if (currentPrice > 0) {
+                const scaledPrice = currentPrice * config.conversionFactor;
+                const scaledChange = change * config.conversionFactor;
+                
                 results.push({
                   symbol: config.name,
                   price: scaledPrice,
-                  change: 0,
-                  changePercent: 0,
+                  change: scaledChange,
+                  changePercent: changePercent,
                 });
               }
             }
