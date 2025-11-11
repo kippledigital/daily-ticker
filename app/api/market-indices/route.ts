@@ -27,77 +27,114 @@ export async function GET() {
   }
 
   try {
-    // Try index symbols first, then fall back to ETF proxies for free tier
-    // Index symbols: I:SPX, I:NDX, I:DJI (may require paid tier)
-    // ETF proxies: SPY (S&P 500), QQQ (NASDAQ 100), DIA (Dow Jones) - work on free tier
+    // Use ETF proxies for indices (SPY, QQQ, DIA) - these work on free tier
+    // Index symbols (I:SPX, I:NDX, I:DJI) may require paid tier
+    // Use snapshot endpoint to get current day's data with proper change calculations
+    // Conversion factors to scale ETF prices to actual index values
     const indexConfig = [
-      { index: 'I:SPX', etf: 'SPY', name: 'S&P 500' },
-      { index: 'I:NDX', etf: 'QQQ', name: 'NASDAQ' },
-      { index: 'I:DJI', etf: 'DIA', name: 'DOW' },
+      { index: 'I:SPX', etf: 'SPY', name: 'S&P 500', conversionFactor: 10 }, // SPY ~1/10th of S&P 500
+      { index: 'I:NDX', etf: 'QQQ', name: 'NASDAQ', conversionFactor: 100 }, // QQQ ~1/100th of NASDAQ
+      { index: 'I:DJI', etf: 'DIA', name: 'DOW', conversionFactor: 100 }, // DIA ~1/100th of DOW
     ];
     const results: MarketIndex[] = [];
 
     for (const config of indexConfig) {
       let success = false;
       
-      // Try index symbol first
+      // Try snapshot endpoint first (gives current day's data with proper change calculations)
       try {
-        const response = await fetch(
-          `https://api.polygon.io/v2/aggs/ticker/${config.index}/prev?adjusted=true&apiKey=${apiKey}`,
+        // Try index symbol snapshot first
+        const snapshotResponse = await fetch(
+          `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${config.index}?apiKey=${apiKey}`,
           {
             next: { revalidate: 60 },
           }
         );
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === 'OK' && data.results && data.results.length > 0) {
-            const result = data.results[0];
-            const closePrice = result.c;
-            const openPrice = result.o;
-            const change = closePrice - openPrice;
-            const changePercent = (change / openPrice) * 100;
+        if (snapshotResponse.ok) {
+          const snapshotData = await snapshotResponse.json();
+          if (snapshotData.status === 'OK' && snapshotData.ticker) {
+            const ticker = snapshotData.ticker;
+            const currentPrice = ticker.day?.c || ticker.lastQuote?.p || 0;
+            const todaysChange = ticker.todaysChange || 0;
+            const todaysChangePerc = ticker.todaysChangePerc || 0;
 
-            results.push({
-              symbol: config.name,
-              price: closePrice,
-              change: change,
-              changePercent: changePercent,
-            });
-            success = true;
+            if (currentPrice > 0) {
+              // Index symbols (I:SPX, etc.) already return actual index values, no scaling needed
+              results.push({
+                symbol: config.name,
+                price: currentPrice,
+                change: todaysChange,
+                changePercent: todaysChangePerc,
+              });
+              success = true;
+            }
           }
-        } else if (response.status === 403) {
-          // Index not available on free tier, try ETF proxy
-          const etfResponse = await fetch(
+        }
+
+        // If index snapshot failed, try ETF snapshot
+        if (!success) {
+          const etfSnapshotResponse = await fetch(
+            `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${config.etf}?apiKey=${apiKey}`,
+            {
+              next: { revalidate: 60 },
+            }
+          );
+
+          if (etfSnapshotResponse.ok) {
+            const etfSnapshotData = await etfSnapshotResponse.json();
+            if (etfSnapshotData.status === 'OK' && etfSnapshotData.ticker) {
+              const ticker = etfSnapshotData.ticker;
+              const currentPrice = ticker.day?.c || ticker.lastQuote?.p || 0;
+              const todaysChange = ticker.todaysChange || 0;
+              const todaysChangePerc = ticker.todaysChangePerc || 0;
+
+              if (currentPrice > 0) {
+                // Scale ETF price to actual index value
+                const scaledPrice = currentPrice * config.conversionFactor;
+                const scaledChange = todaysChange * config.conversionFactor;
+                
+                results.push({
+                  symbol: config.name,
+                  price: scaledPrice,
+                  change: scaledChange,
+                  changePercent: todaysChangePerc, // Percentage doesn't need scaling
+                });
+                success = true;
+              }
+            }
+          }
+        }
+
+        // Fallback: Try /prev endpoint if snapshot fails (previous day's close)
+        if (!success) {
+          const prevResponse = await fetch(
             `https://api.polygon.io/v2/aggs/ticker/${config.etf}/prev?adjusted=true&apiKey=${apiKey}`,
             {
               next: { revalidate: 60 },
             }
           );
 
-          if (etfResponse.ok) {
-            const etfData = await etfResponse.json();
-            if (etfData.status === 'OK' && etfData.results && etfData.results.length > 0) {
-              const result = etfData.results[0];
+          if (prevResponse.ok) {
+            const prevData = await prevResponse.json();
+            if (prevData.status === 'OK' && prevData.results && prevData.results.length > 0) {
+              const result = prevData.results[0];
               const closePrice = result.c;
-              const openPrice = result.o;
-              const change = closePrice - openPrice;
-              const changePercent = (change / openPrice) * 100;
-
+              // Scale ETF price to actual index value
+              const scaledPrice = closePrice * config.conversionFactor;
+              // For /prev endpoint, we don't have today's change, so set to 0 (fallback)
               results.push({
                 symbol: config.name,
-                price: closePrice,
-                change: change,
-                changePercent: changePercent,
+                price: scaledPrice,
+                change: 0,
+                changePercent: 0,
               });
               success = true;
             }
           }
-        } else if (response.status !== 403) {
-          console.warn(`Polygon API error for ${config.index}: ${response.status}`);
         }
       } catch (error) {
-        console.error(`Error fetching ${config.index}:`, error);
+        console.error(`Error fetching ${config.name}:`, error);
       }
     }
 
