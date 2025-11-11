@@ -28,68 +28,42 @@ export async function GET() {
 
   try {
     // Use ETF proxies for indices (SPY, QQQ, DIA) - these work on free tier
-    // Index symbols (I:SPX, I:NDX, I:DJI) may require paid tier
-    // Use snapshot endpoint to get current day's data with proper change calculations
     // Conversion factors to scale ETF prices to actual index values
     const indexConfig = [
-      { index: 'I:SPX', etf: 'SPY', name: 'S&P 500', conversionFactor: 10 }, // SPY ~1/10th of S&P 500
-      { index: 'I:NDX', etf: 'QQQ', name: 'NASDAQ', conversionFactor: 100 }, // QQQ ~1/100th of NASDAQ
-      { index: 'I:DJI', etf: 'DIA', name: 'DOW', conversionFactor: 100 }, // DIA ~1/100th of DOW
+      { etf: 'SPY', name: 'S&P 500', conversionFactor: 10 }, // SPY ~1/10th of S&P 500
+      { etf: 'QQQ', name: 'NASDAQ', conversionFactor: 100 }, // QQQ ~1/100th of NASDAQ
+      { etf: 'DIA', name: 'DOW', conversionFactor: 100 }, // DIA ~1/100th of DOW
     ];
     const results: MarketIndex[] = [];
 
-    for (const config of indexConfig) {
-      let success = false;
-      
-      // Try snapshot endpoint first (gives current day's data with proper change calculations)
-      try {
-        // Try index symbol snapshot first
-        const snapshotResponse = await fetch(
-          `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${config.index}?apiKey=${apiKey}`,
-          {
-            next: { revalidate: 60 },
-          }
-        );
-
-        if (snapshotResponse.ok) {
-          const snapshotData = await snapshotResponse.json();
-          if (snapshotData.status === 'OK' && snapshotData.ticker) {
-            const ticker = snapshotData.ticker;
-            const currentPrice = ticker.day?.c || ticker.lastQuote?.p || 0;
-            const todaysChange = ticker.todaysChange || 0;
-            const todaysChangePerc = ticker.todaysChangePerc || 0;
-
-            if (currentPrice > 0) {
-              // Index symbols (I:SPX, etc.) already return actual index values, no scaling needed
-              results.push({
-                symbol: config.name,
-                price: currentPrice,
-                change: todaysChange,
-                changePercent: todaysChangePerc,
-              });
-              success = true;
-            }
-          }
+    // Use group snapshot endpoint - more reliable for multiple tickers
+    try {
+      const tickers = indexConfig.map(c => c.etf).join(',');
+      const groupSnapshotResponse = await fetch(
+        `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${tickers}&apiKey=${apiKey}`,
+        {
+          next: { revalidate: 60 },
         }
+      );
 
-        // If index snapshot failed, try ETF snapshot
-        if (!success) {
-          const etfSnapshotResponse = await fetch(
-            `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${config.etf}?apiKey=${apiKey}`,
-            {
-              next: { revalidate: 60 },
-            }
-          );
+      if (groupSnapshotResponse.ok) {
+        const groupData = await groupSnapshotResponse.json();
+        
+        if (groupData.status === 'OK' && groupData.results) {
+          // Create a map of ETF to config
+          const etfMap = new Map(indexConfig.map(c => [c.etf, c]));
+          
+          for (const ticker of groupData.results) {
+            const tickerSymbol = ticker.ticker;
+            const config = etfMap.get(tickerSymbol);
+            
+            if (config) {
+              // Extract price and change data
+              const currentPrice = ticker.day?.c || ticker.lastQuote?.p || ticker.close || 0;
+              const todaysChange = ticker.todaysChange || ticker.change || 0;
+              const todaysChangePerc = ticker.todaysChangePerc || ticker.changePercent || 0;
 
-          if (etfSnapshotResponse.ok) {
-            const etfSnapshotData = await etfSnapshotResponse.json();
-            if (etfSnapshotData.status === 'OK' && etfSnapshotData.ticker) {
-              const ticker = etfSnapshotData.ticker;
-              const currentPrice = ticker.day?.c || ticker.lastQuote?.p || 0;
-              const todaysChange = ticker.todaysChange || 0;
-              const todaysChangePerc = ticker.todaysChangePerc || 0;
-
-              if (currentPrice > 0) {
+              if (currentPrice > 0 && typeof currentPrice === 'number') {
                 // Scale ETF price to actual index value
                 const scaledPrice = currentPrice * config.conversionFactor;
                 const scaledChange = todaysChange * config.conversionFactor;
@@ -98,16 +72,59 @@ export async function GET() {
                   symbol: config.name,
                   price: scaledPrice,
                   change: scaledChange,
-                  changePercent: todaysChangePerc, // Percentage doesn't need scaling
+                  changePercent: todaysChangePerc,
                 });
-                success = true;
               }
             }
           }
         }
+      }
+    } catch (error) {
+      console.error('Error fetching group snapshot:', error);
+    }
 
-        // Fallback: Try /prev endpoint if snapshot fails (previous day's close)
-        if (!success) {
+    // Fallback: Fetch individual tickers if group snapshot failed
+    if (results.length < indexConfig.length) {
+      for (const config of indexConfig) {
+        // Skip if we already have this index
+        if (results.some(r => r.symbol === config.name)) {
+          continue;
+        }
+
+        try {
+          // Try individual snapshot endpoint
+          const snapshotResponse = await fetch(
+            `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${config.etf}?apiKey=${apiKey}`,
+            {
+              next: { revalidate: 60 },
+            }
+          );
+
+          if (snapshotResponse.ok) {
+            const snapshotData = await snapshotResponse.json();
+            
+            if (snapshotData.status === 'OK' && snapshotData.ticker) {
+              const ticker = snapshotData.ticker;
+              const currentPrice = ticker.day?.c || ticker.lastQuote?.p || ticker.close || 0;
+              const todaysChange = ticker.todaysChange || ticker.change || 0;
+              const todaysChangePerc = ticker.todaysChangePerc || ticker.changePercent || 0;
+
+              if (currentPrice > 0 && typeof currentPrice === 'number') {
+                const scaledPrice = currentPrice * config.conversionFactor;
+                const scaledChange = todaysChange * config.conversionFactor;
+                
+                results.push({
+                  symbol: config.name,
+                  price: scaledPrice,
+                  change: scaledChange,
+                  changePercent: todaysChangePerc,
+                });
+                continue;
+              }
+            }
+          }
+
+          // Final fallback: Use /prev endpoint
           const prevResponse = await fetch(
             `https://api.polygon.io/v2/aggs/ticker/${config.etf}/prev?adjusted=true&apiKey=${apiKey}`,
             {
@@ -120,21 +137,21 @@ export async function GET() {
             if (prevData.status === 'OK' && prevData.results && prevData.results.length > 0) {
               const result = prevData.results[0];
               const closePrice = result.c;
-              // Scale ETF price to actual index value
-              const scaledPrice = closePrice * config.conversionFactor;
-              // For /prev endpoint, we don't have today's change, so set to 0 (fallback)
-              results.push({
-                symbol: config.name,
-                price: scaledPrice,
-                change: 0,
-                changePercent: 0,
-              });
-              success = true;
+              
+              if (closePrice > 0) {
+                const scaledPrice = closePrice * config.conversionFactor;
+                results.push({
+                  symbol: config.name,
+                  price: scaledPrice,
+                  change: 0,
+                  changePercent: 0,
+                });
+              }
             }
           }
+        } catch (error) {
+          console.error(`Error fetching ${config.name}:`, error);
         }
-      } catch (error) {
-        console.error(`Error fetching ${config.name}:`, error);
       }
     }
 
