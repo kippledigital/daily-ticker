@@ -11,6 +11,66 @@ interface MarketIndex {
   changePercent: number;
 }
 
+interface MarketStatus {
+  isOpen: boolean;
+  statusText: string;
+  lastTradingDay: string;
+}
+
+/**
+ * Check if US stock market is currently open
+ * Market hours: 9:30 AM - 4:00 PM ET, Monday-Friday (excluding holidays)
+ */
+function getMarketStatus(): MarketStatus {
+  const now = new Date();
+
+  // Convert to ET timezone
+  const etTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const dayOfWeek = etTime.getDay(); // 0 = Sunday, 6 = Saturday
+  const hours = etTime.getHours();
+  const minutes = etTime.getMinutes();
+  const timeInMinutes = hours * 60 + minutes;
+
+  // Market hours: 9:30 AM (570 min) to 4:00 PM (960 min) ET
+  const marketOpen = 9 * 60 + 30; // 570 minutes
+  const marketClose = 16 * 60; // 960 minutes
+
+  // Check if it's a weekday and within market hours
+  const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+  const isDuringMarketHours = timeInMinutes >= marketOpen && timeInMinutes < marketClose;
+  const isOpen = isWeekday && isDuringMarketHours;
+
+  // Get last trading day
+  let lastTradingDay = new Date(etTime);
+  if (!isWeekday || (isWeekday && timeInMinutes < marketOpen)) {
+    // Before market open, use previous trading day
+    do {
+      lastTradingDay.setDate(lastTradingDay.getDate() - 1);
+    } while (lastTradingDay.getDay() === 0 || lastTradingDay.getDay() === 6);
+  }
+
+  const lastTradingDayStr = lastTradingDay.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+
+  let statusText = '';
+  if (isOpen) {
+    statusText = 'Markets Open';
+  } else if (isWeekday && timeInMinutes >= marketClose) {
+    statusText = 'Markets Closed';
+  } else {
+    statusText = 'Markets Closed';
+  }
+
+  return {
+    isOpen,
+    statusText,
+    lastTradingDay: lastTradingDayStr,
+  };
+}
+
 // Cache to store the last successful fetch (in-memory, resets on deployment)
 let cachedData: { data: MarketIndex[], timestamp: number } | null = null;
 const CACHE_DURATION = 60000; // 60 seconds
@@ -21,6 +81,7 @@ const CACHE_DURATION = 60000; // 60 seconds
  */
 export async function GET() {
   const apiKey = process.env.POLYGON_API_KEY;
+  const marketStatus = getMarketStatus();
 
   // Return cached data if it's still fresh (within 60 seconds)
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
@@ -30,6 +91,7 @@ export async function GET() {
       data: cachedData.data,
       cached: true,
       timestamp: cachedData.timestamp,
+      marketStatus,
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
@@ -45,6 +107,7 @@ export async function GET() {
       data: sampleData,
       cached: false,
       timestamp: Date.now(),
+      marketStatus,
     });
   }
 
@@ -99,6 +162,7 @@ export async function GET() {
         data: sampleData,
         cached: false,
         timestamp: Date.now(),
+        marketStatus,
       });
     }
 
@@ -115,6 +179,7 @@ export async function GET() {
           cached: true,
           stale: true,
           timestamp: cachedData.timestamp,
+          marketStatus,
         });
       }
 
@@ -124,6 +189,7 @@ export async function GET() {
         data: sampleData,
         cached: false,
         timestamp: Date.now(),
+        marketStatus,
       });
     }
 
@@ -179,6 +245,7 @@ export async function GET() {
         data: results,
         cached: false,
         timestamp: Date.now(),
+        marketStatus,
       }, {
         headers: {
           'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
@@ -208,6 +275,7 @@ export async function GET() {
         cached: false,
         partial: true,
         timestamp: Date.now(),
+        marketStatus,
       }, {
         headers: {
           'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
@@ -223,6 +291,7 @@ export async function GET() {
       data: sampleData,
       cached: false,
       timestamp: Date.now(),
+      marketStatus,
     });
   } catch (error) {
     console.error('Error fetching market indices:', error);
@@ -235,6 +304,7 @@ export async function GET() {
         cached: true,
         stale: true,
         timestamp: cachedData.timestamp,
+        marketStatus,
       });
     }
 
@@ -245,6 +315,7 @@ export async function GET() {
       data: sampleData,
       cached: false,
       timestamp: Date.now(),
+      marketStatus,
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',

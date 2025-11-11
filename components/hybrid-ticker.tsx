@@ -14,6 +14,12 @@ interface MarketIndex {
   changePercent: number
 }
 
+interface MarketStatus {
+  isOpen: boolean
+  statusText: string
+  lastTradingDay: string
+}
+
 interface DailyPick {
   ticker: string
   sector: string
@@ -34,7 +40,7 @@ export function HybridTicker() {
   const [dailyPicks, setDailyPicks] = useState<DailyPick[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPickIndex, setCurrentPickIndex] = useState(0)
-  const [isLive, setIsLive] = useState(false)
+  const [marketStatus, setMarketStatus] = useState<MarketStatus | null>(null)
   const [marketLoading, setMarketLoading] = useState(true)
   const hasInitialDataRef = useRef(false)
 
@@ -55,12 +61,14 @@ export function HybridTicker() {
 
         if (data.success && data.data) {
           setMarketData(data.data)
-          setIsLive(true)
+          if (data.marketStatus) {
+            setMarketStatus(data.marketStatus)
+          }
           hasInitialDataRef.current = true
         }
       } catch (error) {
         console.error("Failed to fetch market indices:", error)
-        setIsLive(false)
+        setMarketStatus(null)
       } finally {
         setMarketLoading(false)
       }
@@ -194,17 +202,34 @@ export function HybridTicker() {
           <div className="hidden lg:grid lg:grid-cols-[2fr,3fr] divide-x divide-[#1a3a52]">
           {/* Left: Market Pulse */}
           <div className="p-5 space-y-3">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
-                <span>📊</span> Market Pulse
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75 animate-ping"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
-                </span>
-                <span className="text-xs font-mono text-gray-200">LIVE</span>
+            <div className="space-y-2 mb-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                  <span>📊</span> Market Pulse
+                </h3>
+                <div className="flex items-center gap-2">
+                  {marketStatus && (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className={cn(
+                          "absolute inline-flex h-full w-full rounded-full opacity-75",
+                          marketStatus.isOpen ? "bg-[#00ff88] animate-ping" : "bg-gray-400"
+                        )}></span>
+                        <span className={cn(
+                          "relative inline-flex rounded-full h-2 w-2",
+                          marketStatus.isOpen ? "bg-[#00ff88]" : "bg-gray-400"
+                        )}></span>
+                      </span>
+                      <span className="text-xs font-mono text-gray-200">{marketStatus.statusText}</span>
+                    </>
+                  )}
+                </div>
               </div>
+              {marketStatus && !marketStatus.isOpen && (
+                <p className="text-xs text-gray-400">
+                  Last close: {marketStatus.lastTradingDay}
+                </p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -322,17 +347,34 @@ export function HybridTicker() {
         <div className="lg:hidden divide-y divide-[#1a3a52]">
           {/* Market Pulse */}
           <div className="p-5 space-y-3">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
-                <span>📊</span> Market Pulse
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75 animate-ping"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
-                </span>
-                <span className="text-xs font-mono text-gray-200">LIVE</span>
+            <div className="space-y-2 mb-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-mono text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                  <span>📊</span> Market Pulse
+                </h3>
+                <div className="flex items-center gap-2">
+                  {marketStatus && (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className={cn(
+                          "absolute inline-flex h-full w-full rounded-full opacity-75",
+                          marketStatus.isOpen ? "bg-[#00ff88] animate-ping" : "bg-gray-400"
+                        )}></span>
+                        <span className={cn(
+                          "relative inline-flex rounded-full h-2 w-2",
+                          marketStatus.isOpen ? "bg-[#00ff88]" : "bg-gray-400"
+                        )}></span>
+                      </span>
+                      <span className="text-xs font-mono text-gray-200">{marketStatus.statusText}</span>
+                    </>
+                  )}
+                </div>
               </div>
+              {marketStatus && !marketStatus.isOpen && (
+                <p className="text-xs text-gray-400">
+                  Last close: {marketStatus.lastTradingDay}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-4">
