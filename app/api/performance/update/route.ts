@@ -41,18 +41,18 @@ async function updatePerformance() {
 
     if (fetchError) {
       console.error('Error fetching open positions:', fetchError)
-      return NextResponse.json({
+      return {
         success: false,
         error: 'Failed to fetch open positions',
-      }, { status: 500 })
+      }
     }
 
     if (!openPositions || openPositions.length === 0) {
-      return NextResponse.json({
+      return {
         success: true,
         message: 'No open positions to update',
         updated: 0,
-      })
+      }
     }
 
     const today = new Date()
