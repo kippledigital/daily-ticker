@@ -36,32 +36,26 @@ export function HybridTicker() {
   const [currentPickIndex, setCurrentPickIndex] = useState(0)
   const [isLive, setIsLive] = useState(false)
   const [marketLoading, setMarketLoading] = useState(true)
-  const cacheTimestampRef = useRef(0)
   const hasInitialDataRef = useRef(false)
 
-  // Fetch live market indices data with caching
+  // Fetch live market indices data - updates every 60 seconds
   useEffect(() => {
-    const CACHE_DURATION = 60000 // 60 seconds
-
     const fetchMarketData = async () => {
-      // Skip if cached data is still fresh
-      const now = Date.now()
-      if (now - cacheTimestampRef.current < CACHE_DURATION && hasInitialDataRef.current) {
-        return
-      }
-
       setMarketLoading(true)
       try {
-        const response = await fetch('/api/market-indices', {
-          // Browser will respect Cache-Control headers from API
-          cache: 'default',
+        // Add timestamp to bypass browser cache and ensure fresh data
+        const timestamp = Date.now()
+        const response = await fetch(`/api/market-indices?t=${timestamp}`, {
+          cache: 'no-store', // Always fetch fresh data
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
         })
         const data = await response.json()
 
         if (data.success && data.data) {
           setMarketData(data.data)
           setIsLive(true)
-          cacheTimestampRef.current = now
           hasInitialDataRef.current = true
         }
       } catch (error) {
@@ -72,8 +66,10 @@ export function HybridTicker() {
       }
     }
 
+    // Fetch immediately on mount
     fetchMarketData()
-    // Refresh every 60 seconds for live updates (matches cache duration)
+    
+    // Refresh every 60 seconds for live updates
     const interval = setInterval(fetchMarketData, 60000)
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps

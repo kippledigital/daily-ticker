@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
-// Cache for 60 seconds - market data doesn't need to be real-time
+// Revalidate every 60 seconds - ensures fresh market data
 export const revalidate = 60;
+export const dynamic = 'force-dynamic'; // Force dynamic rendering for real-time data
 
 interface MarketIndex {
   symbol: string;
@@ -247,9 +248,10 @@ export async function GET() {
         success: true,
         data: results,
         cached: true,
+        timestamp: Date.now(), // Include timestamp so client knows when data was fetched
       }, {
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=0',
         },
       });
     }
@@ -259,6 +261,11 @@ export async function GET() {
       success: true,
       data: getSampleIndices(),
       cached: false,
+      timestamp: Date.now(),
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=0',
+      },
     });
   } catch (error) {
     console.error('Error fetching market indices:', error);
@@ -266,6 +273,11 @@ export async function GET() {
       success: true,
       data: getSampleIndices(),
       cached: false,
+      timestamp: Date.now(),
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=0',
+      },
     });
   }
 }
