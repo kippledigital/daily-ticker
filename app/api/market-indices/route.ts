@@ -59,36 +59,29 @@ export async function GET() {
             
             if (config) {
               // Extract price and change data
-              // Prioritize lastQuote (real-time) over day.close (previous close)
+              // Prioritize lastQuote (real-time) over day.close
               // lastQuote.p is the most recent trade price (real-time when market is open)
-              // day.c is the previous day's close
-              const currentPrice = ticker.lastQuote?.p || ticker.day?.c || ticker.close || 0;
-              let todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
-              let todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? null;
+              // day.c is the current day's close (or previous close if market closed)
+              const realTimePrice = ticker.lastQuote?.p;
+              const dayClose = ticker.day?.c;
               
-              // If we have lastQuote (real-time) but todaysChange/todaysChangePerc are missing, calculate from day data
-              // Only recalculate if both are missing (null), not if they're legitimately 0
-              if (ticker.lastQuote?.p && ticker.day?.c && 
-                  (ticker.todaysChange === null || ticker.todaysChange === undefined) &&
-                  (ticker.todaysChangePerc === null || ticker.todaysChangePerc === undefined)) {
-                const prevClose = ticker.day.c;
-                todaysChange = ticker.lastQuote.p - prevClose;
-                if (prevClose > 0) {
-                  todaysChangePerc = (todaysChange / prevClose) * 100;
-                }
-              }
-
-              // If changePercent is missing (null/undefined) but we have change and price, calculate it
-              // Note: We use ?? instead of || to preserve 0 and negative values
-              if (todaysChangePerc === null && currentPrice > 0 && todaysChange !== 0) {
-                const prevPrice = currentPrice - todaysChange;
-                if (prevPrice > 0) {
-                  todaysChangePerc = (todaysChange / prevPrice) * 100;
-                } else {
-                  todaysChangePerc = 0;
-                }
-              } else if (todaysChangePerc === null) {
-                todaysChangePerc = 0;
+              // Use real-time price if available, otherwise use day close
+              const currentPrice = realTimePrice || dayClose || ticker.close || 0;
+              
+              // Previous close is always day.c (this is the previous trading day's close)
+              // If we have real-time price, compare to day.c
+              // If we only have day.c, we can't calculate change (use API values)
+              let todaysChange = 0;
+              let todaysChangePerc = 0;
+              
+              if (realTimePrice && dayClose && realTimePrice > 0 && dayClose > 0) {
+                // We have real-time price and previous close - calculate change
+                todaysChange = realTimePrice - dayClose;
+                todaysChangePerc = (todaysChange / dayClose) * 100;
+              } else {
+                // Use API-provided values
+                todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
+                todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? 0;
               }
 
               // Ensure all values are valid numbers (not NaN)
@@ -137,34 +130,27 @@ export async function GET() {
             
             if (snapshotData.status === 'OK' && snapshotData.ticker) {
               const ticker = snapshotData.ticker;
-              // Prioritize lastQuote (real-time) over day.close (previous close)
-              const currentPrice = ticker.lastQuote?.p || ticker.day?.c || ticker.close || 0;
-              let todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
-              let todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? null;
+              // Prioritize lastQuote (real-time) over day.close
+              const realTimePrice = ticker.lastQuote?.p;
+              const dayClose = ticker.day?.c;
               
-              // If we have lastQuote (real-time) but todaysChange/todaysChangePerc are missing, calculate from day data
-              // Only recalculate if both are missing (null), not if they're legitimately 0
-              if (ticker.lastQuote?.p && ticker.day?.c && 
-                  (ticker.todaysChange === null || ticker.todaysChange === undefined) &&
-                  (ticker.todaysChangePerc === null || ticker.todaysChangePerc === undefined)) {
-                const prevClose = ticker.day.c;
-                todaysChange = ticker.lastQuote.p - prevClose;
-                if (prevClose > 0) {
-                  todaysChangePerc = (todaysChange / prevClose) * 100;
-                }
-              }
-
-              // If changePercent is missing (null/undefined) but we have change and price, calculate it
-              // Note: We use ?? instead of || to preserve 0 and negative values
-              if (todaysChangePerc === null && currentPrice > 0 && todaysChange !== 0) {
-                const prevPrice = currentPrice - todaysChange;
-                if (prevPrice > 0) {
-                  todaysChangePerc = (todaysChange / prevPrice) * 100;
-                } else {
-                  todaysChangePerc = 0;
-                }
-              } else if (todaysChangePerc === null) {
-                todaysChangePerc = 0;
+              // Use real-time price if available, otherwise use day close
+              const currentPrice = realTimePrice || dayClose || ticker.close || 0;
+              
+              // Previous close is always day.c (this is the previous trading day's close)
+              // If we have real-time price, compare to day.c
+              // If we only have day.c, we can't calculate change (use API values)
+              let todaysChange = 0;
+              let todaysChangePerc = 0;
+              
+              if (realTimePrice && dayClose && realTimePrice > 0 && dayClose > 0) {
+                // We have real-time price and previous close - calculate change
+                todaysChange = realTimePrice - dayClose;
+                todaysChangePerc = (todaysChange / dayClose) * 100;
+              } else {
+                // Use API-provided values
+                todaysChange = ticker.todaysChange ?? ticker.change ?? 0;
+                todaysChangePerc = ticker.todaysChangePerc ?? ticker.changePercent ?? 0;
               }
 
               // Ensure all values are valid numbers (not NaN)
