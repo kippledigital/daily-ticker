@@ -75,4 +75,9 @@ export interface AutomationResult {
     archiveStorage?: boolean;
     twitterPosting?: boolean;
   };
+  emailsSent?: {
+    free: number;
+    premium: number;
+    total: number;
+  };
 }

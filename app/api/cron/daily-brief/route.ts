@@ -16,70 +16,68 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
  */
 export async function GET(request: NextRequest) {
   try {
-    // Vercel cron jobs don't send Authorization headers - they're authenticated at infrastructure level
-    // Check for Vercel-specific indicators
+    // STRICT AUTHENTICATION: Only allow Vercel cron or valid Bearer token
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
-    
-    // Check for Vercel cron indicators (Vercel sends these headers)
-    const vercelCron = request.headers.get('x-vercel-cron') || 
-                       request.headers.get('x-vercel-signature') ||
-                       request.headers.get('user-agent')?.includes('vercel-cron');
-    
-    // If it's a Vercel cron job (has Vercel headers), allow it
-    // Vercel cron jobs are authenticated at the infrastructure level
-    if (vercelCron) {
-      console.log('✅ Verified Vercel cron job (infrastructure-authenticated)');
-    } else if (process.env.NODE_ENV === 'production' && !authHeader) {
-      // TEMPORARY FIX: Allow production requests without auth header
-      // Vercel cron jobs don't send Authorization headers
-      // This allows both Vercel cron and manual triggers to work
-      // TODO: After verifying Vercel cron headers, tighten security
-      console.log('⚠️  Production request without auth header - allowing (Vercel cron workaround)');
-      const headers = Object.fromEntries(request.headers.entries());
-      console.log('Request headers:', JSON.stringify(headers, null, 2));
-      // Allow it - proceed to automation
-    } else {
-      // For manual triggers, require Bearer token authentication
+
+    // Check for Vercel cron headers (Vercel sends these with cron jobs)
+    const vercelCronHeader = request.headers.get('x-vercel-cron');
+    const vercelSignature = request.headers.get('x-vercel-signature');
+    const userAgent = request.headers.get('user-agent') || '';
+
+    let triggerSource = 'unknown';
+
+    // Option 1: Verify Vercel cron (strict check)
+    if (vercelCronHeader === '1' || vercelSignature || userAgent.includes('vercel-cron')) {
+      console.log('✅ Verified Vercel cron job');
+      triggerSource = 'vercel-cron';
+    }
+    // Option 2: Verify Bearer token (for manual triggers)
+    else if (authHeader) {
       if (!cronSecret) {
-        console.error('CRON_SECRET not configured - endpoint is unprotected!');
-        // In production, fail closed. In development, allow for testing.
-        if (process.env.NODE_ENV === 'production') {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-      } else {
-        // Timing-safe comparison to prevent timing attacks
-        const expectedHeader = `Bearer ${cronSecret}`;
-        
-        if (!authHeader || authHeader.length !== expectedHeader.length) {
+        console.error('❌ CRON_SECRET not configured but auth header provided');
+        return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+      }
+
+      const expectedHeader = `Bearer ${cronSecret}`;
+
+      // Timing-safe comparison to prevent timing attacks
+      if (authHeader.length !== expectedHeader.length) {
+        console.warn('⚠️  Invalid auth header length');
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      try {
+        const authBuffer = Buffer.from(authHeader, 'utf8');
+        const expectedBuffer = Buffer.from(expectedHeader, 'utf8');
+
+        if (!timingSafeEqual(authBuffer, expectedBuffer)) {
+          console.warn('⚠️  Invalid Bearer token');
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Use Node.js crypto.timingSafeEqual for constant-time comparison
-        try {
-          const authBuffer = Buffer.from(authHeader, 'utf8');
-          const expectedBuffer = Buffer.from(expectedHeader, 'utf8');
-          
-          // timingSafeEqual requires buffers of same length (we already checked)
-          if (authBuffer.length !== expectedBuffer.length) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-          }
-
-          // Constant-time comparison to prevent timing attacks
-          if (!timingSafeEqual(authBuffer, expectedBuffer)) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-          }
-        } catch (err) {
-          console.error('Error in timing-safe comparison:', err);
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        console.log('✅ Verified manual trigger with Bearer token');
+        triggerSource = 'manual';
+      } catch (err) {
+        console.error('❌ Error in auth verification:', err);
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
+    // Option 3: REJECT - no valid authentication
+    else {
+      console.error('❌ No valid authentication (no Vercel cron header, no Bearer token)');
+      const headers = Object.fromEntries(request.headers.entries());
+      console.error('Received headers:', JSON.stringify(headers, null, 2));
+      return NextResponse.json({
+        error: 'Unauthorized',
+        hint: 'Must be triggered by Vercel cron or with valid Bearer token'
+      }, { status: 401 });
+    }
 
-    console.log('🚀 Daily automation triggered via cron');
+    console.log(`🚀 Daily automation triggered via ${triggerSource}`);
 
-    // Run the full automation workflow
-    const result = await runDailyAutomation();
+    // Run the full automation workflow with tracking
+    const result = await runDailyAutomation(triggerSource);
 
     if (!result.success) {
       return NextResponse.json(

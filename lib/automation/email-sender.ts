@@ -17,11 +17,19 @@ export interface SendEmailParams {
   tier?: 'free' | 'premium'; // Filter by tier
 }
 
+export interface SendEmailResult {
+  success: boolean;
+  sentCount: number;
+  recipientCount: number;
+  error?: string;
+}
+
 /**
  * Sends email using Resend API
  * Fetches subscribers from Supabase (replaces Beehiiv)
+ * NOW RETURNS DETAILED RESULTS
  */
-export async function sendMorningBrief(params: SendEmailParams): Promise<boolean> {
+export async function sendMorningBrief(params: SendEmailParams): Promise<SendEmailResult> {
   const { subject, htmlContent, to, tier } = params;
 
   try {
@@ -32,7 +40,12 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
       const tierLabel = tier ? `${tier} tier` : 'specified';
       console.warn(`⚠️  No recipients to send ${tierLabel} email to`);
       console.warn(`   Subject: ${subject}`);
-      return false;
+      return {
+        success: false,
+        sentCount: 0,
+        recipientCount: 0,
+        error: `No ${tierLabel} subscribers found`,
+      };
     }
 
     const tierLabel = tier ? `${tier} tier` : 'custom';
@@ -73,7 +86,12 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
 
     if (error) {
       console.error('Error sending email via Resend:', error);
-      return false;
+      return {
+        success: false,
+        sentCount: 0,
+        recipientCount: recipients.length,
+        error: error.message || 'Resend API error',
+      };
     }
 
     console.log('Email sent successfully:', data);
@@ -81,10 +99,19 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<boolean
     // Update email sent count for all subscribers
     await updateEmailSentCount(recipients);
 
-    return true;
+    return {
+      success: true,
+      sentCount: recipients.length,
+      recipientCount: recipients.length,
+    };
   } catch (error) {
     console.error('Error in sendMorningBrief:', error);
-    return false;
+    return {
+      success: false,
+      sentCount: 0,
+      recipientCount: 0,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 

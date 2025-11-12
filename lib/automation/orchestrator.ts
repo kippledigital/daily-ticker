@@ -24,24 +24,53 @@ import { sendErrorNotification } from './error-notifier';
  * 7. Email Generation (Scout persona with beginner-friendly content)
  * 8. Send Email (Resend to subscribers)
  * 9. Store in Archive (Supabase)
+ *
+ * NOW WITH STRICT SUCCESS CRITERIA:
+ * - MUST generate at least 1 validated stock
+ * - MUST send emails successfully
+ * - MUST store in archive
+ * - TRACKS every run in database for monitoring
  */
-export async function runDailyAutomation(): Promise<AutomationResult> {
+export async function runDailyAutomation(triggerSource: string = 'unknown'): Promise<AutomationResult> {
+  const startTime = Date.now();
+  const date = new Date().toISOString().split('T')[0];
+
   const result: AutomationResult = {
     success: false,
     steps: {},
   };
 
+  // Initialize Supabase for cron tracking
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Create cron run tracking record
+  const { data: cronRun, error: cronRunError } = await supabase
+    .from('cron_runs')
+    .insert({
+      run_date: date,
+      status: 'running',
+      trigger_source: triggerSource,
+    })
+    .select()
+    .single();
+
+  if (cronRunError || !cronRun) {
+    console.error('❌ Failed to create cron run tracking record:', cronRunError);
+    // Continue anyway - don't fail the whole automation because of tracking
+  } else {
+    console.log(`📊 Cron run tracking started: ${cronRun.id}`);
+  }
+
+  const cronRunId = cronRun?.id;
+
   try {
-    const date = new Date().toISOString().split('T')[0];
     console.log(`🚀 Starting daily automation for ${date}...`);
 
     // Check if brief already exists for today (prevent duplicate runs)
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     const { data: existingBrief } = await supabase
       .from('briefs')
       .select('id, date')
@@ -233,36 +262,76 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     console.log(`✅ Free email generated: "${freeEmail.subject}"`);
     result.steps.emailGeneration = true;
 
-    // Step 8: Send emails to BOTH free and premium subscribers
+    // Step 8: Send emails to BOTH free and premium subscribers (WITH RETRY)
     console.log('📮 Step 8: Sending emails to subscribers (segmented by tier)...');
 
-    // Send premium email to premium subscribers
-    const premiumEmailSent = await sendMorningBrief({
+    // Send premium email to premium subscribers (with retry)
+    let premiumEmailResult = await sendMorningBrief({
       subject: premiumEmail.subject,
       htmlContent: premiumEmail.htmlContent,
       tier: 'premium',
     });
 
-    // Send free email to free subscribers
-    const freeEmailSent = await sendMorningBrief({
+    // Retry premium email once if failed
+    if (!premiumEmailResult.success && premiumEmailResult.recipientCount > 0) {
+      console.warn('⚠️  Premium email failed, retrying once...');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+      premiumEmailResult = await sendMorningBrief({
+        subject: premiumEmail.subject,
+        htmlContent: premiumEmail.htmlContent,
+        tier: 'premium',
+      });
+    }
+
+    // Send free email to free subscribers (with retry)
+    let freeEmailResult = await sendMorningBrief({
       subject: freeEmail.subject,
       htmlContent: freeEmail.htmlContent,
       tier: 'free',
     });
 
-    const emailSent = premiumEmailSent && freeEmailSent;
-
-    if (!emailSent) {
-      console.warn('⚠️  One or both email sends failed');
-      console.warn(`  Premium: ${premiumEmailSent ? '✅' : '❌'}`);
-      console.warn(`  Free: ${freeEmailSent ? '✅' : '❌'}`);
-    } else {
-      console.log(`✅ Emails sent successfully to both tiers`);
+    // Retry free email once if failed
+    if (!freeEmailResult.success && freeEmailResult.recipientCount > 0) {
+      console.warn('⚠️  Free email failed, retrying once...');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+      freeEmailResult = await sendMorningBrief({
+        subject: freeEmail.subject,
+        htmlContent: freeEmail.htmlContent,
+        tier: 'free',
+      });
     }
 
-    result.steps.emailSending = emailSent;
+    // Check if ANY emails were sent (some subscribers is better than none)
+    const anyEmailsSent = premiumEmailResult.success || freeEmailResult.success;
+    const totalEmailsSent = premiumEmailResult.sentCount + freeEmailResult.sentCount;
 
-    // Step 9: Store BOTH versions in archive (Supabase)
+    if (!anyEmailsSent) {
+      // CRITICAL FAILURE: No emails sent at all
+      throw new Error('CRITICAL: Failed to send any emails to any subscribers after retry');
+    }
+
+    if (!premiumEmailResult.success) {
+      console.error(`❌ Premium email failed: ${premiumEmailResult.error}`);
+    } else {
+      console.log(`✅ Premium email sent to ${premiumEmailResult.sentCount} subscribers`);
+    }
+
+    if (!freeEmailResult.success) {
+      console.error(`❌ Free email failed: ${freeEmailResult.error}`);
+    } else {
+      console.log(`✅ Free email sent to ${freeEmailResult.sentCount} subscribers`);
+    }
+
+    console.log(`✅ Total emails sent: ${totalEmailsSent}`);
+
+    result.steps.emailSending = anyEmailsSent;
+    result.emailsSent = {
+      free: freeEmailResult.sentCount,
+      premium: premiumEmailResult.sentCount,
+      total: totalEmailsSent,
+    };
+
+    // Step 9: Store BOTH versions in archive (Supabase) - CRITICAL STEP
     console.log('💾 Step 9: Storing both versions in archive...');
     const archived = await storeInArchive({
       date,
@@ -275,12 +344,45 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     });
 
     if (!archived) {
-      console.warn('⚠️  Archive storage failed');
-    } else {
-      console.log(`✅ Brief archived successfully`);
+      // CRITICAL FAILURE: Archive storage is mandatory
+      throw new Error('CRITICAL: Failed to store brief in archive');
     }
 
-    result.steps.archiveStorage = archived;
+    console.log(`✅ Brief archived successfully`);
+    result.steps.archiveStorage = true;
+
+    // STRICT SUCCESS CHECK: All critical steps must pass
+    const criticalStepsPassed =
+      result.steps.stockDiscovery &&
+      result.steps.validation &&
+      result.steps.emailGeneration &&
+      result.steps.emailSending &&
+      result.steps.archiveStorage;
+
+    if (!criticalStepsPassed) {
+      throw new Error('CRITICAL: One or more critical steps failed');
+    }
+
+    // Calculate execution time
+    const executionTimeMs = Date.now() - startTime;
+
+    // Update cron run tracking with SUCCESS
+    if (cronRunId) {
+      await supabase
+        .from('cron_runs')
+        .update({
+          status: 'success',
+          completed_at: new Date().toISOString(),
+          steps_completed: result.steps,
+          stocks_discovered: tickers.length,
+          stocks_validated: validatedStocks.length,
+          emails_sent_free: result.emailsSent?.free || 0,
+          emails_sent_premium: result.emailsSent?.premium || 0,
+          archive_stored: true,
+          execution_time_ms: executionTimeMs,
+        })
+        .eq('id', cronRunId);
+    }
 
     // Prepare final result
     result.success = true;
@@ -297,11 +399,37 @@ export async function runDailyAutomation(): Promise<AutomationResult> {
     };
 
     console.log('🎉 Daily automation completed successfully!');
+    console.log(`   Execution time: ${(executionTimeMs / 1000).toFixed(2)}s`);
+    console.log(`   Stocks: ${validatedStocks.length} validated`);
+    console.log(`   Emails: ${result.emailsSent?.total || 0} sent`);
+    console.log(`   Archive: ✅ Stored`);
+
     return result;
   } catch (error) {
     console.error('❌ Automation failed:', error);
     result.success = false;
     result.error = error instanceof Error ? error.message : 'Unknown error';
+
+    // Calculate execution time even on failure
+    const executionTimeMs = Date.now() - startTime;
+
+    // Update cron run tracking with FAILURE
+    if (cronRunId) {
+      await supabase
+        .from('cron_runs')
+        .update({
+          status: 'failed',
+          completed_at: new Date().toISOString(),
+          steps_completed: result.steps,
+          error_message: result.error,
+          error_details: error instanceof Error ? {
+            name: error.name,
+            stack: error.stack,
+          } : { error },
+          execution_time_ms: executionTimeMs,
+        })
+        .eq('id', cronRunId);
+    }
 
     // Send error notification to admin
     await sendErrorNotification({
