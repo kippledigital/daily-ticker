@@ -11,7 +11,7 @@
     },
     {
       "path": "/api/performance/update",
-      "schedule": "0 22 * * *"
+      "schedule": "0 22 * * 1-5"
     }
   ],
   "headers": [

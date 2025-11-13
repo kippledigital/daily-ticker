@@ -58,7 +58,12 @@ async function updatePerformance() {
     const today = new Date()
     const updates = []
 
-    // Process each open position
+    // Process each open position with rate limiting
+    // Polygon free tier: 5 calls/minute = 1 call every 12 seconds
+    // Using 13 seconds to be safe
+    const RATE_LIMIT_DELAY_MS = 13000
+    let processedCount = 0
+
     for (const position of openPositions) {
       const { stocks } = position as any
       const ticker = stocks?.ticker
@@ -68,13 +73,21 @@ async function updatePerformance() {
         continue
       }
 
+      // Rate limiting: Wait 13 seconds between API calls (except for first call)
+      if (processedCount > 0) {
+        console.log(`  ⏳ Rate limiting: waiting 13s before next API call...`)
+        await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
+      }
+
       // Fetch current price from Polygon.io
+      console.log(`  📡 Fetching price for ${ticker}...`)
       const polygonResponse = await fetch(
         `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
       )
 
       if (!polygonResponse.ok) {
-        console.error(`Failed to fetch price for ${ticker}`)
+        const errorText = await polygonResponse.text()
+        console.error(`Failed to fetch price for ${ticker}: ${polygonResponse.status} - ${errorText}`)
         continue
       }
 
@@ -82,9 +95,12 @@ async function updatePerformance() {
       const currentPrice = polygonData.results?.[0]?.c // Close price
 
       if (!currentPrice) {
-        console.warn(`No price data for ${ticker}`)
+        console.warn(`No price data for ${ticker}: ${JSON.stringify(polygonData)}`)
         continue
       }
+
+      console.log(`  💰 ${ticker}: $${currentPrice.toFixed(2)}`)
+      processedCount++
 
       // Calculate holding days
       const entryDate = new Date(position.entry_date)
@@ -115,6 +131,13 @@ async function updatePerformance() {
 
       // If position should be closed, update it
       if (exitPrice && exitReason && exitDate) {
+        const returnPercent = ((exitPrice - position.entry_price) / position.entry_price) * 100
+        console.log(`  🔴 CLOSING POSITION: ${ticker}`)
+        console.log(`    Reason: ${exitReason.replace('_', ' ').toUpperCase()}`)
+        console.log(`    Entry: $${position.entry_price.toFixed(2)} → Exit: $${exitPrice.toFixed(2)}`)
+        console.log(`    Return: ${returnPercent > 0 ? '+' : ''}${returnPercent.toFixed(2)}%`)
+        console.log(`    Holding days: ${holdingDays}`)
+
         const { error: updateError } = await supabase
           .from('stock_performance')
           .update({
@@ -125,15 +148,19 @@ async function updatePerformance() {
           .eq('id', position.id)
 
         if (updateError) {
-          console.error(`Failed to update position ${position.id}:`, updateError)
+          console.error(`  ❌ Failed to update position ${position.id}:`, updateError)
         } else {
+          console.log(`  ✅ Position closed successfully`)
           updates.push({
             id: position.id,
             ticker,
             exit_reason: exitReason,
             exit_price: exitPrice,
+            return_percent: returnPercent,
           })
         }
+      } else {
+        console.log(`  ✅ ${ticker}: Position remains OPEN (within targets)`)
       }
     }
 
