@@ -131,7 +131,9 @@ export async function GET() {
     // This gives us all tickers in one request, minimizing API calls
     const groupedBarsUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${yesterdayStr}?adjusted=true&apiKey=${apiKey}`;
 
-    console.log('Fetching grouped daily bars for market indices...');
+    console.log(`Fetching grouped daily bars for market indices (date: ${yesterdayStr})...`);
+    console.log(`URL: ${groupedBarsUrl.replace(apiKey, 'REDACTED')}`);
+
     const response = await fetch(groupedBarsUrl, {
       next: { revalidate: 60 },
       headers: {
@@ -142,6 +144,7 @@ export async function GET() {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Polygon API error (${response.status}):`, errorText);
+      console.error(`Requested date was: ${yesterdayStr}`);
 
       // If we have stale cached data, return it
       if (cachedData) {
@@ -197,12 +200,17 @@ export async function GET() {
     const results: MarketIndex[] = [];
     const etfDataMap = new Map();
 
+    console.log(`Processing ${data.results?.length || 0} results from Polygon...`);
+
     // Build a map of ETF ticker -> bar data
     for (const bar of data.results) {
       if (bar.T && (bar.T === 'SPY' || bar.T === 'QQQ' || bar.T === 'DIA')) {
+        console.log(`Found ETF: ${bar.T}, close=${bar.c}, open=${bar.o}, pc=${bar.pc}`);
         etfDataMap.set(bar.T, bar);
       }
     }
+
+    console.log(`Found ${etfDataMap.size} ETFs in results`);
 
     // Process each index
     for (const config of indexConfig) {
@@ -235,6 +243,7 @@ export async function GET() {
 
     // If we got all three indices, cache and return the data
     if (results.length === 3) {
+      console.log('✅ Successfully retrieved all 3 indices from Polygon');
       cachedData = {
         data: results,
         timestamp: Date.now(),
@@ -252,6 +261,8 @@ export async function GET() {
         },
       });
     }
+
+    console.warn(`⚠️ Only found ${results.length}/3 indices, falling back to sample data`);
 
     // If we got partial data, fill in the gaps with sample data
     if (results.length > 0) {
