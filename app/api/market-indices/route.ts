@@ -120,18 +120,31 @@ export async function GET() {
       { etf: 'DIA', name: 'DOW', actualSymbol: '^DJI', conversionFactor: 100 },
     ];
 
-    // IMPORTANT: Polygon free tier doesn't allow requesting today's data until market close
-    // We need to request yesterday's completed data instead
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    // IMPORTANT: Polygon free tier doesn't allow requesting today's data
+    // Always request previous trading day to ensure data is available
+    // We need to go back at least 1 day, but potentially more for weekends
+    const now = new Date();
+    const etNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
 
-    // Use grouped daily bars with YESTERDAY'S date - free tier only allows completed days
+    // Get the most recent completed trading day
+    let tradingDay = new Date(etNow);
+
+    // If it's before 5 PM ET (market data finalized), go back a full day
+    // If it's a weekend, go back to Friday
+    tradingDay.setDate(tradingDay.getDate() - 1); // Always go back at least 1 day
+
+    // Keep going back until we hit a weekday
+    while (tradingDay.getDay() === 0 || tradingDay.getDay() === 6) {
+      tradingDay.setDate(tradingDay.getDate() - 1);
+    }
+
+    const tradingDayStr = tradingDay.toISOString().split('T')[0];
+
+    // Use grouped daily bars with most recent trading day - free tier only allows completed days
     // This gives us all tickers in one request, minimizing API calls
-    const groupedBarsUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${yesterdayStr}?adjusted=true&apiKey=${apiKey}`;
+    const groupedBarsUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${tradingDayStr}?adjusted=true&apiKey=${apiKey}`;
 
-    console.log(`Fetching grouped daily bars for market indices (date: ${yesterdayStr})...`);
+    console.log(`Fetching grouped daily bars for market indices (date: ${tradingDayStr})...`);
     console.log(`URL: ${groupedBarsUrl.replace(apiKey, 'REDACTED')}`);
 
     const response = await fetch(groupedBarsUrl, {
@@ -144,7 +157,7 @@ export async function GET() {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Polygon API error (${response.status}):`, errorText);
-      console.error(`Requested date was: ${yesterdayStr}`);
+      console.error(`Requested date was: ${tradingDayStr}`);
 
       // If we have stale cached data, return it
       if (cachedData) {
@@ -169,7 +182,7 @@ export async function GET() {
         _debug: {
           reason: 'polygon_api_error',
           status: response.status,
-          requestedDate: yesterdayStr,
+          requestedDate: tradingDayStr,
         },
       });
     }
@@ -200,7 +213,7 @@ export async function GET() {
         marketStatus,
         _debug: {
           reason: 'no_results_in_polygon_response',
-          requestedDate: yesterdayStr,
+          requestedDate: tradingDayStr,
           status: data.status,
         },
       });
@@ -315,7 +328,7 @@ export async function GET() {
       marketStatus,
       _debug: {
         reason: 'no_etf_data_in_grouped_bars',
-        requestedDate: yesterdayStr,
+        requestedDate: tradingDayStr,
         resultsCount: data.results?.length || 0,
       },
     });
