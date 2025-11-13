@@ -44,7 +44,8 @@ export function HybridTicker() {
   const [marketLoading, setMarketLoading] = useState(true)
   const hasInitialDataRef = useRef(false)
 
-  // Fetch live market indices data - updates every 60 seconds
+  // Fetch market indices data with smart scheduled updates
+  // Only poll at meaningful times: market open (9:30 AM ET), close (4 PM ET), and data available (5 PM ET)
   useEffect(() => {
     const fetchMarketData = async () => {
       setMarketLoading(true)
@@ -52,7 +53,7 @@ export function HybridTicker() {
         // Add timestamp to bypass browser cache and ensure fresh data
         const timestamp = Date.now()
         const response = await fetch(`/api/market-indices?t=${timestamp}`, {
-          cache: 'no-store', // Always fetch fresh data
+          cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache',
           },
@@ -74,12 +75,73 @@ export function HybridTicker() {
       }
     }
 
+    // Calculate next meaningful update time
+    const scheduleNextUpdate = () => {
+      const now = new Date()
+      const etNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+      const dayOfWeek = etNow.getDay() // 0 = Sunday, 6 = Saturday
+
+      // Skip weekends - schedule for Monday 9:30 AM ET
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        const daysUntilMonday = dayOfWeek === 0 ? 1 : 2
+        const nextMonday = new Date(etNow)
+        nextMonday.setDate(etNow.getDate() + daysUntilMonday)
+        nextMonday.setHours(9, 30, 0, 0)
+        const msUntilMonday = nextMonday.getTime() - etNow.getTime()
+        console.log(`Weekend: Next update at Monday 9:30 AM ET (${Math.round(msUntilMonday / 1000 / 60)} minutes)`)
+        return setTimeout(() => {
+          fetchMarketData()
+          scheduleNextUpdate()
+        }, msUntilMonday)
+      }
+
+      const hours = etNow.getHours()
+      const minutes = etNow.getMinutes()
+      const timeInMinutes = hours * 60 + minutes
+
+      // Market events in ET
+      const marketOpen = 9 * 60 + 30 // 9:30 AM
+      const marketClose = 16 * 60 // 4:00 PM
+      const dataAvailable = 17 * 60 // 5:00 PM (when Polygon data is ready)
+
+      let nextUpdateTime = new Date(etNow)
+
+      if (timeInMinutes < marketOpen) {
+        // Before market open - update at 9:30 AM ET
+        nextUpdateTime.setHours(9, 30, 0, 0)
+      } else if (timeInMinutes < marketClose) {
+        // During market hours - update at 4:00 PM ET (market close)
+        nextUpdateTime.setHours(16, 0, 0, 0)
+      } else if (timeInMinutes < dataAvailable) {
+        // After close, before data available - update at 5:00 PM ET
+        nextUpdateTime.setHours(17, 0, 0, 0)
+      } else {
+        // After data available - schedule for next trading day 9:30 AM ET
+        nextUpdateTime.setDate(etNow.getDate() + 1)
+        nextUpdateTime.setHours(9, 30, 0, 0)
+        // Skip to Monday if next day is weekend
+        if (nextUpdateTime.getDay() === 6) nextUpdateTime.setDate(nextUpdateTime.getDate() + 2) // Skip to Monday
+        if (nextUpdateTime.getDay() === 0) nextUpdateTime.setDate(nextUpdateTime.getDate() + 1) // Skip to Monday
+      }
+
+      const msUntilNextUpdate = nextUpdateTime.getTime() - etNow.getTime()
+      console.log(`Next market data update scheduled for: ${nextUpdateTime.toLocaleString('en-US', { timeZone: 'America/New_York' })} ET (${Math.round(msUntilNextUpdate / 1000 / 60)} minutes)`)
+
+      return setTimeout(() => {
+        fetchMarketData()
+        scheduleNextUpdate()
+      }, msUntilNextUpdate)
+    }
+
     // Fetch immediately on mount
     fetchMarketData()
-    
-    // Refresh every 60 seconds for live updates
-    const interval = setInterval(fetchMarketData, 60000)
-    return () => clearInterval(interval)
+
+    // Schedule next update at a meaningful time
+    const timeoutId = scheduleNextUpdate()
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
