@@ -166,6 +166,11 @@ export async function GET() {
         cached: false,
         timestamp: Date.now(),
         marketStatus,
+        _debug: {
+          reason: 'polygon_api_error',
+          status: response.status,
+          requestedDate: yesterdayStr,
+        },
       });
     }
 
@@ -193,6 +198,11 @@ export async function GET() {
         cached: false,
         timestamp: Date.now(),
         marketStatus,
+        _debug: {
+          reason: 'no_results_in_polygon_response',
+          requestedDate: yesterdayStr,
+          status: data.status,
+        },
       });
     }
 
@@ -303,6 +313,11 @@ export async function GET() {
       cached: false,
       timestamp: Date.now(),
       marketStatus,
+      _debug: {
+        reason: 'no_etf_data_in_grouped_bars',
+        requestedDate: yesterdayStr,
+        resultsCount: data.results?.length || 0,
+      },
     });
   } catch (error) {
     console.error('Error fetching market indices:', error);
@@ -327,6 +342,10 @@ export async function GET() {
       cached: false,
       timestamp: Date.now(),
       marketStatus,
+      _debug: {
+        reason: 'catch_error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
