@@ -21,15 +21,18 @@ export async function GET(request: NextRequest) {
     const cronSecret = process.env.CRON_SECRET;
 
     // Check for Vercel cron headers (Vercel sends these with cron jobs)
-    const vercelCronHeader = request.headers.get('x-vercel-cron');
-    const vercelSignature = request.headers.get('x-vercel-signature');
+    // Vercel actually sends: x-vercel-proxy-signature and x-vercel-oidc-token
+    const vercelProxySignature = request.headers.get('x-vercel-proxy-signature');
+    const vercelOidcToken = request.headers.get('x-vercel-oidc-token');
     const userAgent = request.headers.get('user-agent') || '';
 
     let triggerSource = 'unknown';
 
     // Option 1: Verify Vercel cron (strict check)
-    if (vercelCronHeader === '1' || vercelSignature || userAgent.includes('vercel-cron')) {
+    // Accept if ANY Vercel authentication header is present
+    if (vercelProxySignature || vercelOidcToken || userAgent.includes('vercel-cron')) {
       console.log('✅ Verified Vercel cron job');
+      console.log(`   Auth: ${vercelProxySignature ? 'proxy-signature' : ''} ${vercelOidcToken ? 'oidc-token' : ''} ${userAgent.includes('vercel-cron') ? 'user-agent' : ''}`);
       triggerSource = 'vercel-cron';
     }
     // Option 2: Verify Bearer token (for manual triggers)
