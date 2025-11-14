@@ -192,6 +192,7 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
         console.log(`✅ ${ticker}: Validation passed`);
       } else {
         console.warn(`⚠️ ${ticker}: Validation failed (missing required fields or quality issues)`);
+        console.warn(`   Raw AI response: ${JSON.stringify(analysis).substring(0, 500)}...`);
         failedTickers.push(ticker);
       }
     }
@@ -220,6 +221,7 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
               if (validatedStocks.length >= 3) break;
             } else {
               console.warn(`  ⚠️ ${ticker}: Retry validation failed`);
+              console.warn(`     Raw retry response: ${JSON.stringify(retryAnalysis).substring(0, 500)}...`);
             }
           } else {
             console.warn(`  ⚠️ ${ticker}: Retry analysis returned null`);
