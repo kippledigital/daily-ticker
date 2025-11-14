@@ -190,7 +190,7 @@ Output your analysis as valid JSON with these fields: ticker, confidence (number
   try {
     const client = getAnthropic();
     const message = await client.messages.create({
-      model: 'claude-3-sonnet-20240229', // Claude 3 Sonnet (stable, widely available)
+      model: 'claude-3-opus-20240229', // Claude 3 Opus (verified working on account)
       max_tokens: 2048,
       messages: [
         {
