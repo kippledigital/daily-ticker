@@ -64,7 +64,7 @@ export async function getTickerPicks(ticker: string): Promise<TickerPick[]> {
   console.log(`Found ${stocks.length} stocks for ${ticker}`);
 
   // Get unique brief IDs
-  const briefIds = [...new Set(stocks.map((s: any) => s.brief_id).filter(Boolean))];
+  const briefIds = Array.from(new Set(stocks.map((s: any) => s.brief_id).filter(Boolean)));
   
   // Fetch briefs
   let briefMap = new Map();
