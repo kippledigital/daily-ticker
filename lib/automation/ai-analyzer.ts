@@ -170,7 +170,7 @@ Output your analysis as valid JSON with these fields: ticker, confidence (number
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview', // Matches Gumloop's GPT-4
+      model: 'gpt-4o', // Updated to current GPT-4o model
       messages: [
         {
           role: 'system',
