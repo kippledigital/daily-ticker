@@ -3,13 +3,27 @@ import Anthropic from '@anthropic-ai/sdk';
 import { StockAnalysis } from '@/types/automation';
 import { AggregatedStockData } from './data-aggregator';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization to ensure environment variables are loaded
+let openai: OpenAI;
+let anthropic: Anthropic;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
+
+function getAnthropic() {
+  if (!anthropic) {
+    anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+  }
+  return anthropic;
+}
 
 export interface AnalyzeStockParams {
   ticker: string;
@@ -174,8 +188,9 @@ Use this to: 1) Avoid repeating stocks analyzed recently 2) Build on previous in
 Output your analysis as valid JSON with these fields: ticker, confidence (number 0-100), risk_level (Low/Medium/High), last_price (number), avg_volume (number), sector, summary, why_matters, momentum_check, actionable_insight, suggested_allocation, why_trust, caution_notes, ideal_entry_zone, mini_learning_moment, stop_loss, profit_target. You are analyzing stock ticker: ${ticker} Using this financial data: ${financialData} Return ONLY valid JSON (no markdown, no extra text) with this structure: { "ticker": "", "confidence": 85, "risk_level": "Medium", "last_price": 150.25, "avg_volume": 5000000, "sector": "Technology", "summary": "2-3 sentences about the company and stock", "why_matters": "Why this stock is significant", "momentum_check": "Recent price action and performance", "actionable_insight": "Worth watching / Potential buy / Hold steady / Caution", "suggested_allocation": "Recommended portfolio percentage or position size", "why_trust": "Key reasons to trust this analysis", "caution_notes": "Specific risks or red flags", "ideal_entry_zone": "Suggested price range or conditions for entry", "mini_learning_moment": "One educational insight related to this stock", "stop_loss": 142.50, "profit_target": 165.50 } CRITICAL RULES: - ALWAYS use the exact ticker provided above - NEVER write UNKNOWN or N/A for any field - confidence must be a number between 0-100 - risk_level must be exactly: Low, Medium, or High - last_price and avg_volume must be numbers - sector must be one of: Technology, Healthcare, Energy, Finance, Consumer, Industrial, Materials, Real Estate, Utilities, Communication, or Other - stop_loss: Calculate using one of these methods: (1) Support level: Recent swing low or key support, (2) ATR method: last_price - (2 × ATR), (3) Percentage: last_price × 0.92 (8% stop). Choose based on volatility. Must be BELOW last_price. Return as number. - profit_target: Calculate as last_price + (2 × (last_price - stop_loss)) for 2:1 reward-to-risk ratio. Adjust if exceeds technical resistance. Must be ABOVE last_price. Return as number. - Ensure: stop_loss < last_price < profit_target - If data is limited, make reasonable estimates - Return ONLY the JSON object, nothing else`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+    const client = getAnthropic();
+    const message = await client.messages.create({
+      model: 'claude-3-sonnet-20240229', // Claude 3 Sonnet (stable, widely available)
       max_tokens: 2048,
       messages: [
         {
@@ -256,7 +271,8 @@ Output your analysis as valid JSON with these fields: ticker, confidence (number
   try {
     // TRY OPENAI FIRST (Primary AI provider)
     console.log(`🤖 Analyzing ${ticker} with OpenAI GPT-4o...`);
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAI();
+    const completion = await client.chat.completions.create({
       model: 'gpt-4o', // Updated to current GPT-4o model
       messages: [
         {
