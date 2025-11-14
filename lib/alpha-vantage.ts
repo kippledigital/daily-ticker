@@ -151,10 +151,21 @@ export async function getFundamentals(symbol: string): Promise<AlphaVantageFunda
  */
 export async function getNewsAndSentiment(
   symbol: string,
-  limit: number = 10
+  limit: number = 10,
+  timeFrom?: string, // Format: YYYYMMDDTHHMM (e.g., '20251001T0000')
+  timeTo?: string    // Format: YYYYMMDDTHHMM (e.g., '20251001T2359')
 ): Promise<AlphaVantageNewsItem[]> {
   try {
-    const url = `${BASE_URL}?function=NEWS_SENTIMENT&tickers=${symbol}&limit=${limit}&apikey=${API_KEY}`;
+    let url = `${BASE_URL}?function=NEWS_SENTIMENT&tickers=${symbol}&limit=${limit}&apikey=${API_KEY}`;
+
+    // Add time range for historical queries
+    if (timeFrom) {
+      url += `&time_from=${timeFrom}`;
+    }
+    if (timeTo) {
+      url += `&time_to=${timeTo}`;
+    }
+
     const response = await fetch(url);
     const data = await response.json();
 

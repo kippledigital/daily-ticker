@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, Share2, ArrowLeft, Mail, Sparkles } from 'lucide-react'
+import { Calendar, Share2, ArrowLeft, Mail, Sparkles, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BlurredPremium } from '@/components/blurred-premium'
 import { PremiumBadge } from '@/components/premium-badge'
@@ -102,10 +102,21 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
               >
                 {/* Stock Header */}
                 <div className="mb-5">
-                  <h3 className="text-[#00ff88] text-2xl font-bold font-mono mb-1">
-                    🔹 {stock.ticker}
-                  </h3>
-                  <p className="text-gray-400 text-sm font-medium">{stock.sector}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-[#00ff88] text-2xl font-bold font-mono mb-1">
+                        🔹 {stock.ticker}
+                      </h3>
+                      <p className="text-gray-400 text-sm font-medium">{stock.sector}</p>
+                    </div>
+                    <Link
+                      href={`/stocks/${stock.ticker}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 hover:border-[#00ff88] rounded-lg text-sm font-medium text-[#00ff88] transition-all"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Track Record
+                    </Link>
+                  </div>
                 </div>
 
                 {/* What it does */}

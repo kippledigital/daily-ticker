@@ -95,7 +95,10 @@ export interface AggregatedStockData {
 /**
  * Aggregate data from all sources for a single stock
  */
-export async function aggregateStockData(ticker: string): Promise<AggregatedStockData | null> {
+export async function aggregateStockData(
+  ticker: string,
+  historicalDate?: { timeFrom?: string; timeTo?: string } // For historical news queries
+): Promise<AggregatedStockData | null> {
   try {
     console.log(`Aggregating data for ${ticker}...`);
 
@@ -105,7 +108,12 @@ export async function aggregateStockData(ticker: string): Promise<AggregatedStoc
         getStockQuotes([ticker]),
         AlphaVantage.getQuote(ticker),
         AlphaVantage.getFundamentals(ticker),
-        AlphaVantage.getNewsAndSentiment(ticker, 10),
+        AlphaVantage.getNewsAndSentiment(
+          ticker,
+          10,
+          historicalDate?.timeFrom,
+          historicalDate?.timeTo
+        ),
         Finnhub.getCompleteStockData(ticker),
       ]);
 

@@ -8,6 +8,7 @@ import { SubscribeForm } from "@/components/subscribe-form"
 import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
+import { FeaturedStocks } from "@/components/featured-stocks"
 import { TrendingUp, Target, Zap, BookOpen, Plus } from "lucide-react"
 import { trackPerformanceDashboardView } from "@/lib/analytics"
 
@@ -183,6 +184,11 @@ export default function Home() {
           </Suspense>
         </div>
       </section>
+
+      <SectionDivider />
+
+      {/* Featured Stocks Section */}
+      <FeaturedStocks />
 
       <SectionDivider />
 
@@ -636,7 +642,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#00ff88]/20 rounded-2xl p-8 md:p-12 text-center space-y-6">
           <h3 className="text-2xl md:text-3xl font-bold text-white text-balance">Start your mornings smarter</h3>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto text-pretty">
-            Join thousands of investors getting clear, actionable market insights delivered at 8 AM EST.
+            Get clear, actionable market insights delivered free every trading day at 8 AM EST.
           </p>
           <SubscribeForm variant="large" />
           <p className="text-sm text-gray-300">

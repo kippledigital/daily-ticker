@@ -16,12 +16,15 @@ import { aggregateStockData, AggregatedStockData } from './data-aggregator';
  *
  * Returns formatted text summary for AI analysis
  */
-export async function gatherFinancialData(ticker: string): Promise<string> {
+export async function gatherFinancialData(
+  ticker: string,
+  historicalDate?: { timeFrom?: string; timeTo?: string }
+): Promise<string> {
   try {
     console.log(`Gathering real financial data for ${ticker}...`);
 
     // Get aggregated, validated data from all sources
-    const data = await aggregateStockData(ticker);
+    const data = await aggregateStockData(ticker, historicalDate);
 
     if (!data) {
       console.error(`No data available for ${ticker}`);
@@ -145,11 +148,14 @@ function formatDataForAI(data: AggregatedStockData): string {
 /**
  * Gathers financial data for multiple stocks
  */
-export async function gatherFinancialDataBatch(tickers: string[]): Promise<Record<string, string>> {
+export async function gatherFinancialDataBatch(
+  tickers: string[],
+  historicalDate?: { timeFrom?: string; timeTo?: string }
+): Promise<Record<string, string>> {
   const results: Record<string, string> = {};
 
   for (const ticker of tickers) {
-    const data = await gatherFinancialData(ticker);
+    const data = await gatherFinancialData(ticker, historicalDate);
     results[ticker] = data;
 
     // Rate limiting: small delay between requests
@@ -162,6 +168,9 @@ export async function gatherFinancialDataBatch(tickers: string[]): Promise<Recor
 /**
  * Get raw aggregated data (for use in other modules)
  */
-export async function getRawAggregatedData(ticker: string): Promise<AggregatedStockData | null> {
-  return aggregateStockData(ticker);
+export async function getRawAggregatedData(
+  ticker: string,
+  historicalDate?: { timeFrom?: string; timeTo?: string }
+): Promise<AggregatedStockData | null> {
+  return aggregateStockData(ticker, historicalDate);
 }

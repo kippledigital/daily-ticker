@@ -10,10 +10,16 @@ import { cn } from "@/lib/utils"
 import { trackNewsletterSignup } from "@/lib/analytics"
 
 interface SubscribeFormProps {
-  variant?: "default" | "large"
+  variant?: "default" | "large" | "light"
+  placeholder?: string
+  buttonText?: string
 }
 
-export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
+export function SubscribeForm({ 
+  variant = "default",
+  placeholder = "Enter your email",
+  buttonText = "Get Free Daily Picks"
+}: SubscribeFormProps) {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -54,6 +60,7 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
   }
 
   const isLarge = variant === "large"
+  const isLight = variant === "light"
 
   return (
     <div className={cn("w-full", isLarge ? "max-w-xl mx-auto" : "max-w-md mx-auto")}>
@@ -69,7 +76,7 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
           <Input
             id={`email-${variant}`}
             type="email"
-            placeholder="Enter your email"
+            placeholder={placeholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -77,7 +84,10 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
             aria-describedby={error ? `error-${variant}` : isSuccess ? `success-${variant}` : undefined}
             aria-invalid={!!error}
             className={cn(
-              "w-full bg-[#1a3a52] border-[#2a4a62] text-white placeholder:text-gray-200 focus-visible:ring-[#00ff88] focus-visible:border-[#00ff88]",
+              "w-full border text-white placeholder:text-gray-200 focus-visible:ring-[#00ff88] focus-visible:border-[#00ff88] transition-all",
+              isLight 
+                ? "bg-white/10 border-white/20 placeholder:text-white/70 text-white" 
+                : "bg-[#1a3a52] border-[#2a4a62] placeholder:text-gray-200",
               isLarge ? "h-14 text-base px-5 py-3" : "h-12 text-sm px-4 py-3",
             )}
             style={isLarge ? { height: '56px', fontSize: '16px' } : { height: '48px', fontSize: '14px' }}
@@ -88,21 +98,24 @@ export function SubscribeForm({ variant = "default" }: SubscribeFormProps) {
             type="submit"
             disabled={isLoading || isSuccess}
             className={cn(
-              "w-full bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] font-semibold shadow-lg shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50 transition-all whitespace-nowrap",
+              "w-full font-semibold shadow-lg transition-all whitespace-nowrap",
+              isLight
+                ? "bg-white hover:bg-gray-100 text-blue-600 shadow-white/30 hover:shadow-white/50"
+                : "bg-[#00ff88] hover:bg-[#00dd77] text-[#0B1E32] shadow-[#00ff88]/30 hover:shadow-[#00ff88]/50",
               isLarge ? "h-14 px-4 text-base" : "h-12 px-4 text-sm"
             )}
           >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
-              <span>Subscribing...</span>
-            </>
-          ) : (
-            <>
-              <span>Get Free Daily Picks</span>
-              <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-            </>
-          )}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
+                <span>Subscribing...</span>
+              </>
+            ) : (
+              <>
+                <span>{buttonText}</span>
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+              </>
+            )}
           </Button>
         </div>
       </form>
