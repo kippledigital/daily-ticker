@@ -76,7 +76,7 @@ export async function GET(request: Request) {
       }, { status: 500 })
     }
 
-    // Return successful response
+    // Return successful response with no-cache headers
     return NextResponse.json({
       success: true,
       data: {
@@ -94,6 +94,12 @@ export async function GET(request: Request) {
           worst_pick_percent: 0,
         },
         picks: picks || [],
+      },
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     })
   } catch (error) {
