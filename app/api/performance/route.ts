@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Force dynamic rendering (don't pre-render at build time)
 export const dynamic = 'force-dynamic'
+export const revalidate = 0 // Don't cache at all
 
 /**
  * GET /api/performance
@@ -30,6 +31,11 @@ export async function GET(request: Request) {
       .from('performance_summary')
       .select('*')
       .single()
+
+    // Log what we got from the database
+    console.log('📊 Performance API - Database query result:')
+    console.log('  Summary:', JSON.stringify(summary))
+    console.log('  Error:', summaryError)
 
     if (summaryError && summaryError.code !== 'PGRST116') {
       // PGRST116 = no rows returned (expected if no data yet)
