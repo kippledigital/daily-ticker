@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     console.log(`📊 Found ${openPositions.length} open positions to check`)
 
     const updates = []
-    const RATE_LIMIT_DELAY_MS = 13000 // Polygon free tier: 5 calls/min
+    const RATE_LIMIT_DELAY_MS = 3000 // Reduced delay to complete within timeout
 
     for (let i = 0; i < openPositions.length; i++) {
       const position = openPositions[i] as any
