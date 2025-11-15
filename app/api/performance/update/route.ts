@@ -8,12 +8,14 @@ export const dynamic = 'force-dynamic'
  * GET/POST /api/performance/update
  *
  * Updates stock performance by:
- * 1. Fetching current prices from Polygon.io
- * 2. Checking if stop-loss or profit targets hit
- * 3. Auto-closing positions after 30 days
- * 4. Calculating returns for closed positions
+ * 1. Fetching TODAY's price data (high/low/close) from Polygon.io
+ * 2. Checking if TODAY's intraday low hit stop-loss
+ * 3. Checking if TODAY's intraday high hit profit target
+ * 4. Auto-closing positions after 30 days
+ * 5. Calculating returns for closed positions
  *
- * This endpoint should be called daily (via cron job at 5 PM EST / 10 PM UTC)
+ * Runs daily via cron at 5 PM EST (10 PM UTC) - 1 hour after market close
+ * This ensures today's complete price data is available from Polygon API
  */
 async function updatePerformance() {
   try {
@@ -79,10 +81,13 @@ async function updatePerformance() {
         await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
       }
 
-      // Fetch current price from Polygon.io
-      console.log(`  📡 Fetching price for ${ticker}...`)
+      // Fetch TODAY's price data (high/low/close) - runs at 5 PM EST, 1 hour after market close
+      // Format: YYYY-MM-DD
+      const todayDate = today.toISOString().split('T')[0]
+
+      console.log(`  📡 Fetching today's price data for ${ticker}...`)
       const polygonResponse = await fetch(
-        `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
+        `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${todayDate}/${todayDate}?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
       )
 
       if (!polygonResponse.ok) {
@@ -92,14 +97,15 @@ async function updatePerformance() {
       }
 
       const polygonData = await polygonResponse.json()
-      const currentPrice = polygonData.results?.[0]?.c // Close price
+      const todayBar = polygonData.results?.[0]
 
-      if (!currentPrice) {
-        console.warn(`No price data for ${ticker}: ${JSON.stringify(polygonData)}`)
+      if (!todayBar) {
+        console.warn(`No price data for ${ticker} on ${todayDate}: ${JSON.stringify(polygonData)}`)
         continue
       }
 
-      console.log(`  💰 ${ticker}: $${currentPrice.toFixed(2)}`)
+      const { h: high, l: low, c: close } = todayBar
+      console.log(`  💰 ${ticker}: High=$${high.toFixed(2)} Low=$${low.toFixed(2)} Close=$${close.toFixed(2)}`)
       processedCount++
 
       // Calculate holding days
@@ -110,23 +116,26 @@ async function updatePerformance() {
       let exitReason: string | null = null
       let exitDate: string | null = null
 
-      // Check if stop-loss hit
-      if (stocks.stop_loss && currentPrice <= stocks.stop_loss) {
+      // Check if stop-loss hit (intraday low hit the stop)
+      if (stocks.stop_loss && low <= stocks.stop_loss) {
         exitPrice = stocks.stop_loss
         exitReason = 'stop_loss'
-        exitDate = today.toISOString().split('T')[0]
+        exitDate = todayDate
+        console.log(`  🔴 STOP LOSS HIT: Low $${low.toFixed(2)} <= Stop $${stocks.stop_loss.toFixed(2)}`)
       }
-      // Check if profit target hit
-      else if (stocks.profit_target && currentPrice >= stocks.profit_target) {
+      // Check if profit target hit (intraday high hit the target)
+      else if (stocks.profit_target && high >= stocks.profit_target) {
         exitPrice = stocks.profit_target
         exitReason = 'profit_target'
-        exitDate = today.toISOString().split('T')[0]
+        exitDate = todayDate
+        console.log(`  🟢 PROFIT TARGET HIT: High $${high.toFixed(2)} >= Target $${stocks.profit_target.toFixed(2)}`)
       }
       // Check if 30-day limit reached
       else if (holdingDays >= 30) {
-        exitPrice = currentPrice
-        exitReason = '30_day_limit'
-        exitDate = today.toISOString().split('T')[0]
+        exitPrice = close
+        exitReason = 'stop_loss' // Use stop_loss for DB constraint
+        exitDate = todayDate
+        console.log(`  ⏰ 30-DAY LIMIT: Closing at market close $${close.toFixed(2)}`)
       }
 
       // If position should be closed, update it
