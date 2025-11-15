@@ -185,8 +185,6 @@ export default function Home() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* Featured Stocks Section */}
       <FeaturedStocks />
 
