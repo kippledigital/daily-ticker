@@ -128,7 +128,7 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
             </span>
-            Delivered daily at 8 AM EST
+            Delivered daily
           </div>
 
           {/* Headline - Updated per PM spec */}
@@ -611,7 +611,7 @@ export default function Home() {
                   <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
                 </summary>
                 <p className="text-gray-300 mt-4 leading-relaxed">
-                  Daily briefs are delivered every weekday (Monday-Friday) at 8 AM EST. You&apos;ll receive your first brief the 
+                  Daily briefs are delivered every weekday (Monday-Friday). You&apos;ll receive your first brief the 
                   morning after you subscribe. If you subscribe on a weekend, you&apos;ll get your first brief on Monday morning.
                 </p>
               </details>
@@ -640,7 +640,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#00ff88]/20 rounded-2xl p-8 md:p-12 text-center space-y-6">
           <h3 className="text-2xl md:text-3xl font-bold text-white text-balance">Start your mornings smarter</h3>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto text-pretty">
-            Get clear, actionable market insights delivered free every trading day at 8 AM EST.
+            Get clear, actionable market insights delivered free every trading day.
           </p>
           <SubscribeForm variant="large" />
           <p className="text-sm text-gray-300">
