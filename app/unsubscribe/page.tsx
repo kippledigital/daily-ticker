@@ -6,6 +6,8 @@ import { CheckCircle, Mail } from 'lucide-react';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
+// Note: Metadata is exported from metadata.ts since this is a client component
+
 function UnsubscribeForm() {
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email');

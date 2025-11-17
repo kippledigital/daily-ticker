@@ -4,11 +4,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "functions": {
-    "app/api/cron/daily-brief/route.ts": {
-      "maxDuration": 300
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/daily-brief",
@@ -17,6 +12,19 @@
     {
       "path": "/api/performance/update",
       "schedule": "0 22 * * 1-5"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.dailyticker.co"
+        }
+      ],
+      "destination": "https://dailyticker.co/:path*",
+      "permanent": true
     }
   ],
   "headers": [

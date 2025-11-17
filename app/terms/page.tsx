@@ -1,10 +1,18 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
+import type { Metadata } from "next"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Terms of Service — Daily Ticker",
-  description: "Terms of Service for Daily Ticker",
+  description: "Terms of Service for Daily Ticker. Read our terms and conditions for using our daily stock market newsletter service.",
+  alternates: {
+    canonical: "https://dailyticker.co/terms",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function TermsPage() {

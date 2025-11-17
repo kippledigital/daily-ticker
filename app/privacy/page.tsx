@@ -1,10 +1,18 @@
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
+import type { Metadata } from "next"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Privacy Policy — Daily Ticker",
-  description: "Privacy Policy for Daily Ticker",
+  description: "Privacy Policy for Daily Ticker. Learn how we collect, use, and protect your information when you subscribe to our daily stock market newsletter.",
+  alternates: {
+    canonical: "https://dailyticker.co/privacy",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function PrivacyPage() {

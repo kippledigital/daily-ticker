@@ -8,6 +8,18 @@ export async function middleware(request: NextRequest) {
   // Refresh session if expired - required for Server Components
   await supabase.auth.getSession()
 
+  // Redirect www to non-www (301 permanent redirect for SEO)
+  const hostname = request.headers.get('host') || ''
+  
+  // Only redirect if hostname starts with www. and we're in production
+  if (hostname.startsWith('www.') && !hostname.includes('localhost') && !hostname.includes('vercel.app')) {
+    const url = request.nextUrl.clone()
+    // Construct the non-www URL properly
+    url.hostname = hostname.replace('www.', '')
+    url.protocol = 'https:'
+    return NextResponse.redirect(url, 301)
+  }
+
   // Optional: Protect specific routes
   // TEMPORARILY DISABLED - Archive is public until Supabase Auth is configured
   /*
