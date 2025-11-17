@@ -79,6 +79,10 @@ export async function getCompanyNews(
   symbol: string,
   daysBack: number = 7
 ): Promise<FinnhubNewsItem[]> {
+  if (!API_KEY) {
+    return [];
+  }
+
   try {
     const toDate = new Date();
     const fromDate = new Date();
@@ -92,7 +96,10 @@ export async function getCompanyNews(
     const data = await response.json();
 
     if (data.error) {
-      console.error(`Finnhub API error for ${symbol}:`, data.error);
+      // Don't log errors for missing access - this is expected for free tier
+      if (!data.error.includes("don't have access")) {
+        console.error(`Finnhub API error for ${symbol}:`, data.error);
+      }
       return [];
     }
 
@@ -107,13 +114,20 @@ export async function getCompanyNews(
  * Fetch social sentiment for a stock (Reddit + Twitter)
  */
 export async function getSocialSentiment(symbol: string): Promise<FinnhubSocialSentiment | null> {
+  if (!API_KEY) {
+    return null;
+  }
+
   try {
     const url = `${BASE_URL}/stock/social-sentiment?symbol=${symbol}&token=${API_KEY}`;
     const response = await fetch(url);
     const data = await response.json();
 
     if (data.error) {
-      console.error(`Finnhub API error for ${symbol}:`, data.error);
+      // Don't log errors for missing access - this is expected for free tier
+      if (!data.error.includes("don't have access")) {
+        console.error(`Finnhub API error for ${symbol}:`, data.error);
+      }
       return null;
     }
 
@@ -177,13 +191,20 @@ export async function getSocialSentiment(symbol: string): Promise<FinnhubSocialS
 export async function getInsiderTransactions(
   symbol: string
 ): Promise<FinnhubInsiderTransaction[]> {
+  if (!API_KEY) {
+    return [];
+  }
+
   try {
     const url = `${BASE_URL}/stock/insider-transactions?symbol=${symbol}&token=${API_KEY}`;
     const response = await fetch(url);
     const data = await response.json();
 
     if (data.error) {
-      console.error(`Finnhub API error for ${symbol}:`, data.error);
+      // Don't log errors for missing access - this is expected for free tier
+      if (!data.error.includes("don't have access")) {
+        console.error(`Finnhub API error for ${symbol}:`, data.error);
+      }
       return [];
     }
 
@@ -207,13 +228,20 @@ export async function getInsiderTransactions(
  * Fetch analyst recommendations for a stock
  */
 export async function getRecommendations(symbol: string): Promise<FinnhubRecommendation | null> {
+  if (!API_KEY) {
+    return null;
+  }
+
   try {
     const url = `${BASE_URL}/stock/recommendation?symbol=${symbol}&token=${API_KEY}`;
     const response = await fetch(url);
     const data = await response.json();
 
     if (data.error) {
-      console.error(`Finnhub API error for ${symbol}:`, data.error);
+      // Don't log errors for missing access - this is expected for free tier
+      if (!data.error.includes("don't have access")) {
+        console.error(`Finnhub API error for ${symbol}:`, data.error);
+      }
       return null;
     }
 
@@ -241,23 +269,49 @@ export async function getRecommendations(symbol: string): Promise<FinnhubRecomme
 
 /**
  * Fetch complete social + news data for a stock
- * Uses 2 API calls
+ * Uses 4 API calls
+ * Gracefully handles failures - returns empty data if API key is missing or endpoints fail
  */
 export async function getCompleteStockData(symbol: string) {
-  const [news, sentiment, insider, recommendations] = await Promise.all([
-    getCompanyNews(symbol, 7),
-    getSocialSentiment(symbol),
-    getInsiderTransactions(symbol),
-    getRecommendations(symbol),
-  ]);
+  // Check if API key exists
+  if (!API_KEY) {
+    console.warn('FINNHUB_API_KEY not configured - skipping Finnhub data');
+    return {
+      news: [],
+      sentiment: null,
+      insider: [],
+      recommendations: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
-  return {
-    news,
-    sentiment,
-    insider,
-    recommendations,
-    timestamp: new Date().toISOString(),
-  };
+  try {
+    // Wrap all calls in Promise.allSettled to handle individual failures gracefully
+    const [newsResult, sentimentResult, insiderResult, recommendationsResult] = await Promise.allSettled([
+      getCompanyNews(symbol, 7),
+      getSocialSentiment(symbol),
+      getInsiderTransactions(symbol),
+      getRecommendations(symbol),
+    ]);
+
+    return {
+      news: newsResult.status === 'fulfilled' ? newsResult.value : [],
+      sentiment: sentimentResult.status === 'fulfilled' ? sentimentResult.value : null,
+      insider: insiderResult.status === 'fulfilled' ? insiderResult.value : [],
+      recommendations: recommendationsResult.status === 'fulfilled' ? recommendationsResult.value : null,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error(`Error fetching Finnhub data for ${symbol}:`, error);
+    // Return empty data structure so automation can continue
+    return {
+      news: [],
+      sentiment: null,
+      insider: [],
+      recommendations: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
 
 /**

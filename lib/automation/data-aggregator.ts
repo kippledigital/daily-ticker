@@ -103,7 +103,8 @@ export async function aggregateStockData(
     console.log(`Aggregating data for ${ticker}...`);
 
     // Fetch from all sources in parallel
-    const [polygonData, alphaVantageQuote, alphaVantageFundamentals, alphaVantageNews, finnhubData] =
+    // Use Promise.allSettled for Finnhub so failures don't block the automation
+    const [polygonData, alphaVantageQuote, alphaVantageFundamentals, alphaVantageNews, finnhubResult] =
       await Promise.all([
         getStockQuotes([ticker]),
         AlphaVantage.getQuote(ticker),
@@ -114,8 +115,18 @@ export async function aggregateStockData(
           historicalDate?.timeFrom,
           historicalDate?.timeTo
         ),
-        Finnhub.getCompleteStockData(ticker),
+        Promise.allSettled([Finnhub.getCompleteStockData(ticker)]).then(results => 
+          results[0].status === 'fulfilled' ? results[0].value : {
+            news: [],
+            sentiment: null,
+            insider: [],
+            recommendations: null,
+            timestamp: new Date().toISOString(),
+          }
+        ),
       ]);
+    
+    const finnhubData = finnhubResult;
 
     // Extract Polygon quote
     const polygonQuote = polygonData[0];
