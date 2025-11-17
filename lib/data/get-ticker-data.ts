@@ -273,3 +273,67 @@ export async function getRelatedTickers(
   return uniqueTickers.slice(0, limit);
 }
 
+export interface RelatedTickerWithMetrics {
+  ticker: string;
+  totalPicks: number;
+  winRate: number;
+  avgReturn: number;
+}
+
+/**
+ * Get related tickers with metrics (win rate, pick count, avg return)
+ * This provides better SEO value and user experience
+ * 
+ * Optimized to fetch all data in parallel for better performance
+ */
+export async function getRelatedTickersWithMetrics(
+  ticker: string,
+  sector: string,
+  limit: number = 5
+): Promise<RelatedTickerWithMetrics[]> {
+  // First, get all tickers in the same sector (excluding current ticker)
+  const { data: stocks, error: stocksError } = await supabase
+    .from('stocks')
+    .select('ticker')
+    .eq('sector', sector)
+    .neq('ticker', ticker.toUpperCase());
+
+  if (stocksError || !stocks || stocks.length === 0) {
+    return [];
+  }
+
+  // Get unique tickers
+  const uniqueTickers = Array.from(new Set(stocks.map((s: any) => s.ticker)));
+
+  // Fetch picks for all related tickers in parallel (up to limit * 2 to ensure we have enough)
+  const tickersToFetch = uniqueTickers.slice(0, limit * 2);
+  const picksPromises = tickersToFetch.map(t => getTickerPicks(t));
+  const allPicksArrays = await Promise.all(picksPromises);
+
+  // Calculate metrics for each ticker and filter out empty ones
+  const relatedTickersWithMetrics: RelatedTickerWithMetrics[] = tickersToFetch
+    .map((relatedTicker, index) => {
+      const picks = allPicksArrays[index];
+      
+      // Only include tickers that have at least 1 pick
+      if (!picks || picks.length === 0) {
+        return null;
+      }
+
+      // Calculate metrics
+      const metrics = calculateTickerMetrics(picks);
+
+      return {
+        ticker: relatedTicker,
+        totalPicks: metrics.totalPicks,
+        winRate: metrics.winRate,
+        avgReturn: metrics.avgReturn,
+      };
+    })
+    .filter((item): item is RelatedTickerWithMetrics => item !== null)
+    .sort((a, b) => b.totalPicks - a.totalPicks) // Sort by total picks (descending)
+    .slice(0, limit); // Take only the requested limit
+
+  return relatedTickersWithMetrics;
+}
+

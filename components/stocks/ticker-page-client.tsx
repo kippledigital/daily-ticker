@@ -7,16 +7,14 @@ import { cn } from '@/lib/utils';
 import { SubscribeForm } from '@/components/subscribe-form';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
-import type { TickerPick, TickerMetrics } from '@/lib/data/get-ticker-data';
+import type { TickerPick, TickerMetrics, RelatedTickerWithMetrics } from '@/lib/data/get-ticker-data';
 
 interface TickerPageClientProps {
   ticker: string;
   picks: TickerPick[];
   metrics: TickerMetrics;
   sector: string;
-  relatedTickers: string[];
-  isPreviewMode?: boolean;
-  daysSinceStart?: number;
+  relatedTickers: RelatedTickerWithMetrics[];
 }
 
 export function TickerPageClient({
@@ -25,8 +23,6 @@ export function TickerPageClient({
   metrics,
   sector,
   relatedTickers,
-  isPreviewMode = false,
-  daysSinceStart = 0,
 }: TickerPageClientProps) {
   const [showAllPicks, setShowAllPicks] = useState(false);
   const displayedPicks = showAllPicks ? picks : picks.slice(0, 5);
@@ -212,15 +208,22 @@ export function TickerPageClient({
 
         {/* Track Record Section */}
         {metrics.totalPicks > 0 && (
-          <section className="mb-12">
+          <section className="mb-12" itemScope itemType="https://schema.org/FinancialProduct">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-white" id="track-record">
                 Our {ticker} Track Record
               </h2>
               <div className="text-xs text-gray-500">
                 Updated: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </div>
             </div>
+            
+            {/* Descriptive text for SEO */}
+            <p className="text-gray-400 mb-6 text-sm leading-relaxed">
+              We&apos;ve been tracking {ticker} stock picks and providing daily analysis to help investors make informed decisions. 
+              Our {ticker} newsletter delivers free stock picks with entry prices, exit targets, and performance tracking. 
+              {metrics.totalPicks > 3 && ` See our complete ${ticker} track record below with ${metrics.totalPicks} picks and ${metrics.winRate}% win rate.`}
+            </p>
 
             {/* Metrics Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -309,9 +312,13 @@ export function TickerPageClient({
         {/* Latest Pick Section */}
         {metrics.latestPick && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">
+            <h2 className="text-2xl font-bold text-white mb-4" id="latest-pick">
               Latest {ticker} Pick
             </h2>
+            <p className="text-gray-400 mb-6 text-sm">
+              Our most recent {ticker} stock pick with entry price, performance, and analysis. 
+              Subscribe to get {ticker} picks delivered daily with complete technical analysis.
+            </p>
             <div className="bg-[#1a3a52] border border-[#1a3a52] rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -378,9 +385,13 @@ export function TickerPageClient({
         {/* Historical Picks Table */}
         {picks.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">
+            <h2 className="text-2xl font-bold text-white mb-4" id="historical-picks">
               All {ticker} Picks
             </h2>
+            <p className="text-gray-400 mb-6 text-sm">
+              Complete history of all {ticker} stock picks with entry prices, exit prices, returns, and performance metrics. 
+              Track our {ticker} newsletter performance over time.
+            </p>
             <div className="bg-[#1a3a52] border border-[#1a3a52] rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -590,18 +601,37 @@ export function TickerPageClient({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {relatedTickers.map((relatedTicker) => (
                 <Link
-                  key={relatedTicker}
-                  href={`/stocks/${relatedTicker}`}
+                  key={relatedTicker.ticker}
+                  href={`/stocks/${relatedTicker.ticker}`}
                   className="group bg-[#1a3a52] border border-[#1a3a52] hover:border-[#00ff88] rounded-lg p-4 transition-all hover:shadow-lg hover:shadow-[#00ff88]/20"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-lg font-bold text-white group-hover:text-[#00ff88] transition-colors">
-                      {relatedTicker}
+                      {relatedTicker.ticker}
                     </span>
                     <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-[#00ff88] transition-colors" />
                   </div>
-                  <div className="text-sm text-gray-400">
-                    View track record →
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-gray-400">{relatedTicker.totalPicks} pick{relatedTicker.totalPicks !== 1 ? 's' : ''}</span>
+                      {relatedTicker.winRate > 0 && (
+                        <span className={cn(
+                          "font-semibold",
+                          relatedTicker.winRate >= 70 ? "text-[#00ff88]" : 
+                          relatedTicker.winRate >= 50 ? "text-yellow-400" : "text-gray-400"
+                        )}>
+                          {relatedTicker.winRate}% win rate
+                        </span>
+                      )}
+                    </div>
+                    {relatedTicker.avgReturn !== 0 && (
+                      <div className={cn(
+                        "text-xs font-medium",
+                        relatedTicker.avgReturn >= 0 ? "text-[#00ff88]" : "text-red-400"
+                      )}>
+                        {relatedTicker.avgReturn > 0 ? '+' : ''}{relatedTicker.avgReturn.toFixed(1)}% avg return
+                      </div>
+                    )}
                   </div>
                 </Link>
               ))}

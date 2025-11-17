@@ -10,6 +10,7 @@ interface TickerMetrics {
 
 /**
  * Generate SEO metadata for ticker page
+ * Optimized for better CTR and keyword targeting
  */
 export function generateTickerMetadata(
   ticker: string,
@@ -17,16 +18,37 @@ export function generateTickerMetadata(
 ): Metadata {
   const title = `${ticker} Stock Newsletter | Daily Picks & Analysis | Daily Ticker`;
   
-  let description = `Get ${ticker} stock picks delivered daily. `;
+  // Build compelling meta description (max 160 chars for optimal display)
+  let description = '';
+  
   if (metrics.totalPicks > 0) {
-    description += `See our track record: ${metrics.totalPicks} pick${metrics.totalPicks > 1 ? 's' : ''}, ${metrics.winRate}% win rate`;
-    if (metrics.avgReturn > 0) {
-      description += `, +${metrics.avgReturn.toFixed(1)}% avg return`;
+    // Include key metrics for credibility
+    const winRateText = metrics.winRate > 0 ? `${metrics.winRate}% win rate` : '';
+    const returnText = metrics.avgReturn > 0 ? `+${metrics.avgReturn.toFixed(1)}% avg return` : '';
+    const picksText = `${metrics.totalPicks} ${ticker} pick${metrics.totalPicks !== 1 ? 's' : ''}`;
+    
+    // Build description with priority: picks → win rate → return → CTA
+    description = `Get free ${ticker} stock picks delivered daily. `;
+    description += `Track record: ${picksText}`;
+    
+    if (winRateText) {
+      description += `, ${winRateText}`;
+    }
+    
+    if (returnText && description.length < 120) {
+      description += `, ${returnText}`;
+    }
+    
+    description += `. Free newsletter signup.`;
+    
+    // Ensure description is under 160 characters (optimal for SERP display)
+    if (description.length > 160) {
+      // Fallback: shorter version
+      description = `Free ${ticker} stock picks daily. ${picksText}${winRateText ? `, ${winRateText}` : ''}. Track record & analysis.`;
     }
   } else {
-    description += `Daily stock analysis and picks.`;
+    description = `Get free ${ticker} stock picks delivered daily. Daily stock analysis, entry prices, and performance tracking. Free newsletter signup.`;
   }
-  description += ` Free newsletter signup.`;
 
   const url = `https://dailyticker.co/stocks/${ticker}`;
 
