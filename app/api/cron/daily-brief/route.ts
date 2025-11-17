@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic'; // Prevent static rendering
  * Daily Brief Automation Cron Endpoint
  *
  * Runs automatically via Vercel Cron (configured in vercel.json)
- * Schedule: Sunday-Thursday at 9:00 PM EST / 6:00 PM PST (2:00 AM UTC)
- * Sends briefs for Monday-Friday trading
+ * Schedule: Monday-Friday at 2:00 AM UTC (9:00 PM EST / 6:00 PM PST previous day)
+ * Sends briefs Sunday-Thursday evenings for Monday-Friday trading
  *
  * Can also be manually triggered with proper authentication
  */
