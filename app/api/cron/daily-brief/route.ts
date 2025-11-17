@@ -3,7 +3,7 @@ import { runDailyAutomation } from '@/lib/automation/orchestrator';
 import { timingSafeEqual } from 'crypto';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for cron jobs
-export const maxDuration = 900; // 15 minutes max (Vercel Pro limit)
+export const maxDuration = 300; // 5 minutes max (Vercel Hobby plan limit - need Pro for 900s)
 export const dynamic = 'force-dynamic'; // Prevent static rendering
 
 /**
