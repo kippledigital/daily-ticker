@@ -97,7 +97,8 @@ export async function getCompanyNews(
 
     if (data.error) {
       // Don't log errors for missing access - this is expected for free tier
-      if (!data.error.includes("don't have access")) {
+      const errorLower = String(data.error).toLowerCase();
+      if (!errorLower.includes("don't have access") && !errorLower.includes("you don't have access")) {
         console.error(`Finnhub API error for ${symbol}:`, data.error);
       }
       return [];
@@ -125,7 +126,8 @@ export async function getSocialSentiment(symbol: string): Promise<FinnhubSocialS
 
     if (data.error) {
       // Don't log errors for missing access - this is expected for free tier
-      if (!data.error.includes("don't have access")) {
+      const errorLower = String(data.error).toLowerCase();
+      if (!errorLower.includes("don't have access") && !errorLower.includes("you don't have access")) {
         console.error(`Finnhub API error for ${symbol}:`, data.error);
       }
       return null;
@@ -202,7 +204,8 @@ export async function getInsiderTransactions(
 
     if (data.error) {
       // Don't log errors for missing access - this is expected for free tier
-      if (!data.error.includes("don't have access")) {
+      const errorLower = String(data.error).toLowerCase();
+      if (!errorLower.includes("don't have access") && !errorLower.includes("you don't have access")) {
         console.error(`Finnhub API error for ${symbol}:`, data.error);
       }
       return [];
@@ -239,7 +242,8 @@ export async function getRecommendations(symbol: string): Promise<FinnhubRecomme
 
     if (data.error) {
       // Don't log errors for missing access - this is expected for free tier
-      if (!data.error.includes("don't have access")) {
+      const errorLower = String(data.error).toLowerCase();
+      if (!errorLower.includes("don't have access") && !errorLower.includes("you don't have access")) {
         console.error(`Finnhub API error for ${symbol}:`, data.error);
       }
       return null;
