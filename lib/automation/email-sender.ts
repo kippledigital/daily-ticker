@@ -33,6 +33,31 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<SendEma
   const { subject, htmlContent, to, tier } = params;
 
   try {
+    // Validate Resend configuration BEFORE attempting to send
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error('❌ RESEND_API_KEY is not configured!');
+      return {
+        success: false,
+        sentCount: 0,
+        recipientCount: 0,
+        error: 'RESEND_API_KEY environment variable is not set',
+      };
+    }
+
+    if (!apiKey.startsWith('re_')) {
+      console.error('❌ RESEND_API_KEY format appears invalid (should start with re_)');
+      return {
+        success: false,
+        sentCount: 0,
+        recipientCount: 0,
+        error: 'RESEND_API_KEY format is invalid (should start with re_)',
+      };
+    }
+
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    console.log(`📧 Resend config check: API key present (${apiKey.substring(0, 7)}...), From: ${fromAddress}`);
+
     // Get recipient list from Supabase or use manual list
     const recipients = to || await getSubscriberEmails(tier);
 
@@ -51,9 +76,7 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<SendEma
     const tierLabel = tier ? `${tier} tier` : 'custom';
     console.log(`📧 Sending ${tierLabel} email to ${recipients.length} subscriber(s):`, recipients);
     console.log(`   Subject: ${subject}`);
-
-    // Determine from address
-    const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    console.log(`   From: ${fromAddress}`);
 
     // Send email via Resend (Resend sends email analytics to your dashboard automatically!)
     const { data, error } = await resend.emails.send({
