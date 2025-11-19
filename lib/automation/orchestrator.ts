@@ -267,71 +267,122 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     // Step 8: Send emails to BOTH free and premium subscribers (WITH RETRY)
     console.log('📮 Step 8: Sending emails to subscribers (segmented by tier)...');
 
-    // Send premium email to premium subscribers (with retry)
-    let premiumEmailResult = await sendMorningBrief({
-      subject: premiumEmail.subject,
-      htmlContent: premiumEmail.htmlContent,
-      tier: 'premium',
-    });
+    // Check subscriber counts BEFORE sending (for better error messages)
+    const { data: freeSubscribers } = await supabase
+      .from('subscribers')
+      .select('email')
+      .eq('status', 'active')
+      .eq('tier', 'free');
+    
+    const { data: premiumSubscribers } = await supabase
+      .from('subscribers')
+      .select('email')
+      .eq('status', 'active')
+      .eq('tier', 'premium');
 
-    // Retry premium email once if failed
-    if (!premiumEmailResult.success && premiumEmailResult.recipientCount > 0) {
-      console.warn('⚠️  Premium email failed, retrying once...');
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
-      premiumEmailResult = await sendMorningBrief({
+    const freeCount = freeSubscribers?.length || 0;
+    const premiumCount = premiumSubscribers?.length || 0;
+    const totalSubscribers = freeCount + premiumCount;
+
+    console.log(`📊 Subscriber counts: ${freeCount} free, ${premiumCount} premium (${totalSubscribers} total)`);
+
+    // If no subscribers at all, send to admin email as fallback
+    const adminEmail = process.env.ADMIN_EMAIL || 'brief@dailyticker.co';
+    if (totalSubscribers === 0) {
+      console.warn(`⚠️  No active subscribers found! Sending to admin email ${adminEmail} as fallback`);
+      const fallbackResult = await sendMorningBrief({
+        subject: freeEmail.subject,
+        htmlContent: freeEmail.htmlContent,
+        to: [adminEmail],
+      });
+      
+      if (!fallbackResult.success) {
+        throw new Error(`CRITICAL: No subscribers found AND failed to send fallback email to admin: ${fallbackResult.error}`);
+      }
+      
+      result.steps.emailSending = true;
+      result.emailsSent = {
+        free: 0,
+        premium: 0,
+        total: 1, // Admin email
+      };
+      
+      console.log(`✅ Fallback email sent to admin: ${adminEmail}`);
+    } else {
+      // Send premium email to premium subscribers (with retry)
+      let premiumEmailResult = await sendMorningBrief({
         subject: premiumEmail.subject,
         htmlContent: premiumEmail.htmlContent,
         tier: 'premium',
       });
-    }
 
-    // Send free email to free subscribers (with retry)
-    let freeEmailResult = await sendMorningBrief({
-      subject: freeEmail.subject,
-      htmlContent: freeEmail.htmlContent,
-      tier: 'free',
-    });
+      // Retry premium email once if failed
+      if (!premiumEmailResult.success && premiumEmailResult.recipientCount > 0) {
+        console.warn('⚠️  Premium email failed, retrying once...');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+        premiumEmailResult = await sendMorningBrief({
+          subject: premiumEmail.subject,
+          htmlContent: premiumEmail.htmlContent,
+          tier: 'premium',
+        });
+      }
 
-    // Retry free email once if failed
-    if (!freeEmailResult.success && freeEmailResult.recipientCount > 0) {
-      console.warn('⚠️  Free email failed, retrying once...');
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
-      freeEmailResult = await sendMorningBrief({
+      // Send free email to free subscribers (with retry)
+      let freeEmailResult = await sendMorningBrief({
         subject: freeEmail.subject,
         htmlContent: freeEmail.htmlContent,
         tier: 'free',
       });
+
+      // Retry free email once if failed
+      if (!freeEmailResult.success && freeEmailResult.recipientCount > 0) {
+        console.warn('⚠️  Free email failed, retrying once...');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+        freeEmailResult = await sendMorningBrief({
+          subject: freeEmail.subject,
+          htmlContent: freeEmail.htmlContent,
+          tier: 'free',
+        });
+      }
+
+      // Check if ANY emails were sent (some subscribers is better than none)
+      const anyEmailsSent = premiumEmailResult.success || freeEmailResult.success;
+      const totalEmailsSent = premiumEmailResult.sentCount + freeEmailResult.sentCount;
+
+      if (!anyEmailsSent) {
+        // CRITICAL FAILURE: No emails sent at all
+        const errorDetails = {
+          premiumError: premiumEmailResult.error,
+          freeError: freeEmailResult.error,
+          premiumRecipients: premiumEmailResult.recipientCount,
+          freeRecipients: freeEmailResult.recipientCount,
+          totalSubscribers,
+        };
+        console.error('❌ Email sending failed:', errorDetails);
+        throw new Error(`CRITICAL: Failed to send any emails. Premium: ${premiumEmailResult.error || 'unknown'}, Free: ${freeEmailResult.error || 'unknown'}`);
+      }
+
+      if (!premiumEmailResult.success) {
+        console.error(`❌ Premium email failed: ${premiumEmailResult.error}`);
+      } else {
+        console.log(`✅ Premium email sent to ${premiumEmailResult.sentCount} subscribers`);
+      }
+
+      if (!freeEmailResult.success) {
+        console.error(`❌ Free email failed: ${freeEmailResult.error}`);
+      } else {
+        console.log(`✅ Free email sent to ${freeEmailResult.sentCount} subscribers`);
+      }
+
+      console.log(`✅ Total emails sent: ${totalEmailsSent}`);
+
+      result.steps.emailSending = anyEmailsSent;
+      result.emailsSent = {
+        free: freeEmailResult.sentCount,
+        premium: premiumEmailResult.sentCount,
+        total: totalEmailsSent,
+      };
     }
-
-    // Check if ANY emails were sent (some subscribers is better than none)
-    const anyEmailsSent = premiumEmailResult.success || freeEmailResult.success;
-    const totalEmailsSent = premiumEmailResult.sentCount + freeEmailResult.sentCount;
-
-    if (!anyEmailsSent) {
-      // CRITICAL FAILURE: No emails sent at all
-      throw new Error('CRITICAL: Failed to send any emails to any subscribers after retry');
-    }
-
-    if (!premiumEmailResult.success) {
-      console.error(`❌ Premium email failed: ${premiumEmailResult.error}`);
-    } else {
-      console.log(`✅ Premium email sent to ${premiumEmailResult.sentCount} subscribers`);
-    }
-
-    if (!freeEmailResult.success) {
-      console.error(`❌ Free email failed: ${freeEmailResult.error}`);
-    } else {
-      console.log(`✅ Free email sent to ${freeEmailResult.sentCount} subscribers`);
-    }
-
-    console.log(`✅ Total emails sent: ${totalEmailsSent}`);
-
-    result.steps.emailSending = anyEmailsSent;
-    result.emailsSent = {
-      free: freeEmailResult.sentCount,
-      premium: premiumEmailResult.sentCount,
-      total: totalEmailsSent,
-    };
 
     // Step 9: Store BOTH versions in archive (Supabase) - CRITICAL STEP
     console.log('💾 Step 9: Storing both versions in archive...');
