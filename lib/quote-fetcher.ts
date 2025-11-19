@@ -8,6 +8,8 @@
  * NOTE: IEX Cloud shut down on August 31, 2024, so it's no longer available
  * 
  * NEVER uses sample/fake data - fails if all sources unavailable
+ * 
+ * Version: 2.0 - Guaranteed real data only
  */
 
 import { getStockQuotes as getPolygonQuotes, StockQuote, StockQuotesResult } from './polygon';
