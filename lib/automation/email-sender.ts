@@ -85,12 +85,22 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<SendEma
     });
 
     if (error) {
-      console.error('Error sending email via Resend:', error);
+      console.error('❌ Error sending email via Resend:', error);
+      console.error('   Error details:', JSON.stringify(error, null, 2));
+      console.error('   Recipients:', recipients);
+      console.error('   From address:', fromAddress);
+      console.error('   Resend API key present:', !!process.env.RESEND_API_KEY);
+      console.error('   Resend API key length:', process.env.RESEND_API_KEY?.length || 0);
+      
+      // More detailed error message
+      const errorMessage = error.message || 'Resend API error';
+      const errorDetails = error.name ? `${error.name}: ${errorMessage}` : errorMessage;
+      
       return {
         success: false,
         sentCount: 0,
         recipientCount: recipients.length,
-        error: error.message || 'Resend API error',
+        error: `Resend API error: ${errorDetails}`,
       };
     }
 
