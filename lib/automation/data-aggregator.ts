@@ -6,7 +6,7 @@
  * Provides unified, verified stock data for AI analysis
  */
 
-import { getStockQuotes } from '@/lib/polygon';
+import { getStockQuotesWithFallback } from '@/lib/quote-fetcher';
 import * as AlphaVantage from '@/lib/alpha-vantage';
 import * as Finnhub from '@/lib/finnhub';
 
@@ -104,10 +104,11 @@ export async function aggregateStockData(
 
     // Fetch from all sources in parallel
     // Use Promise.allSettled for Finnhub so failures don't block the automation
-    const [polygonData, alphaVantageQuote, alphaVantageFundamentals, alphaVantageNews, finnhubResult] =
+    // CRITICAL: For final stocks, we MUST have real data - use multi-source fetcher
+    const [quoteResult, alphaVantageQuote, alphaVantageFundamentals, alphaVantageNews, finnhubResult] =
       await Promise.all([
-        getStockQuotes([ticker]),
-        AlphaVantage.getQuote(ticker),
+        getStockQuotesWithFallback([ticker]), // Multi-source: Polygon -> Alpha Vantage
+        AlphaVantage.getQuote(ticker), // Still fetch for cross-validation
         AlphaVantage.getFundamentals(ticker),
         AlphaVantage.getNewsAndSentiment(
           ticker,
@@ -128,20 +129,31 @@ export async function aggregateStockData(
     
     const finnhubData = finnhubResult;
 
-    // Extract Polygon quote
-    const polygonQuote = polygonData[0];
+    // Extract quote from multi-source fetcher (guaranteed to be real data or throws error)
+    const quote = quoteResult.quotes[0];
+    
+    if (!quote) {
+      throw new Error(`❌ CRITICAL: No quote data available for ${ticker} from any source`);
+    }
+    
+    if (quote.isRealData !== true) {
+      throw new Error(`❌ CRITICAL: ${ticker} quote is not marked as real data - cannot proceed`);
+    }
+    
+    console.log(`✅ Data aggregation for ${ticker}: Real data fetched from ${quoteResult.dataQuality.sourcesUsed.join(', ')}`);
 
-    // Validate price across sources
-    const priceValidation = validatePrice(polygonQuote, alphaVantageQuote);
+    // Validate price across sources (cross-check with Alpha Vantage)
+    const priceValidation = validatePrice(quote, alphaVantageQuote);
 
     if (!priceValidation.verified) {
       console.warn(`Price discrepancy for ${ticker}: ${priceValidation.message}`);
     }
 
-    // Use Alpha Vantage as primary source if available, fallback to Polygon
-    const price = alphaVantageQuote?.price || polygonQuote?.price || 0;
-    const change = alphaVantageQuote?.change || polygonQuote?.change || 0;
-    const changePercent = alphaVantageQuote?.changePercent || polygonQuote?.changePercent || 0;
+    // Use quote from multi-source fetcher (guaranteed real data)
+    // Alpha Vantage quote is used for cross-validation only
+    const price = quote.price;
+    const change = quote.change;
+    const changePercent = quote.changePercent;
 
     // Process news and calculate sentiment
     const combinedNews = combineNews(alphaVantageNews, finnhubData.news);

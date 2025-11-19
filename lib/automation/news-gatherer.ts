@@ -147,22 +147,41 @@ function formatDataForAI(data: AggregatedStockData): string {
 
 /**
  * Gathers financial data for multiple stocks
+ * Returns both formatted text (for AI) and raw aggregated data (for validation)
+ * This avoids duplicate API calls - we fetch once and reuse the data
  */
 export async function gatherFinancialDataBatch(
   tickers: string[],
   historicalDate?: { timeFrom?: string; timeTo?: string }
-): Promise<Record<string, string>> {
-  const results: Record<string, string> = {};
+): Promise<{
+  formattedData: Record<string, string>;
+  rawData: Record<string, AggregatedStockData>;
+}> {
+  const formattedResults: Record<string, string> = {};
+  const rawResults: Record<string, AggregatedStockData> = {};
 
   for (const ticker of tickers) {
-    const data = await gatherFinancialData(ticker, historicalDate);
-    results[ticker] = data;
+    // Fetch aggregated data ONCE per stock
+    const rawData = await aggregateStockData(ticker, historicalDate);
+    
+    if (rawData) {
+      // Store raw data for validation
+      rawResults[ticker] = rawData;
+      // Format as text for AI analysis
+      formattedResults[ticker] = formatDataForAI(rawData);
+    } else {
+      // Fallback if data fetch fails
+      formattedResults[ticker] = `Limited data available for ${ticker}. Stock ticker: ${ticker}`;
+    }
 
     // Rate limiting: small delay between requests
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  return results;
+  return {
+    formattedData: formattedResults,
+    rawData: rawResults,
+  };
 }
 
 /**

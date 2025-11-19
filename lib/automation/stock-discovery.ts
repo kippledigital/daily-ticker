@@ -1,5 +1,5 @@
 import { StockDiscoveryConfig } from '@/types/automation';
-import { getStockQuotes } from '@/lib/polygon';
+import { getStockQuotesWithFallback } from '@/lib/quote-fetcher';
 import { getRecentlyAnalyzedTickers } from './historical-data';
 import { getSocialSentiment } from '@/lib/finnhub';
 
@@ -72,8 +72,31 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
       console.log(`Limiting candidates from ${candidates.length} to ${maxCandidates} to respect Polygon rate limits`);
     }
 
-    // Fetch real-time quotes for limited candidates
-    const quotes = await getStockQuotes(limitedCandidates);
+    // Fetch real-time quotes for limited candidates (with multi-source fallback)
+    // Note: For stock discovery, we allow some failures since we're just ranking candidates
+    // The final 3 stocks will use strict validation in data-aggregator
+    let quotesResult;
+    try {
+      quotesResult = await getStockQuotesWithFallback(limitedCandidates);
+    } catch (error) {
+      // If all sources fail during discovery, log but continue with available data
+      console.error(`❌ Stock discovery: Failed to fetch quotes from all sources:`, error);
+      // Fall back to default stocks if discovery completely fails
+      console.warn(`⚠️ Falling back to default stocks due to API failures`);
+      return ['AAPL', 'MSFT', 'GOOGL'].slice(0, finalConfig.numberOfTickers);
+    }
+    
+    const quotes = quotesResult.quotes;
+
+    // Log data quality info
+    if (quotesResult.dataQuality.failed > 0) {
+      console.warn(`⚠️ Stock discovery: ${quotesResult.dataQuality.failed}/${quotesResult.dataQuality.totalRequested} stocks failed to fetch`);
+      console.warn(`   Sources used: ${quotesResult.dataQuality.sourcesUsed.join(', ')}`);
+      console.warn(`   Failed symbols: ${quotesResult.dataQuality.failedSymbols.join(', ')}`);
+    } else {
+      console.log(`✅ Stock discovery: All ${quotesResult.dataQuality.successful} stocks fetched successfully`);
+      console.log(`   Sources used: ${quotesResult.dataQuality.sourcesUsed.join(', ')}`);
+    }
 
     // Fetch social sentiment for top movers (limit API calls)
     // Only fetch for stocks with significant price movement (> 1%)

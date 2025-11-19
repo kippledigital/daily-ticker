@@ -37,12 +37,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch stock quotes
-    const quotes = await getStockQuotes(validSymbols);
+    const quotesResult = await getStockQuotes(validSymbols);
 
     return NextResponse.json(
       {
         success: true,
-        data: quotes,
+        data: quotesResult.quotes,
+        dataQuality: quotesResult.dataQuality,
         timestamp: new Date().toISOString(),
       },
       {

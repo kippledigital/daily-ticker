@@ -1,7 +1,7 @@
 import { AutomationResult, ValidatedStock } from '@/types/automation';
 import { discoverTrendingStocks } from './stock-discovery';
 import { getHistoricalWatchlistData } from './historical-data';
-import { gatherFinancialDataBatch, getRawAggregatedData } from './news-gatherer';
+import { gatherFinancialDataBatch } from './news-gatherer';
 import { analyzeStock } from './ai-analyzer';
 import { validateStockAnalysis } from './validator';
 import { injectTrendSymbol } from './trend-injector';
@@ -136,25 +136,12 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     result.steps.historicalData = true;
 
     // Step 3: Gather financial data and news for each ticker
+    // This now returns both formatted text (for AI) and raw data (for validation)
+    // This avoids duplicate API calls - we fetch once and reuse the data
     console.log('📰 Step 3: Gathering financial data and news...');
-    const financialData = await gatherFinancialDataBatch(tickers);
-    console.log(`✅ Financial data gathered for ${tickers.length} tickers`);
+    const { formattedData: financialData, rawData: aggregatedDataMap } = await gatherFinancialDataBatch(tickers);
+    console.log(`✅ Financial data gathered for ${tickers.length} tickers (no duplicate API calls)`);
     result.steps.newsGathering = true;
-
-    // Step 3b: Get raw aggregated data for validation
-    console.log('🔍 Step 3b: Fetching aggregated data for validation...');
-    const aggregatedDataPromises = tickers.map(ticker => getRawAggregatedData(ticker));
-    const aggregatedDataArray = await Promise.all(aggregatedDataPromises);
-
-    // Create map of ticker -> aggregated data
-    const aggregatedDataMap = new Map();
-    tickers.forEach((ticker, index) => {
-      if (aggregatedDataArray[index]) {
-        aggregatedDataMap.set(ticker, aggregatedDataArray[index]);
-      }
-    });
-
-    console.log(`✅ Aggregated data fetched for validation`);
 
     // Step 4: AI Analysis for each stock with validation
     console.log('🤖 Step 4: Analyzing stocks with AI (with validation layer)...');
@@ -163,7 +150,7 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
         ticker,
         financialData: financialData[ticker],
         historicalWatchlist: historicalData,
-        aggregatedData: aggregatedDataMap.get(ticker), // Pass for validation
+        aggregatedData: aggregatedDataMap[ticker], // Pass raw data for validation (reused from Step 3)
       })
     );
 

@@ -7,6 +7,19 @@ export interface StockQuote {
   changePercent: number;
   volume?: number;
   timestamp?: number;
+  isRealData?: boolean; // Track if this is real API data or sample data
+}
+
+export interface StockQuotesResult {
+  quotes: StockQuote[];
+  dataQuality: {
+    totalRequested: number;
+    successful: number;
+    failed: number;
+    sampleDataUsed: number;
+    successRate: number;
+    failedSymbols: string[];
+  };
 }
 
 export interface PolygonTickerSnapshot {
@@ -31,27 +44,38 @@ export interface PolygonResponse {
 }
 
 /**
- * Fetches real-time stock quotes from Polygon.io
+ * Fetches real-time stock quotes from Polygon.io with data quality tracking
  * @param symbols Array of stock symbols to fetch
- * @returns Array of stock quotes
+ * @returns Stock quotes with data quality metrics
  */
-export async function getStockQuotes(symbols: string[]): Promise<StockQuote[]> {
+export async function getStockQuotes(symbols: string[]): Promise<StockQuotesResult> {
   const apiKey = process.env.POLYGON_API_KEY;
 
   if (!apiKey) {
-    console.warn('POLYGON_API_KEY not set, using sample data');
-    return getSampleData(symbols);
+    console.error('🚨 CRITICAL: POLYGON_API_KEY not set, using sample data');
+    const sampleQuotes = getSampleData(symbols);
+    return {
+      quotes: sampleQuotes,
+      dataQuality: {
+        totalRequested: symbols.length,
+        successful: 0,
+        failed: symbols.length,
+        sampleDataUsed: symbols.length,
+        successRate: 0,
+        failedSymbols: symbols,
+      },
+    };
   }
 
-  try {
-    // Fetch previous day close for each symbol with delay to respect rate limits
-    // Free tier: 5 calls/minute = 1 call per 12 seconds
-    // We use 13 seconds to be safe and add retry logic for 429 errors
-    const quotes: StockQuote[] = [];
-    const sampleData = getSampleData(symbols);
-    const DELAY_MS = 13000; // 13 seconds between calls (safe for 5/minute limit)
-    const MAX_RETRIES = 3;
+  const quotes: StockQuote[] = [];
+  const sampleData = getSampleData(symbols);
+  const DELAY_MS = 13000; // 13 seconds between calls (safe for 5/minute limit)
+  const MAX_RETRIES = 3;
+  const failedSymbols: string[] = [];
+  let successful = 0;
+  let failed = 0;
 
+  try {
     for (let i = 0; i < symbols.length; i++) {
       const symbol = symbols[i];
 
@@ -64,31 +88,53 @@ export async function getStockQuotes(symbols: string[]): Promise<StockQuote[]> {
         // Retry logic for rate limits
         let retries = 0;
         let response: Response | null = null;
+        let lastError: Error | null = null;
         
         while (retries <= MAX_RETRIES) {
-          response = await fetch(
-            `https://api.polygon.io/v2/aggs/ticker/${symbol}/prev?adjusted=true&apiKey=${apiKey}`,
-            {
-              next: { revalidate: 3600 }, // Cache for 1 hour (data doesn't change often)
-            }
-          );
+          try {
+            response = await fetch(
+              `https://api.polygon.io/v2/aggs/ticker/${symbol}/prev?adjusted=true&apiKey=${apiKey}`,
+              {
+                next: { revalidate: 3600 }, // Cache for 1 hour (data doesn't change often)
+              }
+            );
 
-          // If rate limited, wait and retry
-          if (response.status === 429) {
-            retries++;
-            if (retries <= MAX_RETRIES) {
-              const waitTime = Math.min(60000 * retries, 60000); // Exponential backoff, max 60s
-              console.warn(`Polygon rate limit hit for ${symbol}, retrying in ${waitTime/1000}s...`);
+            // If rate limited, wait and retry
+            if (response.status === 429) {
+              retries++;
+              if (retries <= MAX_RETRIES) {
+                const waitTime = Math.min(60000 * retries, 60000); // Exponential backoff, max 60s
+                console.warn(`⚠️ Polygon rate limit hit for ${symbol}, retrying in ${waitTime/1000}s... (attempt ${retries}/${MAX_RETRIES})`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                continue;
+              } else {
+                lastError = new Error(`Rate limit exceeded after ${MAX_RETRIES} retries`);
+                break;
+              }
+            }
+
+            // Success or non-429 error
+            if (response.ok) {
+              break;
+            } else {
+              lastError = new Error(`Polygon API error for ${symbol}: ${response.status}`);
+              break;
+            }
+          } catch (fetchError) {
+            lastError = fetchError instanceof Error ? fetchError : new Error(String(fetchError));
+            if (retries < MAX_RETRIES) {
+              retries++;
+              const waitTime = Math.min(60000 * retries, 60000);
+              console.warn(`⚠️ Fetch error for ${symbol}, retrying in ${waitTime/1000}s... (attempt ${retries}/${MAX_RETRIES})`);
               await new Promise(resolve => setTimeout(resolve, waitTime));
               continue;
             }
+            break;
           }
-
-          break; // Success or non-429 error
         }
 
-        if (!response || !response.ok) {
-          throw new Error(`Polygon API error for ${symbol}: ${response?.status || 'unknown'}`);
+        if (!response || !response.ok || lastError) {
+          throw lastError || new Error(`Polygon API error for ${symbol}: ${response?.status || 'unknown'}`);
         }
 
         const data = await response.json();
@@ -107,21 +153,73 @@ export async function getStockQuotes(symbols: string[]): Promise<StockQuote[]> {
             changePercent: changePercent,
             volume: result.v,
             timestamp: result.t,
+            isRealData: true, // Mark as real data
           });
+          successful++;
         } else {
-          throw new Error(`No data available for ${symbol}`);
+          throw new Error(`No data available for ${symbol} (status: ${data.status})`);
         }
       } catch (error) {
-        console.warn(`Failed to fetch ${symbol}, using sample data:`, error);
-        quotes.push(sampleData[i]);
+        failed++;
+        failedSymbols.push(symbol);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`❌ Failed to fetch ${symbol} from Polygon: ${errorMessage}`);
+        console.warn(`⚠️ Using sample data for ${symbol} - THIS MAY BE INACCURATE`);
+        
+        // Use sample data but mark it as not real
+        const sampleQuote = sampleData[i] || {
+          symbol,
+          price: 100,
+          change: 0,
+          changePercent: 0,
+        };
+        quotes.push({
+          ...sampleQuote,
+          isRealData: false, // Mark as sample data
+        });
       }
     }
 
-    return quotes;
+    const successRate = symbols.length > 0 ? (successful / symbols.length) * 100 : 0;
+
+    // Log data quality summary
+    if (failed > 0) {
+      console.error(`\n🚨 POLYGON DATA QUALITY WARNING:`);
+      console.error(`   Total requested: ${symbols.length}`);
+      console.error(`   Successful: ${successful} (${successRate.toFixed(1)}%)`);
+      console.error(`   Failed: ${failed} (${((failed / symbols.length) * 100).toFixed(1)}%)`);
+      console.error(`   Failed symbols: ${failedSymbols.join(', ')}`);
+      console.error(`   ⚠️ Some stocks are using SAMPLE DATA which may be INACCURATE\n`);
+    } else {
+      console.log(`✅ Polygon data quality: ${successful}/${symbols.length} stocks fetched successfully (100%)`);
+    }
+
+    return {
+      quotes,
+      dataQuality: {
+        totalRequested: symbols.length,
+        successful,
+        failed,
+        sampleDataUsed: failed,
+        successRate,
+        failedSymbols,
+      },
+    };
   } catch (error) {
-    console.error('Error fetching stock data from Polygon:', error);
+    console.error('❌ CRITICAL: Error fetching stock data from Polygon:', error);
     // Fallback to sample data on error
-    return getSampleData(symbols);
+    const sampleQuotes = getSampleData(symbols);
+    return {
+      quotes: sampleQuotes.map(q => ({ ...q, isRealData: false })),
+      dataQuality: {
+        totalRequested: symbols.length,
+        successful: 0,
+        failed: symbols.length,
+        sampleDataUsed: symbols.length,
+        successRate: 0,
+        failedSymbols: symbols,
+      },
+    };
   }
 }
 
@@ -194,8 +292,8 @@ export async function getTopMovers(): Promise<{ gainers: StockQuote[], losers: S
 
   if (!apiKey) {
     const watchlist = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'AMD'];
-    const quotes = await getStockQuotes(watchlist);
-    const sorted = quotes.sort((a, b) => b.changePercent - a.changePercent);
+    const quotesResult = await getStockQuotes(watchlist);
+    const sorted = quotesResult.quotes.sort((a, b) => b.changePercent - a.changePercent);
 
     return {
       gainers: sorted.slice(0, 4),
@@ -242,8 +340,8 @@ export async function getTopMovers(): Promise<{ gainers: StockQuote[], losers: S
     console.error('Error fetching top movers:', error);
     // Fallback to sample data
     const watchlist = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'AMD'];
-    const quotes = await getStockQuotes(watchlist);
-    const sorted = quotes.sort((a, b) => b.changePercent - a.changePercent);
+    const quotesResult = await getStockQuotes(watchlist);
+    const sorted = quotesResult.quotes.sort((a, b) => b.changePercent - a.changePercent);
 
     return {
       gainers: sorted.slice(0, 4),
