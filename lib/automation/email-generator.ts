@@ -147,7 +147,8 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 16000, // Need high limit due to large HTML template in system prompt (~4000 tokens)
+      max_tokens: 12000, // Reduced from 16000 to speed up generation (still plenty for HTML email)
+      timeout: 120000, // 2 minute timeout per OpenAI call (total 5 min limit)
     });
 
     let htmlContent = completion.choices[0]?.message?.content || '';
@@ -164,11 +165,11 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       console.warn('⚠️ Email generation was truncated due to token limit. Consider reducing template size or increasing max_tokens.');
     }
 
-    // Generate TL;DR first
-    const tldr = await generateTLDR(stocks);
-
-    // Generate subject line (needs the brief content)
-    const subject = await generateSubjectLine(stocks, tldr);
+    // Generate TL;DR and subject line in parallel (they don't depend on each other)
+    const [tldr, subject] = await Promise.all([
+      generateTLDR(stocks),
+      generateSubjectLine(stocks, ''), // Subject line can be generated without TL;DR
+    ]);
 
     // Add source citations footer to HTML
     htmlContent = addSourceCitations(htmlContent, date);

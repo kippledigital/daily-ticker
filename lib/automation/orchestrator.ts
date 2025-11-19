@@ -245,20 +245,20 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     console.log(`✅ Trend symbols added`);
     result.steps.trendInjection = true;
 
-    // Step 7: Generate BOTH free and premium email content
-    console.log('📧 Step 7: Generating email content (free + premium versions)...');
+    // Step 7: Generate BOTH free and premium email content IN PARALLEL
+    console.log('📧 Step 7: Generating email content (free + premium versions in parallel)...');
 
-    // Generate premium email (full features)
-    const premiumEmail = await generateEmailContent({
-      stocks: stocksWithTrends,
-      date,
-    });
-
-    // Generate free email (stripped-down version)
-    const freeEmail = await generateFreeEmail({
-      stocks: stocksWithTrends,
-      date,
-    });
+    // Generate both emails in parallel to save time
+    const [premiumEmail, freeEmail] = await Promise.all([
+      generateEmailContent({
+        stocks: stocksWithTrends,
+        date,
+      }),
+      generateFreeEmail({
+        stocks: stocksWithTrends,
+        date,
+      }),
+    ]);
 
     console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
     console.log(`✅ Free email generated: "${freeEmail.subject}"`);
