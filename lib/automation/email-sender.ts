@@ -131,6 +131,14 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<SendEma
  */
 async function getSubscriberEmails(tier?: 'free' | 'premium'): Promise<string[]> {
   try {
+    console.log(`🔍 Fetching ${tier || 'all'} subscribers from Supabase...`);
+    
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Supabase not configured! Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+      throw new Error('Supabase configuration missing');
+    }
+
     let query = supabase
       .from('subscribers')
       .select('email, tier, status')
@@ -144,21 +152,34 @@ async function getSubscriberEmails(tier?: 'free' | 'premium'): Promise<string[]>
     const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching Supabase subscribers:', error);
+      console.error('❌ Error fetching Supabase subscribers:', error);
+      console.error('   Error code:', error.code);
+      console.error('   Error message:', error.message);
+      console.error('   Error details:', JSON.stringify(error, null, 2));
       throw error;
     }
 
     if (!data || data.length === 0) {
-      console.warn('No active subscribers found in Supabase');
+      const tierLabel = tier ? `${tier} tier` : 'all tiers';
+      console.warn(`⚠️  No active ${tierLabel} subscribers found in Supabase`);
+      console.warn('   This could mean:');
+      console.warn('   1. No subscribers have signed up yet');
+      console.warn('   2. All subscribers are unsubscribed/bounced');
+      console.warn('   3. Database query issue');
       return [];
     }
 
     const emails = data.map((sub) => sub.email);
-    console.log(`Found ${emails.length} active subscribers`);
+    const tierLabel = tier ? `${tier} tier` : 'all tiers';
+    console.log(`✅ Found ${emails.length} active ${tierLabel} subscribers:`, emails);
 
     return emails;
   } catch (error) {
-    console.error('Error fetching subscribers:', error);
+    console.error('❌ Error fetching subscribers:', error);
+    if (error instanceof Error) {
+      console.error('   Error message:', error.message);
+      console.error('   Error stack:', error.stack);
+    }
     return [];
   }
 }
