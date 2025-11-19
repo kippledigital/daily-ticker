@@ -45,28 +45,50 @@ export async function getStockQuotes(symbols: string[]): Promise<StockQuote[]> {
 
   try {
     // Fetch previous day close for each symbol with delay to respect rate limits
-    // Free tier: 5 calls/minute, so we space them out with 250ms delay
+    // Free tier: 5 calls/minute = 1 call per 12 seconds
+    // We use 13 seconds to be safe and add retry logic for 429 errors
     const quotes: StockQuote[] = [];
     const sampleData = getSampleData(symbols);
+    const DELAY_MS = 13000; // 13 seconds between calls (safe for 5/minute limit)
+    const MAX_RETRIES = 3;
 
     for (let i = 0; i < symbols.length; i++) {
       const symbol = symbols[i];
 
       try {
-        // Add delay between requests (250ms = ~4 calls/second, well under 5/minute limit)
+        // Add delay between requests (respect 5 calls/minute limit)
         if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, 250));
+          await new Promise(resolve => setTimeout(resolve, DELAY_MS));
         }
 
-        const response = await fetch(
-          `https://api.polygon.io/v2/aggs/ticker/${symbol}/prev?adjusted=true&apiKey=${apiKey}`,
-          {
-            next: { revalidate: 3600 }, // Cache for 1 hour (data doesn't change often)
-          }
-        );
+        // Retry logic for rate limits
+        let retries = 0;
+        let response: Response | null = null;
+        
+        while (retries <= MAX_RETRIES) {
+          response = await fetch(
+            `https://api.polygon.io/v2/aggs/ticker/${symbol}/prev?adjusted=true&apiKey=${apiKey}`,
+            {
+              next: { revalidate: 3600 }, // Cache for 1 hour (data doesn't change often)
+            }
+          );
 
-        if (!response.ok) {
-          throw new Error(`Polygon API error for ${symbol}: ${response.status}`);
+          // If rate limited, wait and retry
+          if (response.status === 429) {
+            retries++;
+            if (retries <= MAX_RETRIES) {
+              const waitTime = Math.min(60000 * retries, 60000); // Exponential backoff, max 60s
+              console.warn(`Polygon rate limit hit for ${symbol}, retrying in ${waitTime/1000}s...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              continue;
+            }
+          }
+
+          break; // Success or non-429 error
+        }
+
+        if (!response || !response.ok) {
+          throw new Error(`Polygon API error for ${symbol}: ${response?.status || 'unknown'}`);
         }
 
         const data = await response.json();

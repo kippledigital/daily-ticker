@@ -62,8 +62,18 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
       candidates = ['AAPL', 'NVDA', 'MSFT'];
     }
 
-    // Fetch real-time quotes for all candidates
-    const quotes = await getStockQuotes(candidates);
+    // Limit candidates to avoid Polygon rate limits (5 calls/minute)
+    // We'll fetch quotes for max 20 stocks to keep within reasonable time
+    // With 13s delay, 20 stocks = ~4 minutes, which is acceptable
+    const maxCandidates = 20;
+    const limitedCandidates = candidates.slice(0, maxCandidates);
+    
+    if (candidates.length > maxCandidates) {
+      console.log(`Limiting candidates from ${candidates.length} to ${maxCandidates} to respect Polygon rate limits`);
+    }
+
+    // Fetch real-time quotes for limited candidates
+    const quotes = await getStockQuotes(limitedCandidates);
 
     // Fetch social sentiment for top movers (limit API calls)
     // Only fetch for stocks with significant price movement (> 1%)
