@@ -193,11 +193,11 @@ export async function aggregateStockData(
 
       // Price Data
       price,
-      priceSource: alphaVantageQuote ? 'Alpha Vantage' : 'Polygon.io',
+      priceSource: quoteResult.dataQuality.sourcesUsed[0] || 'Polygon.io',
       priceVerified: priceValidation.verified,
       change,
       changePercent,
-      volume: alphaVantageQuote?.volume || polygonQuote?.volume || 0,
+      volume: alphaVantageQuote?.volume || quote.volume || 0,
       high: alphaVantageQuote?.high || 0,
       low: alphaVantageQuote?.low || 0,
       open: alphaVantageQuote?.open || 0,
