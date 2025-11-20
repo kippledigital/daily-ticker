@@ -195,7 +195,7 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
             ticker,
             financialData: financialData[ticker],
             historicalWatchlist: historicalData,
-            aggregatedData: aggregatedDataMap.get(ticker),
+            aggregatedData: aggregatedDataMap[ticker] || null,
           });
 
           if (retryAnalysis) {
