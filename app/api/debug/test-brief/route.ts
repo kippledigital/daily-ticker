@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { discoverTrendingStocks } from '@/lib/automation/stock-discovery';
 import { getHistoricalWatchlistData } from '@/lib/automation/historical-data';
-import { gatherFinancialDataBatch, getRawAggregatedData } from '@/lib/automation/news-gatherer';
+import { gatherFinancialDataBatch } from '@/lib/automation/news-gatherer';
 import { analyzeStock } from '@/lib/automation/ai-analyzer';
 import { validateStockAnalysis } from '@/lib/automation/validator';
 
@@ -32,29 +32,17 @@ export async function GET() {
 
     // Step 3: Gather financial data
     logs.push('\n📰 Step 3: Gathering financial data...');
-    const financialData = await gatherFinancialDataBatch(tickers);
+    const { formattedData: financialData, rawData: aggregatedDataMap } = await gatherFinancialDataBatch(tickers);
     logs.push(`✅ Financial data gathered for ${tickers.length} tickers`);
-
-    // Step 3b: Get aggregated data
-    logs.push('\n🔍 Step 3b: Fetching aggregated data...');
-    const aggregatedDataPromises = tickers.map(ticker => getRawAggregatedData(ticker));
-    const aggregatedDataArray = await Promise.all(aggregatedDataPromises);
-    const aggregatedDataMap = new Map();
-    tickers.forEach((ticker, index) => {
-      if (aggregatedDataArray[index]) {
-        aggregatedDataMap.set(ticker, aggregatedDataArray[index]);
-      }
-    });
-    logs.push('✅ Aggregated data fetched');
 
     // Step 4: AI Analysis
     logs.push('\n🤖 Step 4: Analyzing stocks with AI...');
     const analysisPromises = tickers.map(ticker =>
       analyzeStock({
         ticker,
-        financialData: financialData[ticker],
+        financialData: financialData[ticker] || `Limited data available for ${ticker}`,
         historicalWatchlist: historicalData,
-        aggregatedData: aggregatedDataMap.get(ticker),
+        aggregatedData: aggregatedDataMap[ticker] || null,
       })
     );
     const analyses = await Promise.all(analysisPromises);
