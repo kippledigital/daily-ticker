@@ -147,11 +147,12 @@ export async function aggregateStockData(
     
     console.log(`✅ Data aggregation for ${ticker}: Real data fetched from ${quoteResult.dataQuality.sourcesUsed.join(', ')}`);
 
-    // Validate price across sources (cross-check with Alpha Vantage)
-    const priceValidation = validatePrice(quote, alphaVantageQuote);
-
-    if (!priceValidation.verified) {
-      console.warn(`Price discrepancy for ${ticker}: ${priceValidation.message}`);
+    // Validate price across sources (cross-check with Alpha Vantage if available)
+    if (alphaVantageQuote) {
+      const priceValidation = validatePrice(quote, alphaVantageQuote);
+      if (!priceValidation.verified) {
+        console.warn(`Price discrepancy for ${ticker}: ${priceValidation.message}`);
+      }
     }
 
     // Use quote from multi-source fetcher (guaranteed real data)
