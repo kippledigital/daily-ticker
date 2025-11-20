@@ -213,7 +213,7 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     // Check elapsed time before email generation (informational only - we have 15 minutes now)
     const elapsedBeforeEmail = Date.now() - startTime;
     const elapsedSeconds = Math.floor(elapsedBeforeEmail / 1000);
-    console.log(`⏱️  Elapsed time before email generation: ${elapsedSeconds}s (limit: 900s)`);
+    console.log(`⏱️  Elapsed time before email generation: ${elapsedSeconds}s (limit: 800s)`);
 
     // Generate both free and premium emails in parallel (we have plenty of time now)
     const [premiumEmail, freeEmail] = await Promise.all([
