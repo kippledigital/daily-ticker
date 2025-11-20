@@ -3,22 +3,25 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createMiddlewareClient(request)
-
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession()
-
-  // Redirect www to non-www (301 permanent redirect for SEO)
+  // Redirect www to non-www FIRST (before any other processing)
+  // This prevents redirect loops and ensures clean redirects
   const hostname = request.headers.get('host') || ''
   
   // Only redirect if hostname starts with www. and we're in production
   if (hostname.startsWith('www.') && !hostname.includes('localhost') && !hostname.includes('vercel.app')) {
-    const url = request.nextUrl.clone()
-    // Construct the non-www URL properly
-    url.hostname = hostname.replace('www.', '')
+    const nonWwwHostname = hostname.replace('www.', '')
+    const url = new URL(request.url)
+    url.hostname = nonWwwHostname
     url.protocol = 'https:'
+    // Return redirect immediately - don't process anything else
     return NextResponse.redirect(url, 301)
   }
+
+  // Only create Supabase client if we're not redirecting
+  const { supabase, response } = createMiddlewareClient(request)
+
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getSession()
 
   // Optional: Protect specific routes
   // TEMPORARILY DISABLED - Archive is public until Supabase Auth is configured
