@@ -148,7 +148,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 7000, // Vercel Pro: Increased for complete emails with all details
+      max_tokens: 6000, // Reduced slightly to speed up generation (still complete, just more concise)
     });
 
     // Vercel Pro: Increased timeout - GPT-4o can take longer with large prompts
