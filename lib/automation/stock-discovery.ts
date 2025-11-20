@@ -64,30 +64,40 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
 
     // OPTIMIZATION: Use Polygon's snapshot/gainers endpoint to get MANY stocks in ONE call
     // This lets us explore lots of options without the 13s delay per stock
-    // Then filter to our focus sectors and rank from there
+    // Strategy: Prioritize focus sectors, but include ALL top movers to catch great picks outside sectors
     let quotesResult;
     try {
-      // First, try to get top movers from Polygon (single API call gets many stocks)
+      // First, get top movers from Polygon (single API call gets many stocks)
       const { getTopMovers } = await import('@/lib/polygon');
       const topMovers = await getTopMovers();
       
-      // Combine gainers and losers, filter to our focus sectors
+      // Combine gainers and losers - get ALL movers (not just focus sectors)
       const allMovers = [...topMovers.gainers, ...topMovers.losers];
-      const sectorFiltered = allMovers.filter(quote => {
-        // Check if this ticker is in our candidate list (from focus sectors)
-        return candidates.includes(quote.symbol);
-      });
       
-      // If we got good results from top movers, use those
-      // Otherwise fall back to fetching individual quotes for our candidates
-      if (sectorFiltered.length >= 3) {
-        console.log(`✅ Using Polygon top movers: ${sectorFiltered.length} stocks from focus sectors`);
+      // Separate into focus sector stocks and other stocks
+      const focusSectorMovers = allMovers.filter(quote => 
+        candidates.includes(quote.symbol)
+      );
+      const otherSectorMovers = allMovers.filter(quote => 
+        !candidates.includes(quote.symbol)
+      );
+      
+      // Strategy: Use focus sector stocks first, but add other sectors if we need more options
+      // This ensures we catch great picks outside focus sectors while still prioritizing them
+      const combinedMovers = [
+        ...focusSectorMovers, // Focus sectors first (priority)
+        ...otherSectorMovers.slice(0, 20), // Add top 20 from other sectors for variety
+      ];
+      
+      if (combinedMovers.length >= 3) {
+        console.log(`✅ Using Polygon top movers: ${focusSectorMovers.length} from focus sectors, ${otherSectorMovers.length} from other sectors`);
+        console.log(`   Focus sectors: ${finalConfig.focusSectors.join(', ')}`);
         // Convert to quotesResult format
         quotesResult = {
-          quotes: sectorFiltered.map(q => ({ ...q, isRealData: true })),
+          quotes: combinedMovers.map(q => ({ ...q, isRealData: true })),
           dataQuality: {
-            totalRequested: sectorFiltered.length,
-            successful: sectorFiltered.length,
+            totalRequested: combinedMovers.length,
+            successful: combinedMovers.length,
             failed: 0,
             sourcesUsed: ['Polygon (snapshot)'],
             failedSymbols: [],
@@ -96,7 +106,7 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
         };
       } else {
         // Fallback: fetch individual quotes (but limit to avoid timeout)
-        console.log(`⚠️ Top movers didn't match focus sectors, fetching individual quotes...`);
+        console.log(`⚠️ Top movers didn't provide enough stocks, fetching individual quotes...`);
         const maxCandidates = 10; // Can fetch more since we're not using top movers
         const limitedCandidates = candidates.slice(0, maxCandidates);
         quotesResult = await getStockQuotesWithFallback(limitedCandidates);
@@ -147,7 +157,8 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
     // 1. Price change % (momentum) - 40% weight
     // 2. Social sentiment score - 30% weight
     // 3. Social mentions count - 20% weight
-    // 4. Randomization for variety - 10% weight
+    // 4. Focus sector bonus - 5% weight (prioritizes focus sectors but allows great picks from anywhere)
+    // 5. Randomization for variety - 5% weight
 
     const scoredStocks = quotes
       .filter(q => {
@@ -174,10 +185,15 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
           ? Math.min((sentiment.overall.totalMentions / 100) * 20, 20)
           : 0;
 
-        // Randomization (0-10 points) for variety
-        const randomScore = Math.random() * 10;
+        // Focus sector bonus (0-5 points) - small bonus to prioritize focus sectors
+        // But great picks from other sectors can still win with high momentum/sentiment
+        const isFocusSector = candidates.includes(q.symbol);
+        const focusSectorBonus = isFocusSector ? 5 : 0;
 
-        const totalScore = momentumScore + sentimentScore + buzzScore + randomScore;
+        // Randomization (0-5 points) for variety (reduced from 10 to make room for focus bonus)
+        const randomScore = Math.random() * 5;
+
+        const totalScore = momentumScore + sentimentScore + buzzScore + focusSectorBonus + randomScore;
 
         return {
           ticker: q.symbol,
@@ -194,8 +210,10 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
             momentum: momentumScore.toFixed(1),
             sentiment: sentimentScore.toFixed(1),
             buzz: buzzScore.toFixed(1),
+            focusSectorBonus: focusSectorBonus.toFixed(1),
             random: randomScore.toFixed(1),
           },
+          isFocusSector,
         };
       })
       .sort((a, b) => b.score - a.score);
@@ -204,7 +222,7 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
     console.log('Top candidates with scores:');
     scoredStocks.slice(0, 10).forEach(s => {
       console.log(
-        `${s.ticker}: ${s.score.toFixed(1)} (${s.breakdown.momentum}m + ${s.breakdown.sentiment}s + ${s.breakdown.buzz}b + ${s.breakdown.random}r) ${s.changePercent >= 0 ? '📈' : '📉'}${Math.abs(s.changePercent).toFixed(2)}%${s.sentiment ? ` | ${s.sentiment.mentions} mentions` : ''}`
+        `${s.ticker}: ${s.score.toFixed(1)} (${s.breakdown.momentum}m + ${s.breakdown.sentiment}s + ${s.breakdown.buzz}b + ${s.breakdown.focusSectorBonus}f + ${s.breakdown.random}r) ${s.changePercent >= 0 ? '📈' : '📉'}${Math.abs(s.changePercent).toFixed(2)}%${s.isFocusSector ? ' [Focus]' : ' [Other]'}${s.sentiment ? ` | ${s.sentiment.mentions} mentions` : ''}`
       );
     });
 
