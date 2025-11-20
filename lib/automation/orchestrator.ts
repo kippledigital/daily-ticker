@@ -206,137 +206,30 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     console.log(`✅ Trend symbols added`);
     result.steps.trendInjection = true;
 
-    // Step 7: Generate email content
-    // TEMPORARY: Only generate premium email to stay within 5-minute limit
-    // TODO: Re-enable free email generation after upgrading to Vercel Pro (15-minute limit)
-    console.log('📧 Step 7: Generating email content (premium version only - free disabled to prevent timeout)...');
+    // Step 7: Generate email content (both free and premium versions)
+    // Vercel Pro: We now have 15 minutes, so we can generate both emails in parallel
+    console.log('📧 Step 7: Generating email content (free and premium versions)...');
 
-    // Check elapsed time before email generation (warn if approaching timeout)
+    // Check elapsed time before email generation (informational only - we have 15 minutes now)
     const elapsedBeforeEmail = Date.now() - startTime;
     const elapsedSeconds = Math.floor(elapsedBeforeEmail / 1000);
-    console.log(`⏱️  Elapsed time before email generation: ${elapsedSeconds}s (limit: 300s)`);
-    
-    if (elapsedSeconds > 250) {
-      console.warn(`⚠️  WARNING: Already at ${elapsedSeconds}s, email generation may timeout!`);
-      // Send early warning notification
-      await sendErrorNotification({
-        step: 'Email Generation (Pre-timeout warning)',
-        message: `Automation is at ${elapsedSeconds}s before email generation. May timeout at 300s limit.`,
-        details: {
-          elapsedSeconds,
-          stepsCompleted: Object.keys(result.steps).length,
-          stocks: stocksWithTrends.map(s => s.ticker),
-        },
-        timestamp: new Date(),
-      });
-    }
+    console.log(`⏱️  Elapsed time before email generation: ${elapsedSeconds}s (limit: 900s)`);
 
-    // TEMPORARY: Only generate premium email (free email disabled to prevent timeout)
-    // Generate premium email only - this cuts email generation time in half
-    const emailGenerationPromise = generateEmailContent({
-      stocks: stocksWithTrends,
-      date,
-    });
-    
-    // Create a "free" email that's just the premium email (temporary workaround)
-    // In production, free subscribers will get premium content until we upgrade to Vercel Pro
-    const freeEmailPromise = Promise.resolve({
-      subject: '',
-      htmlContent: '',
-      tldr: '',
-    });
+    // Generate both free and premium emails in parallel (we have plenty of time now)
+    const [premiumEmail, freeEmail] = await Promise.all([
+      generateEmailContent({
+        stocks: stocksWithTrends,
+        date,
+      }),
+      generateFreeEmail({
+        stocks: stocksWithTrends,
+        date,
+      }),
+    ]);
 
-    // Race against timeout - send notification if we're about to timeout
-    // CRITICAL: If we're past 240s, we have <60s left - skip email generation and use fallback
-    const remainingTime = 300000 - elapsedBeforeEmail; // Remaining time until 300s limit
-    const bufferTime = 30000; // 30s buffer for email sending + archive storage
-    
-    if (remainingTime < bufferTime + 45000) { // Less than 75s remaining (45s for email + 30s buffer)
-      console.warn(`⚠️  CRITICAL: Only ${Math.floor(remainingTime / 1000)}s remaining - skipping email generation to prevent timeout`);
-      throw new Error(`Insufficient time for email generation: ${Math.floor(remainingTime / 1000)}s remaining (need 75s+)`);
-    }
-    
-    const timeoutMs = remainingTime - bufferTime; // Use all remaining time minus buffer
-    console.log(`⏱️  Email generation timeout set to ${Math.floor(timeoutMs / 1000)}s (${elapsedSeconds}s elapsed, ${Math.floor(remainingTime / 1000)}s remaining)`);
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const timeoutError = new Error(`Email generation timeout at ${elapsed}s (approaching 300s limit)`);
-        // Send notification before rejecting
-        sendErrorNotification({
-          step: 'Email Generation (Timeout)',
-          message: `Automation timed out during email generation at ${elapsed}s`,
-          details: {
-            elapsedSeconds: elapsed,
-            stepsCompleted: Object.keys(result.steps).length,
-            stocks: stocksWithTrends.map(s => s.ticker),
-            error: timeoutError.message,
-          },
-          timestamp: new Date(),
-        }).catch(err => console.error('Failed to send timeout notification:', err));
-        reject(timeoutError);
-      }, timeoutMs);
-    });
-
-    // TEMPORARY: Only generate premium email (free disabled to prevent timeout)
-    let premiumEmail: { subject: string; htmlContent: string; tldr: string };
-    let emailGenerationSucceeded = false;
-    
-    try {
-      premiumEmail = await Promise.race([
-        emailGenerationPromise,
-        timeoutPromise,
-      ]);
-      emailGenerationSucceeded = true;
-    } catch (error) {
-      // Email generation failed/timed out - create fallback brief to preserve stock analysis
-      console.error('❌ Email generation failed/timed out, creating fallback brief to preserve stock analysis...');
-      const tickers = stocksWithTrends.map(s => s.ticker).join(', ');
-      
-      // Create a basic HTML brief with stock data (preserve the analysis work)
-      const stockSummaries = stocksWithTrends.map(stock => `
-        <div style="margin-bottom:20px; padding:15px; background:#1a3a52; border-radius:8px;">
-          <h3 style="color:#00ff88; margin:0 0 10px 0;">${stock.ticker}</h3>
-          <p style="color:#e5e7eb; margin:5px 0;"><strong>Price:</strong> $${stock.last_price.toFixed(2)}</p>
-          <p style="color:#e5e7eb; margin:5px 0;"><strong>Sector:</strong> ${stock.sector}</p>
-          <p style="color:#e5e7eb; margin:5px 0;"><strong>Risk Level:</strong> ${stock.risk_level}</p>
-          <p style="color:#e5e7eb; margin:5px 0;"><strong>Summary:</strong> ${stock.summary}</p>
-          <p style="color:#e5e7eb; margin:5px 0;"><strong>Actionable Insight:</strong> ${stock.actionable_insight}</p>
-        </div>
-      `).join('');
-      
-      premiumEmail = {
-        subject: `Daily Brief - ${tickers} (Analysis Complete)`,
-        htmlContent: `
-          <div style="font-family: Arial, sans-serif; padding:20px; background:#0B1E32; color:#F0F0F0;">
-            <h1 style="color:#00ff88;">Daily Brief - ${new Date(date).toLocaleDateString()}</h1>
-            <p style="color:#9ca3af;">Stock analysis completed successfully. Email generation timed out, but stock data is preserved below.</p>
-            <div style="margin-top:30px;">
-              <h2 style="color:#00ff88;">Stock Analysis</h2>
-              ${stockSummaries}
-            </div>
-            <p style="color:#9ca3af; margin-top:30px; font-size:12px;">Note: Full email generation timed out. Stock analysis data preserved.</p>
-          </div>
-        `,
-        tldr: `Stocks analyzed: ${tickers}. Full email generation incomplete due to timeout, but stock analysis preserved.`,
-      };
-      emailGenerationSucceeded = false;
-    }
-    
-    // Use premium email for both tiers temporarily (until Vercel Pro upgrade)
-    const freeEmail = {
-      subject: premiumEmail.subject,
-      htmlContent: premiumEmail.htmlContent,
-      tldr: premiumEmail.tldr,
-    };
-
-    if (emailGenerationSucceeded) {
-      console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
-      console.log(`✅ Free email generated: "${freeEmail.subject}"`);
-    } else {
-      console.warn(`⚠️ Email generation failed, using minimal brief to preserve stock analysis`);
-    }
-    result.steps.emailGeneration = emailGenerationSucceeded;
+    console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
+    console.log(`✅ Free email generated: "${freeEmail.subject}"`);
+    result.steps.emailGeneration = true;
 
     // Step 8: Send emails to BOTH free and premium subscribers (WITH RETRY)
     console.log('📮 Step 8: Sending emails to subscribers (segmented by tier)...');

@@ -4,7 +4,7 @@ import { sendErrorNotification } from '@/lib/automation/error-notifier';
 import { timingSafeEqual } from 'crypto';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for cron jobs
-export const maxDuration = 300; // 5 minutes max (Vercel Hobby plan limit - need Pro for 900s)
+export const maxDuration = 900; // 15 minutes max (Vercel Pro plan)
 export const dynamic = 'force-dynamic'; // Prevent static rendering
 
 /**
