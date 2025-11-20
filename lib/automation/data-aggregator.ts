@@ -103,12 +103,12 @@ export async function aggregateStockData(
     console.log(`Aggregating data for ${ticker}...`);
 
     // Fetch from all sources in parallel
+    // OPTIMIZED: Removed redundant Alpha Vantage quote call (already in getStockQuotesWithFallback)
     // Use Promise.allSettled for Finnhub so failures don't block the automation
     // CRITICAL: For final stocks, we MUST have real data - use multi-source fetcher
-    const [quoteResult, alphaVantageQuote, alphaVantageFundamentals, alphaVantageNews, finnhubResult] =
+    const [quoteResult, alphaVantageFundamentals, alphaVantageNews, finnhubResult] =
       await Promise.all([
-        getStockQuotesWithFallback([ticker]), // Multi-source: Polygon -> Alpha Vantage
-        AlphaVantage.getQuote(ticker), // Still fetch for cross-validation
+        getStockQuotesWithFallback([ticker]), // Multi-source: Polygon -> Alpha Vantage (includes quote)
         AlphaVantage.getFundamentals(ticker),
         AlphaVantage.getNewsAndSentiment(
           ticker,
@@ -126,6 +126,11 @@ export async function aggregateStockData(
           }
         ),
       ]);
+    
+    // Extract Alpha Vantage quote from quoteResult if available (for cross-validation)
+    const alphaVantageQuote = quoteResult.quotes[0] && quoteResult.dataQuality.sourcesUsed.includes('Alpha Vantage')
+      ? { price: quoteResult.quotes[0].price, symbol: ticker }
+      : null;
     
     const finnhubData = finnhubResult;
 

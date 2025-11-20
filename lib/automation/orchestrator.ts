@@ -184,40 +184,14 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       }
     }
 
-    // Step 5b: Retry failed stocks once
+    // Step 5b: Retry failed stocks (DISABLED to save time - stay within 5-minute limit)
+    // TODO: Re-enable retry logic after upgrading to Vercel Pro
+    /*
     if (failedTickers.length > 0 && validatedStocks.length < 3) {
       console.log(`🔄 Retrying ${failedTickers.length} failed stock(s): ${failedTickers.join(', ')}`);
-
-      for (const ticker of failedTickers) {
-        try {
-          console.log(`  Retrying ${ticker}...`);
-          const retryAnalysis = await analyzeStock({
-            ticker,
-            financialData: financialData[ticker],
-            historicalWatchlist: historicalData,
-            aggregatedData: aggregatedDataMap[ticker] || null,
-          });
-
-          if (retryAnalysis) {
-            const validated = validateStockAnalysis(retryAnalysis);
-            if (validated) {
-              validatedStocks.push(validated);
-              console.log(`  ✅ ${ticker}: Retry successful!`);
-
-              // Stop retrying once we have 3 stocks
-              if (validatedStocks.length >= 3) break;
-            } else {
-              console.warn(`  ⚠️ ${ticker}: Retry validation failed`);
-              console.warn(`     Raw retry response: ${JSON.stringify(retryAnalysis).substring(0, 500)}...`);
-            }
-          } else {
-            console.warn(`  ⚠️ ${ticker}: Retry analysis returned null`);
-          }
-        } catch (error) {
-          console.error(`  ❌ ${ticker}: Retry failed with error:`, error);
-        }
-      }
+      // ... retry logic disabled
     }
+    */
 
     if (validatedStocks.length === 0) {
       throw new Error('No valid stock analyses after validation and retry');

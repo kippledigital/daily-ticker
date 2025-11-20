@@ -148,7 +148,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 8000, // Reduced to speed up generation (still sufficient for HTML email)
+      max_tokens: 6000, // Further reduced to speed up generation (still sufficient for HTML email)
     });
 
     const timeoutPromise = new Promise<never>((_, reject) => {

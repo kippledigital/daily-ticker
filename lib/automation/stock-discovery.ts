@@ -63,9 +63,9 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
     }
 
     // Limit candidates to avoid Polygon rate limits (5 calls/minute)
-    // REDUCED: 20 stocks was taking 4+ minutes (20 × 13s = 260s)
-    // Now limiting to 10 stocks max = ~2 minutes, leaving 3 minutes for rest of automation
-    const maxCandidates = 10;
+    // AGGRESSIVE OPTIMIZATION: Reduced to 5 stocks to stay within 5-minute limit
+    // 5 stocks × 13s = 65s (1.1 min) - leaves ~4 minutes for rest of automation
+    const maxCandidates = 5;
     const limitedCandidates = candidates.slice(0, maxCandidates);
     
     if (candidates.length > maxCandidates) {
