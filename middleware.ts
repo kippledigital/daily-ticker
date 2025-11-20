@@ -3,9 +3,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // TEMPORARILY DISABLED: www redirect causing issues
-  // TODO: Re-enable once redirect loop is resolved
-  /*
   // Redirect www to non-www FIRST (before any other processing)
   // This prevents redirect loops and ensures clean redirects
   const hostname = request.headers.get('host') || ''
@@ -13,15 +10,15 @@ export async function middleware(request: NextRequest) {
   // Only redirect if hostname starts with www. and we're in production
   if (hostname.startsWith('www.') && !hostname.includes('localhost') && !hostname.includes('vercel.app')) {
     const nonWwwHostname = hostname.replace('www.', '')
+    // Construct URL properly - use the request URL but change hostname
     const url = new URL(request.url)
-    url.hostname = nonWwwHostname
+    url.host = nonWwwHostname
     url.protocol = 'https:'
     // Return redirect immediately - don't process anything else
-    return NextResponse.redirect(url, 301)
+    return NextResponse.redirect(url.toString(), 301)
   }
-  */
 
-  // Create Supabase client
+  // Create Supabase client (only if not redirecting)
   const { supabase, response } = createMiddlewareClient(request)
 
   // Refresh session if expired - required for Server Components
