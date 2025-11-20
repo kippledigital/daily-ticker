@@ -104,9 +104,9 @@ export async function aggregateStockData(
 
     // Fetch from all sources in parallel
     // OPTIMIZED: Removed redundant Alpha Vantage quote call (already in getStockQuotesWithFallback)
-    // Use Promise.allSettled for Finnhub so failures don't block the automation
+    // OPTIMIZED: Finnhub is optional (non-blocking) - skip if time is tight
     // CRITICAL: For final stocks, we MUST have real data - use multi-source fetcher
-    const [quoteResult, alphaVantageFundamentals, alphaVantageNews, finnhubResult] =
+    const [quoteResult, alphaVantageFundamentals, alphaVantageNews] =
       await Promise.all([
         getStockQuotesWithFallback([ticker]), // Multi-source: Polygon -> Alpha Vantage (includes quote)
         AlphaVantage.getFundamentals(ticker),
@@ -116,16 +116,30 @@ export async function aggregateStockData(
           historicalDate?.timeFrom,
           historicalDate?.timeTo
         ),
-        Promise.allSettled([Finnhub.getCompleteStockData(ticker)]).then(results => 
-          results[0].status === 'fulfilled' ? results[0].value : {
-            news: [],
-            sentiment: null,
-            insider: [],
-            recommendations: null,
-            timestamp: new Date().toISOString(),
-          }
-        ),
       ]);
+    
+    // Finnhub is optional - fetch in background, don't wait (saves time)
+    const finnhubPromise = Promise.allSettled([Finnhub.getCompleteStockData(ticker)]).then(results => 
+      results[0].status === 'fulfilled' ? results[0].value : {
+        news: [],
+        sentiment: null,
+        insider: [],
+        recommendations: null,
+        timestamp: new Date().toISOString(),
+      }
+    );
+    
+    // Don't await Finnhub - use empty data if it's not ready yet (non-critical)
+    const finnhubResult = await Promise.race([
+      finnhubPromise,
+      Promise.resolve({
+        news: [],
+        sentiment: null,
+        insider: [],
+        recommendations: null,
+        timestamp: new Date().toISOString(),
+      }),
+    ]);
     
     // Extract Alpha Vantage quote from quoteResult if available (for cross-validation)
     const alphaVantageQuote = quoteResult.quotes[0] && quoteResult.dataQuality.sourcesUsed.includes('Alpha Vantage')
