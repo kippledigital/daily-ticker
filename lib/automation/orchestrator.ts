@@ -290,8 +290,8 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
 
     console.log(`📊 Subscriber counts: ${freeCount} free, ${premiumCount} premium (${totalSubscribers} total)`);
 
-    // If no subscribers at all, send to admin email as fallback
-    const adminEmail = process.env.ADMIN_EMAIL || 'brief@dailyticker.co';
+    // If no subscribers at all, send to business email as fallback
+    const adminEmail = 'brief@dailyticker.co';
     if (totalSubscribers === 0) {
       console.warn(`⚠️  No active subscribers found! Sending to admin email ${adminEmail} as fallback`);
       const fallbackResult = await sendMorningBrief({
