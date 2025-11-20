@@ -232,8 +232,10 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     console.log(`✅ Trend symbols added`);
     result.steps.trendInjection = true;
 
-    // Step 7: Generate BOTH free and premium email content IN PARALLEL
-    console.log('📧 Step 7: Generating email content (free + premium versions in parallel)...');
+    // Step 7: Generate email content
+    // TEMPORARY: Only generate premium email to stay within 5-minute limit
+    // TODO: Re-enable free email generation after upgrading to Vercel Pro (15-minute limit)
+    console.log('📧 Step 7: Generating email content (premium version only - free disabled to prevent timeout)...');
 
     // Check elapsed time before email generation (warn if approaching timeout)
     const elapsedBeforeEmail = Date.now() - startTime;
@@ -255,18 +257,20 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       });
     }
 
-    // Generate both emails in parallel to save time
-    // Wrap in timeout handler to send notification before Vercel kills the process
-    const emailGenerationPromise = Promise.all([
-      generateEmailContent({
-        stocks: stocksWithTrends,
-        date,
-      }),
-      generateFreeEmail({
-        stocks: stocksWithTrends,
-        date,
-      }),
-    ]);
+    // TEMPORARY: Only generate premium email (free email disabled to prevent timeout)
+    // Generate premium email only - this cuts email generation time in half
+    const emailGenerationPromise = generateEmailContent({
+      stocks: stocksWithTrends,
+      date,
+    });
+    
+    // Create a "free" email that's just the premium email (temporary workaround)
+    // In production, free subscribers will get premium content until we upgrade to Vercel Pro
+    const freeEmailPromise = Promise.resolve({
+      subject: '',
+      htmlContent: '',
+      tldr: '',
+    });
 
     // Race against timeout - send notification if we're about to timeout
     const timeoutMs = 280000; // 280 seconds - send notification before Vercel kills it at 300s
@@ -290,10 +294,18 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       }, timeoutMs);
     });
 
-    const [premiumEmail, freeEmail] = await Promise.race([
+    // TEMPORARY: Only generate premium email (free disabled to prevent timeout)
+    const premiumEmail = await Promise.race([
       emailGenerationPromise,
       timeoutPromise,
     ]);
+    
+    // Use premium email for both tiers temporarily (until Vercel Pro upgrade)
+    const freeEmail = {
+      subject: premiumEmail.subject,
+      htmlContent: premiumEmail.htmlContent,
+      tldr: premiumEmail.tldr,
+    };
 
     console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
     console.log(`✅ Free email generated: "${freeEmail.subject}"`);
