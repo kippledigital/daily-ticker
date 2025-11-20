@@ -264,12 +264,12 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8,
-      max_tokens: 7000, // Vercel Pro: Increased for complete emails with all details
+      max_tokens: 6000, // Reduced slightly to speed up generation (still complete, just more concise)
     });
 
-    // Vercel Pro: Increased timeout since we have 15 minutes total
+    // Vercel Pro: Increased timeout - GPT-4o can take longer with large prompts
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI API call timed out after 120 seconds')), 120000); // 2 minutes - plenty of time with 15min limit
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 180 seconds')), 180000); // 3 minutes - allows for slower generation
     });
 
     const completion = await Promise.race([completionPromise, timeoutPromise]);
