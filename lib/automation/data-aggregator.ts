@@ -97,18 +97,31 @@ export interface AggregatedStockData {
  */
 export async function aggregateStockData(
   ticker: string,
-  historicalDate?: { timeFrom?: string; timeTo?: string } // For historical news queries
+  historicalDate?: { timeFrom?: string; timeTo?: string }, // For historical news queries
+  preFetchedQuote?: any // Optional: pre-fetched quote to avoid duplicate API calls
 ): Promise<AggregatedStockData | null> {
   try {
     console.log(`Aggregating data for ${ticker}...`);
 
     // Fetch from all sources in parallel
-    // OPTIMIZED: Removed redundant Alpha Vantage quote call (already in getStockQuotesWithFallback)
+    // OPTIMIZED: Use pre-fetched quote if available (from batch fetch) to save ~13s per stock
     // OPTIMIZED: Finnhub is optional (non-blocking) - skip if time is tight
     // CRITICAL: For final stocks, we MUST have real data - use multi-source fetcher
     const [quoteResult, alphaVantageFundamentals, alphaVantageNews] =
       await Promise.all([
-        getStockQuotesWithFallback([ticker]), // Multi-source: Polygon -> Alpha Vantage (includes quote)
+        preFetchedQuote
+          ? Promise.resolve({
+              quotes: [preFetchedQuote],
+              dataQuality: {
+                totalRequested: 1,
+                successful: 1,
+                failed: 0,
+                sourcesUsed: ['Polygon (batch)'],
+                failedSymbols: [],
+                successRate: 100,
+              },
+            })
+          : getStockQuotesWithFallback([ticker]), // Fallback: fetch individually if not pre-fetched
         AlphaVantage.getFundamentals(ticker),
         AlphaVantage.getNewsAndSentiment(
           ticker,

@@ -160,9 +160,30 @@ export async function gatherFinancialDataBatch(
   const formattedResults: Record<string, string> = {};
   const rawResults: Record<string, AggregatedStockData> = {};
 
+  // OPTIMIZATION: Batch fetch quotes for all stocks at once to avoid 13s delays
+  // This saves ~26 seconds (2 × 13s delays) when fetching 3 stocks
+  const { getStockQuotesWithFallback } = await import('@/lib/quote-fetcher');
+  let batchQuotes: Record<string, any> = {};
+  
+  try {
+    console.log(`📡 Batch fetching quotes for ${tickers.length} stocks (saves ~26s)...`);
+    const batchQuoteResult = await getStockQuotesWithFallback(tickers);
+    // Create a map of symbol -> quote for quick lookup
+    batchQuotes = batchQuoteResult.quotes.reduce((acc, quote) => {
+      acc[quote.symbol] = quote;
+      return acc;
+    }, {} as Record<string, any>);
+    console.log(`✅ Batch quotes fetched: ${Object.keys(batchQuotes).length} stocks`);
+  } catch (error) {
+    console.warn(`⚠️ Batch quote fetch failed, will fetch individually:`, error);
+  }
+
+  // Now fetch other data (fundamentals, news) for each stock
+  // Quotes are already fetched, so aggregateStockData will reuse them
   for (const ticker of tickers) {
     // Fetch aggregated data ONCE per stock
-    const rawData = await aggregateStockData(ticker, historicalDate);
+    // Pass pre-fetched quote to avoid duplicate API calls
+    const rawData = await aggregateStockData(ticker, historicalDate, batchQuotes[ticker]);
     
     if (rawData) {
       // Store raw data for validation
@@ -174,7 +195,7 @@ export async function gatherFinancialDataBatch(
       formattedResults[ticker] = `Limited data available for ${ticker}. Stock ticker: ${ticker}`;
     }
 
-    // Rate limiting: small delay between requests
+    // Small delay between Alpha Vantage calls (not quotes - those are already fetched)
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
