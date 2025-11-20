@@ -279,13 +279,36 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       ]);
       emailGenerationSucceeded = true;
     } catch (error) {
-      // Email generation failed/timed out - create minimal brief to preserve stock analysis
-      console.error('❌ Email generation failed/timed out, creating minimal brief to preserve stock analysis...');
+      // Email generation failed/timed out - create fallback brief to preserve stock analysis
+      console.error('❌ Email generation failed/timed out, creating fallback brief to preserve stock analysis...');
       const tickers = stocksWithTrends.map(s => s.ticker).join(', ');
+      
+      // Create a basic HTML brief with stock data (preserve the analysis work)
+      const stockSummaries = stocksWithTrends.map(stock => `
+        <div style="margin-bottom:20px; padding:15px; background:#1a3a52; border-radius:8px;">
+          <h3 style="color:#00ff88; margin:0 0 10px 0;">${stock.ticker}</h3>
+          <p style="color:#e5e7eb; margin:5px 0;"><strong>Price:</strong> $${stock.last_price.toFixed(2)}</p>
+          <p style="color:#e5e7eb; margin:5px 0;"><strong>Sector:</strong> ${stock.sector}</p>
+          <p style="color:#e5e7eb; margin:5px 0;"><strong>Risk Level:</strong> ${stock.risk_level}</p>
+          <p style="color:#e5e7eb; margin:5px 0;"><strong>Summary:</strong> ${stock.summary}</p>
+          <p style="color:#e5e7eb; margin:5px 0;"><strong>Actionable Insight:</strong> ${stock.actionable_insight}</p>
+        </div>
+      `).join('');
+      
       premiumEmail = {
-        subject: `Daily Brief - ${tickers} (Email generation incomplete)`,
-        htmlContent: `<div style="padding:20px;"><h2>Daily Brief - ${new Date(date).toLocaleDateString()}</h2><p>Stock analysis completed but email generation timed out. Stocks analyzed: ${tickers}</p><p>Please check logs for details.</p></div>`,
-        tldr: `Stocks analyzed: ${tickers}. Email generation incomplete due to timeout.`,
+        subject: `Daily Brief - ${tickers} (Analysis Complete)`,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; padding:20px; background:#0B1E32; color:#F0F0F0;">
+            <h1 style="color:#00ff88;">Daily Brief - ${new Date(date).toLocaleDateString()}</h1>
+            <p style="color:#9ca3af;">Stock analysis completed successfully. Email generation timed out, but stock data is preserved below.</p>
+            <div style="margin-top:30px;">
+              <h2 style="color:#00ff88;">Stock Analysis</h2>
+              ${stockSummaries}
+            </div>
+            <p style="color:#9ca3af; margin-top:30px; font-size:12px;">Note: Full email generation timed out. Stock analysis data preserved.</p>
+          </div>
+        `,
+        tldr: `Stocks analyzed: ${tickers}. Full email generation incomplete due to timeout, but stock analysis preserved.`,
       };
       emailGenerationSucceeded = false;
     }
@@ -426,24 +449,36 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     }
 
     // Step 9: Store BOTH versions in archive (Supabase) - CRITICAL STEP
-    console.log('💾 Step 9: Storing both versions in archive...');
-    const archived = await storeInArchive({
-      date,
-      subject_free: freeEmail.subject,
-      subject_premium: premiumEmail.subject,
-      html_content_free: freeEmail.htmlContent,
-      html_content_premium: premiumEmail.htmlContent,
-      tldr: premiumEmail.tldr,
-      stocks: stocksWithTrends,
-    });
+    // Store brief even if email generation failed, as long as we have complete stock analysis
+    if (validatedStocks.length > 0) {
+      console.log('💾 Step 9: Storing brief in archive (preserving stock analysis work)...');
+      try {
+        const archived = await storeInArchive({
+          date,
+          subject_free: freeEmail.subject,
+          subject_premium: premiumEmail.subject,
+          html_content_free: freeEmail.htmlContent,
+          html_content_premium: premiumEmail.htmlContent,
+          tldr: premiumEmail.tldr,
+          stocks: stocksWithTrends,
+        });
 
-    if (!archived) {
-      // CRITICAL FAILURE: Archive storage is mandatory
-      throw new Error('CRITICAL: Failed to store brief in archive');
+        if (!archived) {
+          console.error('❌ Failed to store brief in archive');
+          result.steps.archiveStorage = false;
+        } else {
+          console.log(`✅ Brief archived successfully (${validatedStocks.length} stocks preserved)`);
+          result.steps.archiveStorage = true;
+        }
+      } catch (archiveError) {
+        console.error('❌ Error storing brief in archive:', archiveError);
+        result.steps.archiveStorage = false;
+        // Don't throw - archive failure shouldn't prevent email sending
+      }
+    } else {
+      console.warn('⚠️  No validated stocks to archive - skipping archive storage');
+      result.steps.archiveStorage = false;
     }
-
-    console.log(`✅ Brief archived successfully`);
-    result.steps.archiveStorage = true;
 
     // STRICT SUCCESS CHECK: All critical steps must pass
     const criticalStepsPassed =
