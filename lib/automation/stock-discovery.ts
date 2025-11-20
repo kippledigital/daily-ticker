@@ -62,22 +62,45 @@ export async function discoverTrendingStocks(config: Partial<StockDiscoveryConfi
       candidates = ['AAPL', 'NVDA', 'MSFT'];
     }
 
-    // Limit candidates to avoid Polygon rate limits (5 calls/minute)
-    // MINIMAL OPTIMIZATION: Only fetch 3 stocks (minimum needed) to maximize time for rest
-    // 3 stocks × 13s = 39s (0.65 min) - leaves ~4.3 minutes for rest of automation
-    const maxCandidates = 3;
-    const limitedCandidates = candidates.slice(0, maxCandidates);
-    
-    if (candidates.length > maxCandidates) {
-      console.log(`Limiting candidates from ${candidates.length} to ${maxCandidates} to respect Polygon rate limits`);
-    }
-
-    // Fetch real-time quotes for limited candidates (with multi-source fallback)
-    // Note: For stock discovery, we allow some failures since we're just ranking candidates
-    // The final 3 stocks will use strict validation in data-aggregator
+    // OPTIMIZATION: Use Polygon's snapshot/gainers endpoint to get MANY stocks in ONE call
+    // This lets us explore lots of options without the 13s delay per stock
+    // Then filter to our focus sectors and rank from there
     let quotesResult;
     try {
-      quotesResult = await getStockQuotesWithFallback(limitedCandidates);
+      // First, try to get top movers from Polygon (single API call gets many stocks)
+      const { getTopMovers } = await import('@/lib/polygon');
+      const topMovers = await getTopMovers();
+      
+      // Combine gainers and losers, filter to our focus sectors
+      const allMovers = [...topMovers.gainers, ...topMovers.losers];
+      const sectorFiltered = allMovers.filter(quote => {
+        // Check if this ticker is in our candidate list (from focus sectors)
+        return candidates.includes(quote.symbol);
+      });
+      
+      // If we got good results from top movers, use those
+      // Otherwise fall back to fetching individual quotes for our candidates
+      if (sectorFiltered.length >= 3) {
+        console.log(`✅ Using Polygon top movers: ${sectorFiltered.length} stocks from focus sectors`);
+        // Convert to quotesResult format
+        quotesResult = {
+          quotes: sectorFiltered.map(q => ({ ...q, isRealData: true })),
+          dataQuality: {
+            totalRequested: sectorFiltered.length,
+            successful: sectorFiltered.length,
+            failed: 0,
+            sourcesUsed: ['Polygon (snapshot)'],
+            failedSymbols: [],
+            successRate: 100,
+          },
+        };
+      } else {
+        // Fallback: fetch individual quotes (but limit to avoid timeout)
+        console.log(`⚠️ Top movers didn't match focus sectors, fetching individual quotes...`);
+        const maxCandidates = 10; // Can fetch more since we're not using top movers
+        const limitedCandidates = candidates.slice(0, maxCandidates);
+        quotesResult = await getStockQuotesWithFallback(limitedCandidates);
+      }
     } catch (error) {
       // If all sources fail during discovery, log but continue with available data
       console.error(`❌ Stock discovery: Failed to fetch quotes from all sources:`, error);
