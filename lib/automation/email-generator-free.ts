@@ -250,7 +250,8 @@ Use GENERAL guidance only (e.g., "Watch for pullbacks" not specific prices).
 Return ONLY the HTML email content (no markdown, no code blocks, just the HTML div).`;
 
   try {
-    const completion = await openai.chat.completions.create({
+    // Wrap OpenAI call with timeout using Promise.race
+    const completionPromise = openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
@@ -264,8 +265,13 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       ],
       temperature: 0.8,
       max_tokens: 8000, // Reduced to speed up generation (still sufficient)
-      timeout: 90000, // 90 second timeout per OpenAI call (faster, prevents overall timeout)
     });
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 90 seconds')), 90000);
+    });
+
+    const completion = await Promise.race([completionPromise, timeoutPromise]);
 
     let htmlContent = completion.choices[0]?.message?.content || '';
 

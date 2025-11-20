@@ -134,7 +134,8 @@ ${stockData}
 Return ONLY the HTML email content (no markdown, no code blocks, just the HTML div).`;
 
   try {
-    const completion = await openai.chat.completions.create({
+    // Wrap OpenAI call with timeout using Promise.race
+    const completionPromise = openai.chat.completions.create({
       model: 'gpt-4o', // GPT-4o supports up to 16384 max_tokens (gpt-4-turbo only supports 4096)
       messages: [
         {
@@ -148,8 +149,13 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       ],
       temperature: 0.8, // Creative but consistent
       max_tokens: 8000, // Reduced to speed up generation (still sufficient for HTML email)
-      timeout: 90000, // 90 second timeout per OpenAI call (faster, prevents overall timeout)
     });
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 90 seconds')), 90000);
+    });
+
+    const completion = await Promise.race([completionPromise, timeoutPromise]);
 
     let htmlContent = completion.choices[0]?.message?.content || '';
 
