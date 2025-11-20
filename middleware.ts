@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // TEMPORARILY DISABLED: www redirect causing issues
+  // TODO: Re-enable once redirect loop is resolved
+  /*
   // Redirect www to non-www FIRST (before any other processing)
   // This prevents redirect loops and ensures clean redirects
   const hostname = request.headers.get('host') || ''
@@ -16,8 +19,9 @@ export async function middleware(request: NextRequest) {
     // Return redirect immediately - don't process anything else
     return NextResponse.redirect(url, 301)
   }
+  */
 
-  // Only create Supabase client if we're not redirecting
+  // Create Supabase client
   const { supabase, response } = createMiddlewareClient(request)
 
   // Refresh session if expired - required for Server Components
