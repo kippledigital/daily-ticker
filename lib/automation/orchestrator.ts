@@ -269,10 +269,26 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     });
 
     // TEMPORARY: Only generate premium email (free disabled to prevent timeout)
-    const premiumEmail = await Promise.race([
-      emailGenerationPromise,
-      timeoutPromise,
-    ]);
+    let premiumEmail: { subject: string; htmlContent: string; tldr: string };
+    let emailGenerationSucceeded = false;
+    
+    try {
+      premiumEmail = await Promise.race([
+        emailGenerationPromise,
+        timeoutPromise,
+      ]);
+      emailGenerationSucceeded = true;
+    } catch (error) {
+      // Email generation failed/timed out - create minimal brief to preserve stock analysis
+      console.error('❌ Email generation failed/timed out, creating minimal brief to preserve stock analysis...');
+      const tickers = stocksWithTrends.map(s => s.ticker).join(', ');
+      premiumEmail = {
+        subject: `Daily Brief - ${tickers} (Email generation incomplete)`,
+        htmlContent: `<div style="padding:20px;"><h2>Daily Brief - ${new Date(date).toLocaleDateString()}</h2><p>Stock analysis completed but email generation timed out. Stocks analyzed: ${tickers}</p><p>Please check logs for details.</p></div>`,
+        tldr: `Stocks analyzed: ${tickers}. Email generation incomplete due to timeout.`,
+      };
+      emailGenerationSucceeded = false;
+    }
     
     // Use premium email for both tiers temporarily (until Vercel Pro upgrade)
     const freeEmail = {
@@ -281,9 +297,13 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       tldr: premiumEmail.tldr,
     };
 
-    console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
-    console.log(`✅ Free email generated: "${freeEmail.subject}"`);
-    result.steps.emailGeneration = true;
+    if (emailGenerationSucceeded) {
+      console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
+      console.log(`✅ Free email generated: "${freeEmail.subject}"`);
+    } else {
+      console.warn(`⚠️ Email generation failed, using minimal brief to preserve stock analysis`);
+    }
+    result.steps.emailGeneration = emailGenerationSucceeded;
 
     // Step 8: Send emails to BOTH free and premium subscribers (WITH RETRY)
     console.log('📮 Step 8: Sending emails to subscribers (segmented by tier)...');
