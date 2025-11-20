@@ -264,7 +264,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8,
-      max_tokens: 6000, // Further reduced to speed up generation (still sufficient)
+      max_tokens: 7000, // Vercel Pro: Increased for complete emails with all details
     });
 
     // Vercel Pro: Increased timeout since we have 15 minutes total
