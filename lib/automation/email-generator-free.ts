@@ -268,8 +268,10 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
     });
 
     // Vercel Pro: Increased timeout - GPT-4o can take longer with large prompts
+    // With 800s total limit and ~155s elapsed, we have ~645s remaining
+    // Give each email up to 300s, leaving 45s for sending/archiving
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI API call timed out after 180 seconds')), 180000); // 3 minutes - allows for slower generation
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 300 seconds')), 300000); // 5 minutes - plenty of time with 800s limit
     });
 
     const completion = await Promise.race([completionPromise, timeoutPromise]);
