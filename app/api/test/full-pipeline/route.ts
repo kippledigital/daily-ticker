@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { discoverTrendingStocks } from '@/lib/automation/stock-discovery';
-import { gatherFinancialDataBatch, getRawAggregatedData } from '@/lib/automation/news-gatherer';
+import { gatherFinancialDataBatch } from '@/lib/automation/news-gatherer';
 import { analyzeStock } from '@/lib/automation/ai-analyzer';
 import { validateStockAnalysis } from '@/lib/automation/validator';
 import { injectTrendSymbol } from '@/lib/automation/trend-injector';
@@ -52,11 +52,11 @@ export async function GET(request: NextRequest) {
 
       try {
         // Step 1: Gather financial data
-        const financialData = await gatherFinancialDataBatch([ticker]);
+        const { formattedData: financialDataMap, rawData: aggregatedDataMap } = await gatherFinancialDataBatch([ticker]);
         console.log(`✅ Financial data gathered for ${ticker}`);
 
         // Step 2: Get aggregated data for validation
-        const aggregatedData = await getRawAggregatedData(ticker);
+        const aggregatedData = aggregatedDataMap[ticker];
         console.log(`✅ Aggregated data fetched for ${ticker}`);
 
         if (!aggregatedData) {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
         // Step 3: AI Analysis with validation
         const analysis = await analyzeStock({
           ticker,
-          financialData: financialData[ticker],
+          financialData: financialDataMap[ticker] || `Limited data available for ${ticker}`,
           historicalWatchlist: 'No historical data (test mode)',
           aggregatedData, // Enables validation
         });

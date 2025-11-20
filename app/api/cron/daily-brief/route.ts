@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runDailyAutomation } from '@/lib/automation/orchestrator';
+import { sendErrorNotification } from '@/lib/automation/error-notifier';
 import { timingSafeEqual } from 'crypto';
 
 export const runtime = 'nodejs'; // Use Node.js runtime for cron jobs
@@ -112,6 +113,21 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in cron endpoint:', error);
 
+    // Send error notification (don't await - send in background so response isn't delayed)
+    // This ensures we get notified even if Vercel kills the process
+    sendErrorNotification({
+      step: 'Cron Endpoint',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? {
+        name: error.name,
+        stack: error.stack,
+        message: error.message,
+      } : { error },
+      timestamp: new Date(),
+    }).catch(err => {
+      console.error('Failed to send error notification:', err);
+    });
+
     return NextResponse.json(
       {
         success: false,
@@ -121,4 +137,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-// Force Vercel deployment Wed Nov 19 18:58:43 PST 2025
