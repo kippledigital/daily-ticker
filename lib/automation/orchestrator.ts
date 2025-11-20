@@ -247,9 +247,16 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     });
 
     // Race against timeout - send notification if we're about to timeout
-    // More aggressive timeout: if we're past 200s, we need to finish email generation quickly
+    // CRITICAL: If we're past 240s, we have <60s left - skip email generation and use fallback
     const remainingTime = 300000 - elapsedBeforeEmail; // Remaining time until 300s limit
-    const timeoutMs = Math.max(60000, remainingTime - 20000); // At least 60s, but leave 20s buffer before Vercel kills it
+    const bufferTime = 30000; // 30s buffer for email sending + archive storage
+    
+    if (remainingTime < bufferTime + 45000) { // Less than 75s remaining (45s for email + 30s buffer)
+      console.warn(`⚠️  CRITICAL: Only ${Math.floor(remainingTime / 1000)}s remaining - skipping email generation to prevent timeout`);
+      throw new Error(`Insufficient time for email generation: ${Math.floor(remainingTime / 1000)}s remaining (need 75s+)`);
+    }
+    
+    const timeoutMs = remainingTime - bufferTime; // Use all remaining time minus buffer
     console.log(`⏱️  Email generation timeout set to ${Math.floor(timeoutMs / 1000)}s (${elapsedSeconds}s elapsed, ${Math.floor(remainingTime / 1000)}s remaining)`);
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {

@@ -151,8 +151,9 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       max_tokens: 5500, // Balanced: enough for 3 stocks with full details, but faster than 6000
     });
 
+    // Note: Timeout is handled by orchestrator - this is just a safety net
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI API call timed out after 60 seconds')), 60000); // Reduced from 90s to 60s
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 45 seconds')), 45000); // Reduced to 45s - orchestrator handles main timeout
     });
 
     const completion = await Promise.race([completionPromise, timeoutPromise]);
