@@ -216,7 +216,8 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     console.log(`⏱️  Elapsed time before email generation: ${elapsedSeconds}s (limit: 800s)`);
 
     // Generate both free and premium emails in parallel (we have plenty of time now)
-    const [premiumEmail, freeEmail] = await Promise.all([
+    // Use Promise.allSettled so one failure doesn't block the other
+    const [premiumResult, freeResult] = await Promise.allSettled([
       generateEmailContent({
         stocks: stocksWithTrends,
         date,
@@ -227,9 +228,45 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       }),
     ]);
 
-    console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
-    console.log(`✅ Free email generated: "${freeEmail.subject}"`);
-    result.steps.emailGeneration = true;
+    // Handle premium email result
+    let premiumEmail: { subject: string; htmlContent: string; tldr: string };
+    if (premiumResult.status === 'fulfilled') {
+      premiumEmail = premiumResult.value;
+      console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);
+    } else {
+      console.error(`❌ Premium email generation failed:`, premiumResult.reason);
+      // Fallback: create minimal premium email
+      const tickers = stocksWithTrends.map(s => s.ticker).join(', ');
+      premiumEmail = {
+        subject: `Daily Brief - ${tickers} (Premium generation failed)`,
+        htmlContent: `<div style="padding:20px;"><h2>Daily Brief - ${new Date(date).toLocaleDateString()}</h2><p>Premium email generation failed. Stocks analyzed: ${tickers}</p></div>`,
+        tldr: `Stocks analyzed: ${tickers}. Premium email generation failed.`,
+      };
+    }
+
+    // Handle free email result
+    let freeEmail: { subject: string; htmlContent: string; tldr: string };
+    if (freeResult.status === 'fulfilled') {
+      freeEmail = freeResult.value;
+      console.log(`✅ Free email generated: "${freeEmail.subject}"`);
+    } else {
+      console.error(`❌ Free email generation failed:`, freeResult.reason);
+      // Fallback: use premium email for free subscribers if premium succeeded
+      if (premiumResult.status === 'fulfilled') {
+        console.warn(`⚠️ Using premium email for free subscribers due to free email generation failure`);
+        freeEmail = premiumEmail;
+      } else {
+        // Both failed - create minimal free email
+        const tickers = stocksWithTrends.map(s => s.ticker).join(', ');
+        freeEmail = {
+          subject: `Daily Brief - ${tickers} (Email generation failed)`,
+          htmlContent: `<div style="padding:20px;"><h2>Daily Brief - ${new Date(date).toLocaleDateString()}</h2><p>Email generation failed. Stocks analyzed: ${tickers}</p></div>`,
+          tldr: `Stocks analyzed: ${tickers}. Email generation failed.`,
+        };
+      }
+    }
+
+    result.steps.emailGeneration = premiumResult.status === 'fulfilled' || freeResult.status === 'fulfilled';
 
     // Step 8: Send emails to BOTH free and premium subscribers (WITH RETRY)
     console.log('📮 Step 8: Sending emails to subscribers (segmented by tier)...');

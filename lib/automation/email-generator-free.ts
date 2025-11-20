@@ -267,8 +267,9 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       max_tokens: 6000, // Further reduced to speed up generation (still sufficient)
     });
 
+    // Vercel Pro: Increased timeout since we have 15 minutes total
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI API call timed out after 90 seconds')), 90000);
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 120 seconds')), 120000); // 2 minutes - plenty of time with 15min limit
     });
 
     const completion = await Promise.race([completionPromise, timeoutPromise]);
