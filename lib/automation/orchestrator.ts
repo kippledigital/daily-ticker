@@ -235,8 +235,29 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     // Step 7: Generate BOTH free and premium email content IN PARALLEL
     console.log('📧 Step 7: Generating email content (free + premium versions in parallel)...');
 
+    // Check elapsed time before email generation (warn if approaching timeout)
+    const elapsedBeforeEmail = Date.now() - startTime;
+    const elapsedSeconds = Math.floor(elapsedBeforeEmail / 1000);
+    console.log(`⏱️  Elapsed time before email generation: ${elapsedSeconds}s (limit: 300s)`);
+    
+    if (elapsedSeconds > 250) {
+      console.warn(`⚠️  WARNING: Already at ${elapsedSeconds}s, email generation may timeout!`);
+      // Send early warning notification
+      await sendErrorNotification({
+        step: 'Email Generation (Pre-timeout warning)',
+        message: `Automation is at ${elapsedSeconds}s before email generation. May timeout at 300s limit.`,
+        details: {
+          elapsedSeconds,
+          stepsCompleted: Object.keys(result.steps).length,
+          stocks: stocksWithTrends.map(s => s.ticker),
+        },
+        timestamp: new Date(),
+      });
+    }
+
     // Generate both emails in parallel to save time
-    const [premiumEmail, freeEmail] = await Promise.all([
+    // Wrap in timeout handler to send notification before Vercel kills the process
+    const emailGenerationPromise = Promise.all([
       generateEmailContent({
         stocks: stocksWithTrends,
         date,
@@ -245,6 +266,33 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
         stocks: stocksWithTrends,
         date,
       }),
+    ]);
+
+    // Race against timeout - send notification if we're about to timeout
+    const timeoutMs = 280000; // 280 seconds - send notification before Vercel kills it at 300s
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const timeoutError = new Error(`Email generation timeout at ${elapsed}s (approaching 300s limit)`);
+        // Send notification before rejecting
+        sendErrorNotification({
+          step: 'Email Generation (Timeout)',
+          message: `Automation timed out during email generation at ${elapsed}s`,
+          details: {
+            elapsedSeconds: elapsed,
+            stepsCompleted: Object.keys(result.steps).length,
+            stocks: stocksWithTrends.map(s => s.ticker),
+            error: timeoutError.message,
+          },
+          timestamp: new Date(),
+        }).catch(err => console.error('Failed to send timeout notification:', err));
+        reject(timeoutError);
+      }, timeoutMs);
+    });
+
+    const [premiumEmail, freeEmail] = await Promise.race([
+      emailGenerationPromise,
+      timeoutPromise,
     ]);
 
     console.log(`✅ Premium email generated: "${premiumEmail.subject}"`);

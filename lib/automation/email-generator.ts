@@ -147,8 +147,8 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 12000, // Reduced from 16000 to speed up generation (still plenty for HTML email)
-      timeout: 120000, // 2 minute timeout per OpenAI call (total 5 min limit)
+      max_tokens: 8000, // Reduced to speed up generation (still sufficient for HTML email)
+      timeout: 90000, // 90 second timeout per OpenAI call (faster, prevents overall timeout)
     });
 
     let htmlContent = completion.choices[0]?.message?.content || '';
