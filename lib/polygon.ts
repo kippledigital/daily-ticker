@@ -321,18 +321,26 @@ export async function getTopMovers(): Promise<{ gainers: StockQuote[], losers: S
     const gainersData: PolygonResponse = await gainersResponse.json();
     const losersData: PolygonResponse = await losersResponse.json();
 
-    const gainers = gainersData.tickers?.slice(0, 4).map(ticker => ({
+    // Get ALL gainers/losers (not just top 4) - Polygon returns many stocks in one call
+    // This allows us to explore MANY options for stock discovery
+    const gainers = gainersData.tickers?.map(ticker => ({
       symbol: ticker.ticker,
       price: ticker.day?.c || 0,
       change: ticker.todaysChange || 0,
       changePercent: ticker.todaysChangePerc || 0,
+      volume: ticker.day?.v || 0,
+      timestamp: Date.now(),
+      isRealData: true,
     })) || [];
 
-    const losers = losersData.tickers?.slice(0, 4).map(ticker => ({
+    const losers = losersData.tickers?.map(ticker => ({
       symbol: ticker.ticker,
       price: ticker.day?.c || 0,
       change: ticker.todaysChange || 0,
       changePercent: ticker.todaysChangePerc || 0,
+      volume: ticker.day?.v || 0,
+      timestamp: Date.now(),
+      isRealData: true,
     })) || [];
 
     return { gainers, losers };
