@@ -177,7 +177,7 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
     // Generate TL;DR and subject line in parallel (they don't depend on each other)
     const [tldr, subject] = await Promise.all([
       generateTLDR(stocks),
-      generateSubjectLine(stocks, ''), // Subject line can be generated without TL;DR
+      generateSubjectLine(stocks), // Subject line generated from stock data
     ]);
 
     // Add source citations footer to HTML
@@ -195,16 +195,37 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
 }
 
 /**
- * Generates email subject line
- * Exact Gumloop prompt: "Write one short, engaging subject line for today's Morning Brief email..."
+ * Generates email subject line from stock data
+ * Creates an engaging subject line based on the stocks being featured
  */
-async function generateSubjectLine(stocks: ValidatedStock[], briefContent: string): Promise<string> {
-  // Exact prompt from Gumloop subject line generator
-  const prompt = `Write one short, engaging subject line for today's Morning Brief email. It should summarize the main story or market theme in under 60 characters. Include one emoji at the start that matches the tone. Examples: • ☀️ Apple Holds Steady | Energy Cools Off • ⚡ Calm Market | Watchlist Focus Day • 📈 Tech Stocks Rebound | Tesla Earnings Ahead. Return plain text only. Here is today's brief to analyze: ${briefContent}`;
+async function generateSubjectLine(stocks: ValidatedStock[]): Promise<string> {
+  // Build stock summary for subject line generation
+  const stockSummary = stocks.map(s => {
+    const lastPrice = (s as any).last_price as number | undefined;
+    const previousClose = (s as any).previous_close as number | undefined;
+    const change = lastPrice && previousClose 
+      ? ((lastPrice - previousClose) / previousClose * 100).toFixed(1)
+      : '0';
+    const direction = parseFloat(change) >= 0 ? '📈' : '📉';
+    return `${s.ticker} (${direction}${Math.abs(parseFloat(change))}%)`;
+  }).join(', ');
+
+  const prompt = `Write one short, engaging subject line for today's Morning Brief email. It should summarize the main story or market theme in under 60 characters. Include one emoji at the start that matches the tone.
+
+Today's featured stocks: ${stockSummary}
+Stock summaries: ${stocks.map(s => `${s.ticker}: ${s.summary}`).join(' | ')}
+
+Examples of good subject lines:
+• ☀️ Apple Holds Steady | Energy Cools Off
+• ⚡ Calm Market | Watchlist Focus Day
+• 📈 Tech Stocks Rebound | Tesla Earnings Ahead
+• 🚀 Market Rallies Await Fed's Move | Tech Leads Charge
+
+Return ONLY the subject line text (plain text, no quotes, no explanation).`;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o', // Use same model as email generation
       messages: [
         {
           role: 'user',
@@ -212,12 +233,25 @@ async function generateSubjectLine(stocks: ValidatedStock[], briefContent: strin
         },
       ],
       temperature: 0.9, // More creative
+      max_tokens: 100,
     });
 
-    return completion.choices[0]?.message?.content?.trim() || `☀️ Daily Ticker — ${stocks.map(s => s.ticker).join(', ')}`;
+    const subject = completion.choices[0]?.message?.content?.trim() || '';
+    
+    // Clean up any quotes or extra text
+    const cleanedSubject = subject.replace(/^["']|["']$/g, '').replace(/^Subject:\s*/i, '').trim();
+    
+    // Fallback if empty or too long
+    if (!cleanedSubject || cleanedSubject.length > 100) {
+      const tickers = stocks.map(s => s.ticker).join(', ');
+      return `☀️ Daily Ticker — ${tickers}`;
+    }
+    
+    return cleanedSubject;
   } catch (error) {
     console.error('Error generating subject line:', error);
-    return `☀️ Daily Ticker — ${stocks.map(s => s.ticker).join(', ')}`;
+    const tickers = stocks.map(s => s.ticker).join(', ');
+    return `☀️ Daily Ticker — ${tickers}`;
   }
 }
 
