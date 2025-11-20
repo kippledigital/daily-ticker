@@ -247,7 +247,10 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
     });
 
     // Race against timeout - send notification if we're about to timeout
-    const timeoutMs = 280000; // 280 seconds - send notification before Vercel kills it at 300s
+    // More aggressive timeout: if we're past 200s, we need to finish email generation quickly
+    const remainingTime = 300000 - elapsedBeforeEmail; // Remaining time until 300s limit
+    const timeoutMs = Math.max(60000, remainingTime - 20000); // At least 60s, but leave 20s buffer before Vercel kills it
+    console.log(`⏱️  Email generation timeout set to ${Math.floor(timeoutMs / 1000)}s (${elapsedSeconds}s elapsed, ${Math.floor(remainingTime / 1000)}s remaining)`);
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);

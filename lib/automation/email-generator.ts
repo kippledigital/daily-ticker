@@ -148,11 +148,11 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 6000, // Further reduced to speed up generation (still sufficient for HTML email)
+      max_tokens: 4000, // Aggressively reduced to speed up generation (HTML emails can be concise)
     });
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI API call timed out after 90 seconds')), 90000);
+      setTimeout(() => reject(new Error('OpenAI API call timed out after 60 seconds')), 60000); // Reduced from 90s to 60s
     });
 
     const completion = await Promise.race([completionPromise, timeoutPromise]);
