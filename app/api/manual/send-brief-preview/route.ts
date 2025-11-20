@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateEmailContent } from '@/lib/automation/email-generator';
 import type { ValidatedStock } from '@/types/automation';
 
+export const dynamic = 'force-dynamic'; // This route uses request.url, must be dynamic
+
 /**
  * Manual endpoint to send a preview of the daily brief email
  * Uses sample stock data to show the new branded email design
