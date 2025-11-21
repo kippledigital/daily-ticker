@@ -14,6 +14,19 @@
       "schedule": "0 22 * * 1-5"
     }
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.dailyticker.co"
+        }
+      ],
+      "destination": "https://dailyticker.co/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
