@@ -162,21 +162,16 @@ async function updatePerformance() {
       }
 
       if (!priceBar) {
-        console.warn(`  ⚠️  No price data for ${ticker} on ${checkDate}`)
+        console.warn(`  ⚠️  No price data for ${ticker}`)
+        skipped.push(ticker)
         processedCount++
         continue
       }
 
-      const polygonData = await polygonResponse.json()
-      const todayBar = polygonData.results?.[0]
-
-      if (!todayBar) {
-        console.warn(`No price data for ${ticker} on ${todayDate}: ${JSON.stringify(polygonData)}`)
-        continue
-      }
-
-      const { h: high, l: low, c: close } = priceBar
-      console.log(`  💰 ${ticker}: High=$${high.toFixed(2)} Low=$${low.toFixed(2)} Close=$${close.toFixed(2)}`)
+      // /prev endpoint returns single result with o, h, l, c, v, t (timestamp)
+      const { h: high, l: low, c: close, o: open, t: timestamp } = priceBar
+      const priceDate = new Date(timestamp).toISOString().split('T')[0]
+      console.log(`  💰 ${ticker} (${priceDate}): High=$${high.toFixed(2)} Low=$${low.toFixed(2)} Close=$${close.toFixed(2)}`)
       processedCount++
 
       // Calculate holding days
