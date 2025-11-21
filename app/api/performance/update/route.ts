@@ -60,6 +60,45 @@ async function updatePerformance() {
     const today = new Date()
     const updates = []
 
+    // Smart filtering: Only check positions that actually need checking
+    // This keeps us under the 60s timeout while checking what matters
+    const positionsToCheck = openPositions
+      .map(position => {
+        const entryDate = new Date(position.entry_date)
+        const daysOld = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24))
+        return { ...position, daysOld }
+      })
+      .filter(({ daysOld }) => {
+        // Always check positions approaching 30-day limit
+        if (daysOld >= 20) return true
+        
+        // Skip very new positions (< 7 days) - unlikely to hit targets yet
+        if (daysOld < 7) return false
+        
+        // For positions 7-19 days old, we'll check them but prioritize older ones
+        return true
+      })
+      // Sort by priority: oldest first (approaching 30-day limit)
+      .sort((a, b) => b.daysOld - a.daysOld)
+      // Limit to what we can process in ~50 seconds (4 positions × 13s = 52s)
+      // This leaves buffer for the timeout
+      .slice(0, 4)
+
+    console.log(`📊 Smart filtering: ${openPositions.length} open → ${positionsToCheck.length} need checking`)
+    if (positionsToCheck.length < openPositions.length) {
+      const skipped = openPositions.length - positionsToCheck.length
+      console.log(`  ℹ️  Skipped ${skipped} position(s) (too new or not priority)`)
+    }
+
+    if (positionsToCheck.length === 0) {
+      return {
+        success: true,
+        message: 'No positions need checking right now',
+        updated: 0,
+        skipped: openPositions.length,
+      }
+    }
+
     // Process each open position with rate limiting
     // Polygon free tier: 5 calls/minute = 1 call every 12 seconds
     // Using 13 seconds to be safe
@@ -88,8 +127,8 @@ async function updatePerformance() {
     const rateLimited: string[] = []
 
     // Process positions sequentially with rate limiting
-    for (let i = 0; i < openPositions.length; i++) {
-      const position = openPositions[i]
+    for (let i = 0; i < positionsToCheck.length; i++) {
+      const position = positionsToCheck[i]
       const { stocks } = position as any
       const ticker = stocks?.ticker
 
@@ -101,10 +140,11 @@ async function updatePerformance() {
       // Rate limiting: Wait 13 seconds BEFORE each API call
       // This ensures we stay under Polygon's 5 calls/minute limit
       if (i > 0) {
-        console.log(`  ⏳ [${i + 1}/${openPositions.length}] Rate limiting: waiting 13s before next API call...`)
+        console.log(`  ⏳ [${i + 1}/${positionsToCheck.length}] Rate limiting: waiting 13s before next API call...`)
         await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
       } else {
-        console.log(`  🚀 [${i + 1}/${openPositions.length}] Starting with ${ticker}...`)
+        const daysOld = (position as any).daysOld
+        console.log(`  🚀 [${i + 1}/${positionsToCheck.length}] Starting with ${ticker} (${daysOld} days old)...`)
       }
 
       // Fetch previous trading day's price data (free tier compatible)
@@ -239,14 +279,19 @@ async function updatePerformance() {
       }
     }
 
+    const totalSkipped = skipped.length + (openPositions.length - positionsToCheck.length)
+    
     const summary = {
       success: true,
-      message: `Processed ${openPositions.length} positions`,
+      message: `Processed ${positionsToCheck.length} of ${openPositions.length} positions`,
       updated: updates.length,
       details: updates,
+      checked: positionsToCheck.length,
+      total_open: openPositions.length,
       skipped: skipped.length,
       skipped_tickers: skipped,
       rate_limited: rateLimited.length,
+      filtered_out: openPositions.length - positionsToCheck.length,
     }
 
     if (skipped.length > 0) {
@@ -255,8 +300,11 @@ async function updatePerformance() {
     if (rateLimited.length > 0) {
       console.log(`\n⚠️  Rate limited ${rateLimited.length} ticker(s): ${rateLimited.join(', ')}`)
     }
+    if (openPositions.length > positionsToCheck.length) {
+      console.log(`\nℹ️  Filtered out ${openPositions.length - positionsToCheck.length} position(s) (too new or not priority)`)
+    }
 
-    console.log(`\n✅ Completed: ${updates.length} position(s) closed, ${skipped.length} skipped`)
+    console.log(`\n✅ Completed: ${updates.length} position(s) closed, ${positionsToCheck.length} checked, ${totalSkipped} skipped`)
 
     return summary
   } catch (error) {
