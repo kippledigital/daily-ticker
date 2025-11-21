@@ -159,6 +159,12 @@ export function HybridTicker() {
           const dateStr = targetDate.toISOString().split('T')[0]
 
           const response = await fetch(`/api/archive/${dateStr}`)
+          
+          if (!response.ok) {
+            console.warn(`Failed to fetch archive for ${dateStr}:`, response.status)
+            continue
+          }
+          
           const data = await response.json()
 
           if (data.success && data.data?.stocks) {

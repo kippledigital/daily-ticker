@@ -62,10 +62,19 @@ export function PerformanceDashboard() {
             'Cache-Control': 'no-cache',
           },
         })
+        
+        if (!response.ok) {
+          console.error('Failed to fetch performance data:', response.status, response.statusText)
+          setLoading(false)
+          return
+        }
+        
         const result = await response.json()
 
         if (result.success) {
           setData(result.data)
+        } else {
+          console.warn('Performance API returned unsuccessful response:', result)
         }
       } catch (error) {
         console.error('Failed to fetch performance data:', error)
