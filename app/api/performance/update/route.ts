@@ -66,6 +66,27 @@ async function updatePerformance() {
     const RATE_LIMIT_DELAY_MS = 13000
     let processedCount = 0
 
+    // Get previous trading day (free tier may not have same-day data)
+    // If today is Monday, go back to Friday
+    const getPreviousTradingDay = (date: Date): string => {
+      const prevDay = new Date(date)
+      prevDay.setDate(prevDay.getDate() - 1)
+      
+      // Skip weekends
+      while (prevDay.getDay() === 0 || prevDay.getDay() === 6) {
+        prevDay.setDate(prevDay.getDate() - 1)
+      }
+      
+      return prevDay.toISOString().split('T')[0]
+    }
+
+    const checkDate = getPreviousTradingDay(today)
+    console.log(`📅 Checking prices for previous trading day: ${checkDate}`)
+    console.log(`📊 Processing ${openPositions.length} open position(s)...\n`)
+
+    const skipped: string[] = []
+    const rateLimited: string[] = []
+
     for (const position of openPositions) {
       const { stocks } = position as any
       const ticker = stocks?.ticker
@@ -75,24 +96,69 @@ async function updatePerformance() {
         continue
       }
 
-      // Rate limiting: Wait 13 seconds between API calls (except for first call)
+      // Rate limiting: Wait 13 seconds BEFORE each API call (except first)
       if (processedCount > 0) {
         console.log(`  ⏳ Rate limiting: waiting 13s before next API call...`)
         await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
       }
 
-      // Fetch TODAY's price data (high/low/close) - runs at 5 PM EST, 1 hour after market close
+      // Fetch previous trading day's price data (free tier compatible)
       // Format: YYYY-MM-DD
-      const todayDate = today.toISOString().split('T')[0]
+      console.log(`  📡 Fetching price data for ${ticker} (${checkDate})...`)
+      
+      let polygonResponse
+      let polygonData
+      let priceBar
+      
+      // Try previous day first (free tier compatible)
+      try {
+        polygonResponse = await fetch(
+          `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${checkDate}/${checkDate}?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
+        )
 
-      console.log(`  📡 Fetching today's price data for ${ticker}...`)
-      const polygonResponse = await fetch(
-        `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${todayDate}/${todayDate}?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
-      )
+        if (polygonResponse.ok) {
+          polygonData = await polygonResponse.json()
+          priceBar = polygonData.results?.[0]
+        } else if (polygonResponse.status === 403) {
+          // Free tier doesn't support this timeframe, skip this ticker
+          console.warn(`  ⚠️  ${ticker}: Free tier doesn't support ${checkDate} data (403). Skipping.`)
+          skipped.push(ticker)
+          processedCount++
+          continue
+        } else if (polygonResponse.status === 429) {
+          // Rate limited - wait longer and retry
+          console.warn(`  ⚠️  ${ticker}: Rate limited (429). Waiting 60s before retry...`)
+          rateLimited.push(ticker)
+          await new Promise(resolve => setTimeout(resolve, 60000))
+          // Retry once
+          polygonResponse = await fetch(
+            `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${checkDate}/${checkDate}?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
+          )
+          if (polygonResponse.ok) {
+            polygonData = await polygonResponse.json()
+            priceBar = polygonData.results?.[0]
+            console.log(`  ✅ Retry successful for ${ticker}`)
+          } else {
+            console.warn(`  ❌ Retry failed for ${ticker}, skipping`)
+            processedCount++
+            continue
+          }
+        } else {
+          const errorText = await polygonResponse.text()
+          console.error(`  ❌ Failed to fetch ${ticker}: ${polygonResponse.status} - ${errorText}`)
+          skipped.push(ticker)
+          processedCount++
+          continue
+        }
+      } catch (error) {
+        console.error(`  ❌ Error fetching ${ticker}:`, error)
+        processedCount++
+        continue
+      }
 
-      if (!polygonResponse.ok) {
-        const errorText = await polygonResponse.text()
-        console.error(`Failed to fetch price for ${ticker}: ${polygonResponse.status} - ${errorText}`)
+      if (!priceBar) {
+        console.warn(`  ⚠️  No price data for ${ticker} on ${checkDate}`)
+        processedCount++
         continue
       }
 
@@ -104,7 +170,7 @@ async function updatePerformance() {
         continue
       }
 
-      const { h: high, l: low, c: close } = todayBar
+      const { h: high, l: low, c: close } = priceBar
       console.log(`  💰 ${ticker}: High=$${high.toFixed(2)} Low=$${low.toFixed(2)} Close=$${close.toFixed(2)}`)
       processedCount++
 
@@ -120,21 +186,21 @@ async function updatePerformance() {
       if (stocks.stop_loss && low <= stocks.stop_loss) {
         exitPrice = stocks.stop_loss
         exitReason = 'stop_loss'
-        exitDate = todayDate
+        exitDate = checkDate
         console.log(`  🔴 STOP LOSS HIT: Low $${low.toFixed(2)} <= Stop $${stocks.stop_loss.toFixed(2)}`)
       }
       // Check if profit target hit (intraday high hit the target)
       else if (stocks.profit_target && high >= stocks.profit_target) {
         exitPrice = stocks.profit_target
         exitReason = 'profit_target'
-        exitDate = todayDate
+        exitDate = checkDate
         console.log(`  🟢 PROFIT TARGET HIT: High $${high.toFixed(2)} >= Target $${stocks.profit_target.toFixed(2)}`)
       }
       // Check if 30-day limit reached
       else if (holdingDays >= 30) {
         exitPrice = close
-        exitReason = 'stop_loss' // Use stop_loss for DB constraint
-        exitDate = todayDate
+        exitReason = '30_day_limit'
+        exitDate = checkDate
         console.log(`  ⏰ 30-DAY LIMIT: Closing at market close $${close.toFixed(2)}`)
       }
 
@@ -173,12 +239,26 @@ async function updatePerformance() {
       }
     }
 
-    return {
+    const summary = {
       success: true,
-      message: `Updated ${updates.length} positions`,
+      message: `Processed ${openPositions.length} positions`,
       updated: updates.length,
       details: updates,
+      skipped: skipped.length,
+      skipped_tickers: skipped,
+      rate_limited: rateLimited.length,
     }
+
+    if (skipped.length > 0) {
+      console.log(`\n⚠️  Skipped ${skipped.length} ticker(s) due to API limitations: ${skipped.join(', ')}`)
+    }
+    if (rateLimited.length > 0) {
+      console.log(`\n⚠️  Rate limited ${rateLimited.length} ticker(s): ${rateLimited.join(', ')}`)
+    }
+
+    console.log(`\n✅ Completed: ${updates.length} position(s) closed, ${skipped.length} skipped`)
+
+    return summary
   } catch (error) {
     console.error('Unexpected error in /api/performance/update:', error)
     return {
