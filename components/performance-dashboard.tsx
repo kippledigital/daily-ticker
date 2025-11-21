@@ -53,7 +53,14 @@ export function PerformanceDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/performance?limit=5&status=${filter}`)
+        // Add cache-busting timestamp to ensure fresh data
+        const timestamp = new Date().getTime()
+        const response = await fetch(`/api/performance?limit=5&status=${filter}&_t=${timestamp}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        })
         const result = await response.json()
 
         if (result.success) {
@@ -67,6 +74,11 @@ export function PerformanceDashboard() {
     }
 
     fetchData()
+    
+    // Refresh data every 30 seconds to show live updates
+    const interval = setInterval(fetchData, 30000)
+    
+    return () => clearInterval(interval)
   }, [filter])
 
   if (loading) {
