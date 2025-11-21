@@ -3,24 +3,28 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // TEMPORARILY DISABLED: www redirect causing redirect loops
-  // TODO: Fix redirect properly - likely need to handle at DNS/Vercel level instead
-  /*
   // Redirect www to non-www FIRST (before any other processing)
-  // This prevents redirect loops and ensures clean redirects
+  // Exclude Next.js internal paths to prevent redirect loops
   const hostname = request.headers.get('host') || ''
+  const pathname = request.nextUrl.pathname
   
   // Only redirect if hostname starts with www. and we're in production
-  if (hostname.startsWith('www.') && !hostname.includes('localhost') && !hostname.includes('vercel.app')) {
-    const nonWwwHostname = hostname.replace('www.', '')
-    // Construct URL properly - use the request URL but change hostname
-    const url = new URL(request.url)
-    url.host = nonWwwHostname
+  // Exclude Next.js internal paths (_next, api, etc.)
+  if (
+    hostname.startsWith('www.') && 
+    !hostname.includes('localhost') && 
+    !hostname.includes('vercel.app') &&
+    !pathname.startsWith('/_next') &&
+    !pathname.startsWith('/api') &&
+    pathname !== '/icon' &&
+    pathname !== '/manifest'
+  ) {
+    const url = request.nextUrl.clone()
+    url.hostname = hostname.replace('www.', '')
     url.protocol = 'https:'
     // Return redirect immediately - don't process anything else
-    return NextResponse.redirect(url.toString(), 301)
+    return NextResponse.redirect(url, 301)
   }
-  */
 
   // Create Supabase client
   const { supabase, response } = createMiddlewareClient(request)
