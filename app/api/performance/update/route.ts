@@ -87,7 +87,9 @@ async function updatePerformance() {
     const skipped: string[] = []
     const rateLimited: string[] = []
 
-    for (const position of openPositions) {
+    // Process positions sequentially with rate limiting
+    for (let i = 0; i < openPositions.length; i++) {
+      const position = openPositions[i]
       const { stocks } = position as any
       const ticker = stocks?.ticker
 
@@ -96,10 +98,13 @@ async function updatePerformance() {
         continue
       }
 
-      // Rate limiting: Wait 13 seconds BEFORE each API call (except first)
-      if (processedCount > 0) {
-        console.log(`  ⏳ Rate limiting: waiting 13s before next API call...`)
+      // Rate limiting: Wait 13 seconds BEFORE each API call
+      // This ensures we stay under Polygon's 5 calls/minute limit
+      if (i > 0) {
+        console.log(`  ⏳ [${i + 1}/${openPositions.length}] Rate limiting: waiting 13s before next API call...`)
         await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
+      } else {
+        console.log(`  🚀 [${i + 1}/${openPositions.length}] Starting with ${ticker}...`)
       }
 
       // Fetch previous trading day's price data (free tier compatible)
