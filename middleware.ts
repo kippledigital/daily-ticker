@@ -41,13 +41,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (all Next.js internal paths - static files, chunks, etc.)
      * - favicon.ico (favicon file)
      * - icon (icon route)
      * - manifest (manifest route)
      * - public (public files)
+     * - static files (images, etc.)
      */
-    '/((?!_next/static|_next/image|favicon.ico|icon|manifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next|favicon.ico|icon|manifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
   ],
 }
