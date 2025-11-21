@@ -108,17 +108,17 @@ async function updatePerformance() {
       }
 
       // Fetch previous trading day's price data (free tier compatible)
-      // Format: YYYY-MM-DD
-      console.log(`  📡 Fetching price data for ${ticker} (${checkDate})...`)
+      // Use /prev endpoint which is more reliable for free tier
+      console.log(`  📡 Fetching previous day's price data for ${ticker}...`)
       
       let polygonResponse
       let polygonData
       let priceBar
       
-      // Try previous day first (free tier compatible)
+      // Use /prev endpoint (previous trading day) - more reliable for free tier
       try {
         polygonResponse = await fetch(
-          `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${checkDate}/${checkDate}?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
+          `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
         )
 
         if (polygonResponse.ok) {
@@ -135,9 +135,9 @@ async function updatePerformance() {
           console.warn(`  ⚠️  ${ticker}: Rate limited (429). Waiting 60s before retry...`)
           rateLimited.push(ticker)
           await new Promise(resolve => setTimeout(resolve, 60000))
-          // Retry once
+          // Retry once with /prev endpoint
           polygonResponse = await fetch(
-            `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${checkDate}/${checkDate}?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
+            `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${process.env.POLYGON_API_KEY}`
           )
           if (polygonResponse.ok) {
             polygonData = await polygonResponse.json()
@@ -191,21 +191,21 @@ async function updatePerformance() {
       if (stocks.stop_loss && low <= stocks.stop_loss) {
         exitPrice = stocks.stop_loss
         exitReason = 'stop_loss'
-        exitDate = checkDate
+        exitDate = priceDate
         console.log(`  🔴 STOP LOSS HIT: Low $${low.toFixed(2)} <= Stop $${stocks.stop_loss.toFixed(2)}`)
       }
       // Check if profit target hit (intraday high hit the target)
       else if (stocks.profit_target && high >= stocks.profit_target) {
         exitPrice = stocks.profit_target
         exitReason = 'profit_target'
-        exitDate = checkDate
+        exitDate = priceDate
         console.log(`  🟢 PROFIT TARGET HIT: High $${high.toFixed(2)} >= Target $${stocks.profit_target.toFixed(2)}`)
       }
       // Check if 30-day limit reached
       else if (holdingDays >= 30) {
         exitPrice = close
         exitReason = '30_day_limit'
-        exitDate = checkDate
+        exitDate = priceDate
         console.log(`  ⏰ 30-DAY LIMIT: Closing at market close $${close.toFixed(2)}`)
       }
 
