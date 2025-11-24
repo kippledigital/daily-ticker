@@ -288,6 +288,9 @@ Return ONLY the TL;DR text, nothing else.`;
 
 /**
  * Add source citations footer to HTML email
+ *
+ * We need to be careful where we inject this so it renders as a full-width
+ * block at the bottom of the email, not inside one of the stock cards.
  */
 function addSourceCitations(htmlContent: string, date: string): string {
   const timestamp = new Date(date).toLocaleString('en-US', {
@@ -320,15 +323,29 @@ function addSourceCitations(htmlContent: string, date: string): string {
   </p>
 </div>`;
 
-  // Try to insert before closing </div> tag, or append if not found
-  if (htmlContent.includes('</div>')) {
-    // Find the last </div> and insert before it
-    const lastDivIndex = htmlContent.lastIndexOf('</div>');
-    htmlContent = htmlContent.slice(0, lastDivIndex) + citationFooter + htmlContent.slice(lastDivIndex);
-  } else {
-    // Append to end
-    htmlContent += citationFooter;
+  // Avoid duplicating the footer if it already exists
+  if (htmlContent.includes('Alpha Vantage • Finnhub • Polygon.io')) {
+    return htmlContent;
   }
 
-  return htmlContent;
+  // Preferred: insert just before the closing wrapper divs from the template
+  // (inner content + outer container).
+  const outerWrapperPattern = /(<\/div>\s*<\/div>\s*)$/i;
+  if (outerWrapperPattern.test(htmlContent)) {
+    return htmlContent.replace(outerWrapperPattern, `${citationFooter}$1`);
+  }
+
+  // Fallback: if the model wrapped everything in <body>/<html>, inject above that.
+  const bodyClosePattern = /(<\/body>\s*<\/html>\s*)$/i;
+  if (bodyClosePattern.test(htmlContent)) {
+    return htmlContent.replace(bodyClosePattern, `${citationFooter}$1`);
+  }
+
+  // Last-resort: insert before the final </div>, or append if none found.
+  const lastDivIndex = htmlContent.lastIndexOf('</div>');
+  if (lastDivIndex !== -1) {
+    return htmlContent.slice(0, lastDivIndex) + citationFooter + htmlContent.slice(lastDivIndex);
+  }
+
+  return htmlContent + citationFooter;
 }
