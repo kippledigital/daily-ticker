@@ -97,7 +97,19 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
 
 🧱 OUTPUT FORMAT (HTML ONLY)
 
-<div style="font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width:680px; background:#0B1E32; color:#F0F0F0; margin:0 auto; padding:0;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Daily Ticker Morning Brief</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0B1E32; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#0B1E32; margin:0; padding:0;">
+    <tr>
+      <td align="center" style="padding:0;">
+        <div style="font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width:680px; background:#0B1E32; color:#F0F0F0; margin:0 auto; padding:0;">
   <div style="background:linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); padding:40px 24px 32px; text-align:center; border-bottom:3px solid #00ff88;">
     <div style="display:inline-block; margin-bottom:12px;">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:8px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
@@ -209,7 +221,12 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
       </p>
     </div>
   </div>
-</div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 
 🧩 CRITICAL RULES
 
@@ -400,16 +417,54 @@ async function generateTLDR(stocks: ValidatedStock[]): Promise<string> {
  * Adds source citations footer
  */
 function addSourceCitations(htmlContent: string, date: string): string {
+  // Compact unified footer - match main background color
   const footer = `
-  <div style="padding:24px; background:#0B1E32; border-top:1px solid #1a3a52; text-align:center;">
-    <p style="color:#6b7280; font-size:12px; margin:0 0 8px 0;">
-      Daily Ticker • ${new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-    </p>
-    <p style="color:#6b7280; font-size:11px; margin:0;">
-      Data sources: Polygon.io, OpenAI analysis
-    </p>
-  </div>
+<div style="margin-top:40px;padding:20px;background:#0B1E32;border-radius:8px;border-top:3px solid #00ff88;">
+  <p style="font-size:12px;color:#9ca3af;margin:0 0 12px 0;line-height:1.6;">
+    <strong style="color:#d1d5db;">Data:</strong> Alpha Vantage • Finnhub • Polygon.io
+    <span style="color:#6b7280;margin:0 8px;">|</span>
+    Retrieved ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+  </p>
+  <p style="font-size:11px;color:#9ca3af;margin:0 0 16px 0;padding-top:12px;border-top:1px solid #2a4a62;line-height:1.5;">
+    <strong style="color:#d1d5db;">Disclaimer:</strong> For educational purposes only. Not financial advice. Do your own research and consult a qualified financial advisor.
+  </p>
+  <p style="font-size:12px;color:#9ca3af;margin:0;text-align:center;">
+    <a href="https://dailyticker.co/archive" style="color:#00ff88;text-decoration:none;">Archive</a>
+    <span style="margin:0 6px;">•</span>
+    <a href="https://dailyticker.co/privacy" style="color:#9ca3af;text-decoration:none;">Privacy</a>
+    <span style="margin:0 6px;">•</span>
+    <a href="https://dailyticker.co/unsubscribe" style="color:#9ca3af;text-decoration:none;">Unsubscribe</a>
+  </p>
 </div>`;
 
-  return htmlContent.replace(/<\/div>\s*$/, footer);
+  // Avoid duplicating the footer if it already exists
+  if (htmlContent.includes('Alpha Vantage • Finnhub • Polygon.io')) {
+    return htmlContent;
+  }
+
+  // Preferred: insert just before the closing table/body/html tags
+  const tableClosePattern = /(\s*<\/div>\s*<\/td>\s*<\/tr>\s*<\/table>\s*<\/body>\s*<\/html>\s*)$/i;
+  if (tableClosePattern.test(htmlContent)) {
+    return htmlContent.replace(tableClosePattern, `${footer}$1`);
+  }
+
+  // Fallback: if the model wrapped everything in <body>/<html>, inject above that.
+  const bodyClosePattern = /(\s*<\/body>\s*<\/html>\s*)$/i;
+  if (bodyClosePattern.test(htmlContent)) {
+    return htmlContent.replace(bodyClosePattern, `${footer}$1`);
+  }
+
+  // Fallback: insert just before the closing wrapper divs from the template
+  const outerWrapperPattern = /(\s*<\/div>\s*<\/div>\s*<\/div>\s*)$/i;
+  if (outerWrapperPattern.test(htmlContent)) {
+    return htmlContent.replace(outerWrapperPattern, `${footer}$1`);
+  }
+
+  // Last-resort: insert before the final </div>, or append if none found.
+  const lastDivIndex = htmlContent.lastIndexOf('</div>');
+  if (lastDivIndex !== -1) {
+    return htmlContent.slice(0, lastDivIndex) + footer + htmlContent.slice(lastDivIndex);
+  }
+
+  return htmlContent + footer;
 }
