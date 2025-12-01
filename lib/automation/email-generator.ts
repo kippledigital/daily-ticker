@@ -148,7 +148,9 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
         },
       ],
       temperature: 0.8, // Creative but consistent
-      max_tokens: 6000, // Reduced slightly to speed up generation (still complete, just more concise)
+      // Give the model a bit more room so it can reliably finish the full HTML email.
+      // With our prompt size this still keeps us comfortably under the 16k context limit.
+      max_tokens: 8000,
     });
 
     // Vercel Pro: Increased timeout - GPT-4o can take longer with large prompts
@@ -169,9 +171,25 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
       htmlContent = htmlContent.replace(/^```\s*\n?/, '').replace(/\n?```\s*$/, '');
     }
 
-    // Check if response was truncated
+    // Check if response was truncated (still possible if the model gets very verbose)
     if (completion.choices[0]?.finish_reason === 'length') {
-      console.warn('⚠️ Email generation was truncated due to token limit. Consider reducing template size or increasing max_tokens.');
+      console.warn(
+        '⚠️ Email generation was truncated due to token limit even after increasing max_tokens. ' +
+          'Trimming potentially partial HTML tail before injecting footer.'
+      );
+
+      // If the model stopped mid-way through a tag, we don't want to leave
+      // dangling "<div style=..." fragments that show up as plain text in clients.
+      // Trim the content back to the last complete closing tag we can find.
+      const lastClosingDiv = htmlContent.lastIndexOf('</div>');
+      if (lastClosingDiv !== -1) {
+        htmlContent = htmlContent.slice(0, lastClosingDiv + '</div>'.length);
+      } else {
+        const lastAngleBracket = htmlContent.lastIndexOf('>');
+        if (lastAngleBracket !== -1) {
+          htmlContent = htmlContent.slice(0, lastAngleBracket + 1);
+        }
+      }
     }
 
     // Generate TL;DR and subject line in parallel (they don't depend on each other)
@@ -329,7 +347,8 @@ function addSourceCitations(htmlContent: string, date: string): string {
   }
 
   // Preferred: insert just before the closing wrapper divs from the template
-  // (inner content + outer container).
+  // (inner content + outer container) so the footer stays full-width and
+  // outside any individual stock card.
   const outerWrapperPattern = /(<\/div>\s*<\/div>\s*)$/i;
   if (outerWrapperPattern.test(htmlContent)) {
     return htmlContent.replace(outerWrapperPattern, `${citationFooter}$1`);
@@ -341,11 +360,8 @@ function addSourceCitations(htmlContent: string, date: string): string {
     return htmlContent.replace(bodyClosePattern, `${citationFooter}$1`);
   }
 
-  // Last-resort: insert before the final </div>, or append if none found.
-  const lastDivIndex = htmlContent.lastIndexOf('</div>');
-  if (lastDivIndex !== -1) {
-    return htmlContent.slice(0, lastDivIndex) + citationFooter + htmlContent.slice(lastDivIndex);
-  }
-
+  // Last-resort: append to the end of the HTML.
+  // This guarantees the footer will not be accidentally nested inside the
+  // last stock card or column if the structure isn't exactly what we expect.
   return htmlContent + citationFooter;
 }
