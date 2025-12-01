@@ -9,6 +9,7 @@ import { generateEmailContent } from './email-generator';
 import { generateFreeEmail } from './email-generator-free';
 import { sendMorningBrief } from './email-sender';
 import { sendErrorNotification } from './error-notifier';
+import { sendNoBriefAlert } from '@/lib/emails/admin-notifications';
 
 /**
  * Main automation orchestrator
@@ -312,6 +313,18 @@ export async function runDailyAutomation(triggerSource: string = 'unknown'): Pro
       };
       
       console.log(`✅ Fallback email sent to admin: ${adminEmail}`);
+
+      // Send explicit no-brief alert so you know the list received nothing
+      try {
+        await sendNoBriefAlert({
+          date,
+          freeSubscribers: freeCount,
+          premiumSubscribers: premiumCount,
+          reason: 'No active subscribers for either tier; brief sent only to admin.',
+        });
+      } catch (alertError) {
+        console.error('❌ Failed to send no-brief alert:', alertError);
+      }
     } else {
       // Send premium email to premium subscribers (with retry)
       let premiumEmailResult = await sendMorningBrief({

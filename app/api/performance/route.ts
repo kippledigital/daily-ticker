@@ -60,7 +60,10 @@ export async function GET(request: Request) {
           entry_price
         )
       `)
-      .order('entry_date', { ascending: false })
+      // Order by most recent EXIT date so the table shows the latest closed calls
+      // This ensures "All Closed", "Wins", and "Losses" tabs always show the newest
+      // closed positions from top to bottom, based on when they were actually closed.
+      .order('exit_date', { ascending: false, nullsFirst: false })
       .limit(limit)
 
     // Filter by status if specified

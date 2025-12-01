@@ -1,8 +1,15 @@
 import { Resend } from 'resend';
 import { generateFreeWelcomeEmail, generatePremiumWelcomeEmail } from './welcome-email-templates';
 
-// Initialize Resend client (same pattern as other email modules)
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazily initialize Resend client so missing API key doesn't throw at import time
+let resendClient: Resend | null = null;
+
+function getResendClient(apiKey: string): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
 
 export interface SendWelcomeEmailParams {
   email: string;
@@ -44,6 +51,8 @@ export async function sendWelcomeEmail(
   }
 
   try {
+    const resend = getResendClient(apiKey);
+
     // Generate email content based on tier
     const emailContent =
       tier === 'premium'

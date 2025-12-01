@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { aggregateStockData } from '@/lib/automation/data-aggregator';
 
+// This is a development/testing endpoint – mark as dynamic so Next.js
+// doesn't try to statically render it during the build.
+export const dynamic = 'force-dynamic';
+
 /**
  * Test endpoint for data quality validation
  *

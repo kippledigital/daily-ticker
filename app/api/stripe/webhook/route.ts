@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { supabase } from '@/lib/supabase'
 import Stripe from 'stripe'
 import { sendWelcomeEmail } from '@/lib/emails/send-welcome-email'
+import { sendSignupNotification } from '@/lib/emails/admin-notifications'
 
 // Disable body parsing so we can verify the webhook signature
 export const runtime = 'nodejs'
@@ -190,6 +191,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     } catch (err) {
       console.error('❌ Exception sending premium welcome email:', err);
       // Don't fail the webhook if email fails
+    }
+
+    // Internal admin notification for new / upgraded premium signup (non-blocking)
+    try {
+      await sendSignupNotification({
+        email,
+        tier: 'premium',
+        status: existingSubscriber ? 'upgraded' : 'new',
+        source: 'stripe-webhook',
+        timestamp: new Date(),
+      });
+    } catch (notifyError) {
+      console.error('❌ Failed to send signup admin notification (premium):', notifyError);
     }
   }
 }

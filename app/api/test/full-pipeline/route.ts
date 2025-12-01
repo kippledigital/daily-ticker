@@ -5,6 +5,10 @@ import { analyzeStock } from '@/lib/automation/ai-analyzer';
 import { validateStockAnalysis } from '@/lib/automation/validator';
 import { injectTrendSymbol } from '@/lib/automation/trend-injector';
 
+// This is a development/testing endpoint – mark as dynamic so Next.js
+// doesn't try to statically render it during the build.
+export const dynamic = 'force-dynamic';
+
 /**
  * Test endpoint for full automation pipeline
  *

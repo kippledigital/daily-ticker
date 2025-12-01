@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendWelcomeEmail } from '@/lib/emails/send-welcome-email';
+import { sendSignupNotification } from '@/lib/emails/admin-notifications';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
+
+// Subscription is a purely runtime API – don't attempt static rendering
+export const dynamic = 'force-dynamic';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -79,6 +83,8 @@ export async function POST(request: NextRequest) {
     const utmMedium = url.searchParams.get('utm_medium') || 'organic';
     const utmCampaign = url.searchParams.get('utm_campaign') || null;
 
+    const timestamp = new Date();
+
     // Insert into Supabase
     const { data, error } = await supabase
       .from('subscribers')
@@ -100,7 +106,7 @@ export async function POST(request: NextRequest) {
         // Check if they're already subscribed or unsubscribed
         const { data: existingSub } = await supabase
           .from('subscribers')
-          .select('status')
+          .select('status, tier')
           .eq('email', normalizedEmail)
           .single();
 
@@ -125,6 +131,24 @@ export async function POST(request: NextRequest) {
           }
 
           console.log('Reactivated subscription:', normalizedEmail);
+
+          // Internal admin notification (non-blocking)
+          try {
+            await sendSignupNotification({
+              email: normalizedEmail,
+              tier: existingSub?.tier === 'premium' ? 'premium' : 'free',
+              status: 'reactivated',
+              source: 'subscribe-endpoint',
+              utm_source: utmSource,
+              utm_medium: utmMedium,
+              utm_campaign: utmCampaign,
+              ip_address: ipAddress,
+              user_agent: userAgent,
+              timestamp,
+            });
+          } catch (notifyError) {
+            console.error('❌ Failed to send signup admin notification (reactivated):', notifyError);
+          }
           
           // Send welcome email (await to catch errors)
           try {
@@ -154,6 +178,24 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('New subscription successful:', normalizedEmail);
+
+    // Internal admin notification for new free signup (non-blocking)
+    try {
+      await sendSignupNotification({
+        email: normalizedEmail,
+        tier: 'free',
+        status: 'new',
+        source: 'subscribe-endpoint',
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        timestamp,
+      });
+    } catch (notifyError) {
+      console.error('❌ Failed to send signup admin notification (new free):', notifyError);
+    }
 
     // Send welcome email (await to catch errors, but don't fail the request)
     try {

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendTestEmail } from '@/lib/automation/email-sender';
 
+// This is a development/testing endpoint – mark as dynamic so Next.js
+// doesn't try to statically render it during the build.
+export const dynamic = 'force-dynamic';
+
 /**
  * Test endpoint for email sending with Resend
  *

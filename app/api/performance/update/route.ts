@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendPerformanceUpdateNotification } from '@/lib/emails/admin-notifications'
 
 // Force dynamic rendering (don't pre-render at build time)
 export const dynamic = 'force-dynamic'
@@ -305,6 +306,29 @@ async function updatePerformance() {
     }
 
     console.log(`\n✅ Completed: ${updates.length} position(s) closed, ${positionsToCheck.length} checked, ${totalSkipped} skipped`)
+
+    // Internal admin notification: only send when at least one position was updated
+    if (updates.length > 0) {
+      try {
+        await sendPerformanceUpdateNotification({
+          message: summary.message,
+          updated: summary.updated,
+          checked: summary.checked,
+          total_open: summary.total_open,
+          skipped: summary.skipped,
+          rate_limited: summary.rate_limited,
+          filtered_out: summary.filtered_out,
+          details: summary.details.map((d: any) => ({
+            ticker: d.ticker,
+            exit_reason: d.exit_reason,
+            exit_price: d.exit_price,
+            return_percent: d.return_percent,
+          })),
+        })
+      } catch (notifyError) {
+        console.error('❌ Failed to send performance update admin notification:', notifyError)
+      }
+    }
 
     return summary
   } catch (error) {
