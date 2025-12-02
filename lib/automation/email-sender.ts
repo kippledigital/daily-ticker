@@ -74,68 +74,87 @@ export async function sendMorningBrief(params: SendEmailParams): Promise<SendEma
     }
 
     const tierLabel = tier ? `${tier} tier` : 'custom';
-    console.log(`📧 Sending ${tierLabel} email to ${recipients.length} subscriber(s):`, recipients);
+    console.log(`📧 Sending ${tierLabel} email to ${recipients.length} subscriber(s) (one by one for privacy)...`);
     console.log(`   Subject: ${subject}`);
     console.log(`   From: ${fromAddress}`);
 
-    // Send email via Resend (Resend sends email analytics to your dashboard automatically!)
-    const { data, error } = await resend.emails.send({
-      from: fromAddress,
-      to: recipients,
-      subject: subject,
-      html: htmlContent,
-      // Tags for tracking in Resend dashboard and analytics
-      tags: [
-        {
-          name: 'campaign',
-          value: 'morning-brief',
-        },
-        {
-          name: 'date',
-          value: new Date().toISOString().split('T')[0],
-        },
-        {
-          name: 'subscriber_count',
-          value: recipients.length.toString(),
-        },
-        {
-          name: 'automation',
-          value: 'daily-ticker',
-        },
-      ],
-      // Enable tracking for opens and clicks
-      // Resend automatically tracks these and shows in your dashboard!
-    });
+    // Send each email individually so recipients don't see each other's addresses
+    const successfullySent: string[] = [];
+    const failed: { email: string; error: string }[] = [];
 
-    if (error) {
-      console.error('❌ Error sending email via Resend:', error);
-      console.error('   Error details:', JSON.stringify(error, null, 2));
-      console.error('   Recipients:', recipients);
-      console.error('   From address:', fromAddress);
-      console.error('   Resend API key present:', !!process.env.RESEND_API_KEY);
-      console.error('   Resend API key length:', process.env.RESEND_API_KEY?.length || 0);
-      
-      // More detailed error message
-      const errorMessage = error.message || 'Resend API error';
-      const errorDetails = error.name ? `${error.name}: ${errorMessage}` : errorMessage;
-      
+    for (const recipient of recipients) {
+      try {
+        const { data, error } = await resend.emails.send({
+          from: fromAddress,
+          to: [recipient],
+          subject: subject,
+          html: htmlContent,
+          tags: [
+            {
+              name: 'campaign',
+              value: 'morning-brief',
+            },
+            {
+              name: 'date',
+              value: new Date().toISOString().split('T')[0],
+            },
+            {
+              name: 'automation',
+              value: 'daily-ticker',
+            },
+          ],
+        });
+
+        if (error) {
+          console.error(`❌ Error sending brief to ${recipient}:`, error);
+          const errorMessage = error.message || 'Resend API error';
+          const errorDetails = error.name ? `${error.name}: ${errorMessage}` : errorMessage;
+          failed.push({ email: recipient, error: errorDetails });
+          continue;
+        }
+
+        console.log(`✅ Brief email sent successfully to ${recipient}:`, data?.id);
+        successfullySent.push(recipient);
+      } catch (err: any) {
+        console.error(`❌ Exception sending brief to ${recipient}:`, err);
+        failed.push({
+          email: recipient,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    }
+
+    if (successfullySent.length === 0) {
+      // Complete failure
       return {
         success: false,
         sentCount: 0,
         recipientCount: recipients.length,
-        error: `Resend API error: ${errorDetails}`,
+        error:
+          failed.length > 0
+            ? `Failed to send to all ${recipients.length} recipients. Example error: ${failed[0].error}`
+            : 'Failed to send emails to all recipients.',
       };
     }
 
-    console.log('Email sent successfully:', data);
+    // Update email sent count only for successfully sent recipients
+    await updateEmailSentCount(successfullySent);
 
-    // Update email sent count for all subscribers
-    await updateEmailSentCount(recipients);
+    if (failed.length > 0) {
+      console.warn(
+        `⚠️  Brief sent to ${successfullySent.length}/${recipients.length} recipients; ` +
+          `${failed.length} failed. Example failure: ${failed[0].email} - ${failed[0].error}`
+      );
+    }
 
     return {
-      success: true,
-      sentCount: recipients.length,
+      success: failed.length === 0,
+      sentCount: successfullySent.length,
       recipientCount: recipients.length,
+      error:
+        failed.length > 0
+          ? `Some emails failed: ${failed.length} of ${recipients.length} recipients`
+          : undefined,
     };
   } catch (error) {
     console.error('Error in sendMorningBrief:', error);
