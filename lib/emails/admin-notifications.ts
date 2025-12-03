@@ -80,8 +80,9 @@ export async function sendSignupNotification(params: SignupNotificationParams) {
           ? 'Reactivated subscriber'
           : 'Upgraded to premium';
 
-    const subjectPrefix = isPremium ? '🚀 New Daily Ticker Pro' : '👤 New Daily Ticker signup';
-    const subject = `${subjectPrefix} – ${statusLabel}`;
+    const signupAgentName = 'Growth Agent Nova';
+    const subjectIcon = isPremium ? '🚀' : '👤';
+    const subject = `${subjectIcon} ${signupAgentName} — ${tier} ${statusLabel.toLowerCase()}`;
 
     const occurredAt = (timestamp || new Date()).toLocaleString('en-US', {
       dateStyle: 'medium',
@@ -98,9 +99,9 @@ export async function sendSignupNotification(params: SignupNotificationParams) {
   </head>
   <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #0B1E32; color: #F0F0F0; margin: 0; padding: 24px;">
     <div style="max-width: 600px; margin: 0 auto; background: #102844; border-radius: 12px; overflow: hidden; border: 1px solid #16375a;">
-      <div style="padding: 20px 24px; border-bottom: 1px solid #16375a; background: linear-gradient(135deg, #00ff88 0%, #00c2ff 100%); color: #0B1E32;">
+      <div style="padding: 20px 24px; border-bottom: 3px solid #00ff88; background: linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); color: #F0F0F0;">
         <h1 style="margin: 0; font-size: 20px; font-weight: 700;">
-          ${isPremium ? 'New Daily Ticker Pro signup' : 'New Daily Ticker signup'}
+          ${signupAgentName} — ${statusLabel}
         </h1>
         <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">
           ${statusLabel} detected from ${source === 'stripe-webhook' ? 'Stripe checkout' : 'website subscribe form'}.
@@ -150,7 +151,7 @@ export async function sendSignupNotification(params: SignupNotificationParams) {
       </div>
 
       <div style="padding: 16px 24px; border-top: 1px solid #16375a; font-size: 12px; color: #9fb3c8;">
-        <p style="margin: 0;">This is an internal notification from Daily Ticker.</p>
+        <p style="margin: 0;">This is an internal notification from ${signupAgentName}.</p>
       </div>
     </div>
   </body>
@@ -193,7 +194,7 @@ export interface PerformanceUpdateNotificationParams {
 }
 
 /**
- * Internal notification for daily performance cron when positions are closed.
+ * Internal notification from the performance agent when positions are closed.
  * Only call this when one or more positions have been updated.
  */
 export async function sendPerformanceUpdateNotification(params: PerformanceUpdateNotificationParams) {
@@ -218,7 +219,8 @@ export async function sendPerformanceUpdateNotification(params: PerformanceUpdat
       date,
     } = params;
 
-    const subject = `📈 Daily performance update – ${updated} position${updated === 1 ? '' : 's'} closed`;
+    const agentName = 'Performance Agent Vega';
+    const subject = `📈 ${agentName} — ${updated} position${updated === 1 ? '' : 's'} closed`;
 
     const displayDate =
       date ||
@@ -255,9 +257,9 @@ export async function sendPerformanceUpdateNotification(params: PerformanceUpdat
   </head>
   <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #0B1E32; color: #F0F0F0; margin: 0; padding: 24px;">
     <div style="max-width: 700px; margin: 0 auto; background: #102844; border-radius: 12px; overflow: hidden; border: 1px solid #16375a;">
-      <div style="padding: 20px 24px; border-bottom: 1px solid #16375a; background: linear-gradient(135deg, #00ff88 0%, #00c2ff 100%); color: #0B1E32;">
+      <div style="padding: 20px 24px; border-bottom: 3px solid #00ff88; background: linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); color: #F0F0F0;">
         <h1 style="margin: 0; font-size: 20px; font-weight: 700;">
-          Daily performance cron – ${updated} closed
+          ${agentName} — ${updated} closed
         </h1>
         <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">
           ${displayDate} • ${message}
@@ -301,7 +303,7 @@ export async function sendPerformanceUpdateNotification(params: PerformanceUpdat
       </div>
 
       <div style="padding: 16px 24px; border-top: 1px solid #16375a; font-size: 12px; color: #9fb3c8;">
-        <p style="margin: 0;">This is an internal notification from the performance cron. Only sent when at least one position is closed.</p>
+        <p style="margin: 0;">This is an internal notification from ${agentName}. Only sent when at least one position is closed.</p>
       </div>
     </div>
   </body>
@@ -333,8 +335,9 @@ export interface NoBriefAlertParams {
 }
 
 /**
- * Internal alert when the daily brief has no subscribers to send to.
- * Triggered from the automation when it falls back to admin-only delivery.
+ * Internal alert from the delivery agent when the daily brief has no
+ * subscribers to send to. Triggered from the automation when it falls
+ * back to admin-only delivery.
  */
 export async function sendNoBriefAlert(params: NoBriefAlertParams) {
   try {
@@ -348,7 +351,8 @@ export async function sendNoBriefAlert(params: NoBriefAlertParams) {
 
     const { date, freeSubscribers, premiumSubscribers, reason } = params;
 
-    const subject = `⚠️ No subscribers for Daily Ticker brief on ${date}`;
+    const deliveryAgentName = 'Delivery Agent Atlas';
+    const subject = `⚠️ ${deliveryAgentName} — no subscribers for Daily Ticker brief on ${date}`;
 
     const html = `
 <!DOCTYPE html>
@@ -359,9 +363,9 @@ export async function sendNoBriefAlert(params: NoBriefAlertParams) {
   </head>
   <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #0B1E32; color: #F0F0F0; margin: 0; padding: 24px;">
     <div style="max-width: 640px; margin: 0 auto; background: #102844; border-radius: 12px; overflow: hidden; border: 1px solid #16375a;">
-      <div style="padding: 20px 24px; border-bottom: 1px solid #16375a; background: #ffb300; color: #0B1E32;">
+      <div style="padding: 20px 24px; border-bottom: 3px solid #ffb300; background: linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); color: #F0F0F0;">
         <h1 style="margin: 0; font-size: 20px; font-weight: 700;">
-          No brief recipients for ${date}
+          ${deliveryAgentName} — no brief recipients for ${date}
         </h1>
         <p style="margin: 4px 0 0 0; font-size: 14px;">
           The daily brief automation ran but there were no active subscribers. The brief was only sent to the admin inbox.
@@ -390,7 +394,7 @@ export async function sendNoBriefAlert(params: NoBriefAlertParams) {
       </div>
 
       <div style="padding: 16px 24px; border-top: 1px solid #16375a; font-size: 12px; color: #9fb3c8;">
-        <p style="margin: 0;">This alert is only sent when there are zero subscribers and the brief is delivered to admin only.</p>
+        <p style="margin: 0;">This alert is sent by ${deliveryAgentName} only when there are zero subscribers and the brief is delivered to admin only.</p>
       </div>
     </div>
   </body>
@@ -451,8 +455,9 @@ export interface EngagementDigestNotificationParams {
 }
 
 /**
- * Weekly/daily engagement digest summarizing growth, engagement, and cron stats.
- * Currently based on Supabase subscriber + cron tables (UTMs stand in for GA/GSC sources).
+ * Weekly/daily engagement digest from the analytics agent summarizing growth,
+ * engagement, and cron stats. Currently based on Supabase subscriber + cron
+ * tables (UTMs stand in for GA/GSC sources).
  */
 export async function sendEngagementDigestNotification(
   params: EngagementDigestNotificationParams
@@ -476,8 +481,8 @@ export async function sendEngagementDigestNotification(
       cronSummary,
       utmSources,
     } = params;
-
-    const subject = `📊 Engagement digest (${periodStart} → ${periodEnd})`;
+    const analyticsAgentName = 'Analytics Agent Echo';
+    const subject = `📊 ${analyticsAgentName} — engagement digest (${periodStart} → ${periodEnd})`;
 
     const utmRows =
       utmSources.length > 0
@@ -508,9 +513,9 @@ export async function sendEngagementDigestNotification(
   </head>
   <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #0B1E32; color: #F0F0F0; margin: 0; padding: 24px;">
     <div style="max-width: 720px; margin: 0 auto; background: #102844; border-radius: 12px; overflow: hidden; border: 1px solid #16375a;">
-      <div style="padding: 20px 24px; border-bottom: 1px solid #16375a; background: linear-gradient(135deg, #00ff88 0%, #00c2ff 100%); color: #0B1E32;">
+      <div style="padding: 20px 24px; border-bottom: 3px solid #00ff88; background: linear-gradient(135deg, #0B1E32 0%, #1a3a52 100%); color: #F0F0F0;">
         <h1 style="margin: 0; font-size: 20px; font-weight: 700;">
-          Engagement & growth digest
+          ${analyticsAgentName} — engagement & growth digest
         </h1>
         <p style="margin: 4px 0 0 0; font-size: 14px;">
           ${periodStart} → ${periodEnd}
@@ -562,7 +567,7 @@ export async function sendEngagementDigestNotification(
           </tr>
         </table>
 
-        <h2 style="margin: 12px 0 8px 0; font-size: 16px; font-weight: 600;">Daily brief cron</h2>
+        <h2 style="margin: 12px 0 8px 0; font-size: 16px; font-weight: 600;">Daily brief agent</h2>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 16px;">
           <tr>
             <td style="padding: 4px 0; font-weight: 600; width: 220px;">Runs this period</td>
@@ -600,7 +605,7 @@ export async function sendEngagementDigestNotification(
         </table>
 
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #9fb3c8;">
-          Note: UTM breakdown comes from subscriber signups and is a proxy for GA/GSC traffic sources.
+          Note from ${analyticsAgentName}: UTM breakdown comes from subscriber signups and is a proxy for GA/GSC traffic sources.
         </p>
       </div>
     </div>

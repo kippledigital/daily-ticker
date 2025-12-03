@@ -213,6 +213,28 @@ Return ONLY the HTML email content (no markdown, no code blocks, just the HTML d
 }
 
 /**
+ * Experimental: generate a LIGHT THEME version of the premium email.
+ *
+ * This is used for manual testing only (via a dedicated API route) so we can
+ * preview how a light, accessible variant behaves in mobile email clients
+ * before updating the production template.
+ */
+export async function generateEmailContentLightPreview(
+  params: EmailGenerationParams
+): Promise<{
+  subject: string;
+  htmlContent: string;
+  tldr: string;
+}> {
+  const base = await generateEmailContent(params);
+
+  return {
+    ...base,
+    htmlContent: transformToLightTheme(base.htmlContent),
+  };
+}
+
+/**
  * Generates email subject line from stock data
  * Creates an engaging subject line based on the stocks being featured
  */
@@ -364,4 +386,101 @@ function addSourceCitations(htmlContent: string, date: string): string {
   // This guarantees the footer will not be accidentally nested inside the
   // last stock card or column if the structure isn't exactly what we expect.
   return htmlContent + citationFooter;
+}
+
+/**
+ * Transform the dark theme HTML into a light, high-contrast version.
+ *
+ * This is intentionally conservative and only used for the experimental
+ * light-preview path so we don't surprise existing subscribers.
+ */
+function transformToLightTheme(htmlContent: string): string {
+  let updated = htmlContent;
+
+  // 1) Outer wrapper: deep navy -> soft light background, dark text
+  updated = updated.replace(
+    /max-width:680px; background:#0B1E32; color:#F0F0F0;/i,
+    "max-width:680px; background:#f9fafb; color:#0f172a;"
+  );
+
+  // 2) Header: replace heavy dark gradient with light fintech-style gradient
+  updated = updated.replace(
+    /background:linear-gradient\(135deg, #0B1E32 0%, #1a3a52 100%\);/gi,
+    'background:linear-gradient(135deg, #e5f3ff 0%, #e0f2fe 100%);'
+  );
+
+  // 3) TL;DR container: lighter card + softer green accent, no heavy fill
+  updated = updated.replace(
+    /background:#1a3a52; border-left:4px solid #00ff88;/gi,
+    'background:#ffffff; border-left:4px solid #22c55e;'
+  );
+
+  // 4) Generic stock cards: dark blocks -> white cards with subtle borders
+  updated = updated.replace(
+    /background:#1a3a52; border-radius:12px; padding:24px; margin-bottom:24px; border:1px solid #2a4a62;/gi,
+    'background:#ffffff; border-radius:12px; padding:24px; margin-bottom:24px; border:1px solid #e2e8f0;'
+  );
+
+  // Price / recent move panel: dark band -> white panel
+  updated = updated.replace(
+    /background:#0B1E32; border-radius:8px; padding:16px; margin-bottom:16px; border:1px solid #1a3a52;/gi,
+    'background:#ffffff; border-radius:8px; padding:16px; margin-bottom:16px; border:1px solid #e5e7eb;'
+  );
+
+  // 5) Remove heavy dark gradient panels (Learning Corner, etc.) and use plain cards
+  updated = updated.replace(
+    /background:linear-gradient\(135deg, #1a3a52 0%, #0B1E32 100%\); border-radius:8px; padding:20px; margin-bottom:32px; border:1px solid #2a4a62;/gi,
+    'background:#ffffff; border-radius:8px; padding:20px; margin-bottom:32px; border:1px solid #e2e8f0;'
+  );
+  updated = updated.replace(
+    /background:#1a3a52; border-radius:8px; padding:20px; margin-bottom:24px; border-left:4px solid #00ff88;/gi,
+    'background:#ffffff; border-radius:8px; padding:20px; margin-bottom:24px; border-left:4px solid #22c55e;'
+  );
+
+  // Ideal entry zone band: gradient -> white card with green stroke
+  updated = updated.replace(
+    /background:linear-gradient\(135deg, #1a3a52 0%, #0B1E32 100%\); border-radius:8px; padding:14px 18px; margin-bottom:12px; border:2px solid #00ff88;/gi,
+    'background:#ffffff; border-radius:8px; padding:14px 18px; margin-bottom:12px; border:2px solid #22c55e;'
+  );
+
+  // 6) "What to Do" bright green callout -> subtle pale green card
+  updated = updated.replace(
+    /background:#00ff88; background:linear-gradient\(135deg, #00ff88 0%, #00dd77 100%\); padding:16px 20px; border-radius:8px; margin-bottom:16px; box-shadow:0 4px 12px rgba\(0,255,136,0.2\);/gi,
+    'background:#f0fdf4; padding:16px 20px; border-radius:8px; margin-bottom:16px; border:1px solid #bbf7d0; box-shadow:none;'
+  );
+
+  // 7) Risk/Reward band -> neutral muted band
+  updated = updated.replace(
+    /background:#1a3a52; border-radius:6px; padding:10px; margin-bottom:16px; text-align:center; border:1px solid #2a4a62;/gi,
+    'background:#f3f4f6; border-radius:6px; padding:10px; margin-bottom:16px; text-align:center; border:1px solid #e5e7eb;'
+  );
+
+  // 8) Section headers and accents: neon -> softer but still clearly on-brand
+  updated = updated.replace(/color:#00ff88;/gi, 'color:#16a34a;');
+
+  // 9) Text colors: flip from light-on-dark to dark-on-light
+  updated = updated.replace(/#F0F0F0/gi, '#0f172a');
+  updated = updated.replace(/#e5e7eb/gi, '#111827');
+  updated = updated.replace(/#d1d5db/gi, '#374151');
+  updated = updated.replace(/#9ca3af/gi, '#4b5563');
+
+  // Keep critical semantic accents (stop-loss red, profit green, etc.) as-is.
+
+  // 10) Footer readability: keep dark blue background but ensure light text
+  // After the generic text color swap above, footer paragraphs will be dark-on-dark.
+  // Normalize them back to light-on-dark just for the citation block.
+  updated = updated.replace(
+    /<div style="margin-top:40px;padding:20px;background:#1a3a52;border-radius:8px;border-top:3px solid #00ff88;">\s*<p style="font-size:12px;color:#4b5563;margin:0 0 12px 0;line-height:1.6;">/i,
+    '<div style="margin-top:40px;padding:20px;background:#0B1E32;border-radius:8px;border-top:3px solid #22c55e;">\n  <p style="font-size:12px;color:#e5e7eb;margin:0 0 12px 0;line-height:1.6;">'
+  );
+  updated = updated.replace(
+    /<p style="font-size:11px;color:#4b5563;margin:0 0 16px 0;padding-top:12px;border-top:1px solid #2a4a62;line-height:1.5;">/i,
+    '<p style="font-size:11px;color:#e5e7eb;margin:0 0 16px 0;padding-top:12px;border-top:1px solid #1f2937;line-height:1.5;">'
+  );
+  updated = updated.replace(
+    /<p style="font-size:12px;color:#4b5563;margin:0;text-align:center;">/i,
+    '<p style="font-size:12px;color:#e5e7eb;margin:0;text-align:center;">'
+  );
+
+  return updated;
 }
