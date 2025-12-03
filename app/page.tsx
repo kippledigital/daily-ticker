@@ -762,7 +762,7 @@ export default function Home() {
             <button
               type="button"
               aria-label="Dismiss quick actions"
-              className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-300"
+              className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 -ml-1 rounded-full text-gray-500 hover:text-gray-300 hover:bg-[#1a3a52] active:scale-95 transition"
               onClick={() => setShowMobileStickyCTA(false)}
             >
               <X className="h-4 w-4" />
