@@ -8,8 +8,7 @@ import { SubscribeForm } from "@/components/subscribe-form"
 import { ROICalculatorModal } from "@/components/roi-calculator-modal"
 import { CheckoutButton } from "@/components/checkout-button"
 import { SectionDivider } from "@/components/section-divider"
-import { FeaturedStocks } from "@/components/featured-stocks"
-import { TrendingUp, Target, Zap, BookOpen, Plus } from "lucide-react"
+import { TrendingUp, Target, Zap, BookOpen, Plus, X } from "lucide-react"
 import { trackPerformanceDashboardView } from "@/lib/analytics"
 
 // Lazy load below-fold components  
@@ -47,6 +46,7 @@ function PerformanceDashboardWithTracking() {
 
 export default function Home() {
   const [isYearly, setIsYearly] = useState(true) // Default to yearly
+  const [showMobileStickyCTA, setShowMobileStickyCTA] = useState(false)
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -103,6 +103,31 @@ export default function Home() {
       ]
     }
   }
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY
+      const width = window.innerWidth
+
+      // Only show on small screens
+      if (width >= 768) {
+        if (showMobileStickyCTA) setShowMobileStickyCTA(false)
+        return
+      }
+
+      // Reveal once user has scrolled well past the hero (deeper engagement)
+      setShowMobileStickyCTA(y > 600)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('resize', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
+  }, [showMobileStickyCTA])
 
   return (
     <div className="min-h-screen bg-[#0B1E32]">
@@ -161,7 +186,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* Performance Dashboard - Proof our picks work */}
-      <section id="performance" className="container mx-auto px-4 py-16">
+      <section id="performance" className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-4">
@@ -185,13 +210,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Stocks Section */}
-      <FeaturedStocks />
-
-      <SectionDivider />
-
       {/* Features Section - REDESIGNED with specific value props */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">How Daily Ticker Works</h3>
@@ -297,7 +317,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* Email Preview - NEW: See what you'll get */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-sm text-[#00ff88] mb-4">
@@ -318,14 +338,18 @@ export default function Home() {
       <SectionDivider />
 
       {/* Pricing Section - REDESIGNED per PM spec */}
-      <section className="container mx-auto px-4 py-16" id="pricing">
+      <section className="container mx-auto px-4 py-12 md:py-16" id="pricing">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 md:mb-12">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Choose Your Investment Edge</h3>
             <p className="text-gray-300 text-lg max-w-3xl mx-auto">
               Both tiers get the same daily stock picks (1-3 depending on market opportunities).
               <br />
               <strong className="text-white">Pro unlocks the data that turns picks into profits.</strong>
+            </p>
+            {/* Mobile-only quick summary so users grok pricing at a glance */}
+            <p className="mt-3 text-sm text-gray-400 md:hidden">
+              Free is $0/month. Pro is $10/month (or $96/year) with a 60-day money-back guarantee.
             </p>
           </div>
 
@@ -371,7 +395,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <ul className="space-y-3">
+              {/* Desktop: always show full list */}
+              <ul className="space-y-3 hidden md:block">
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
                   <span><strong>1-3 stock picks daily</strong> (based on market opportunities)</span>
@@ -409,6 +434,54 @@ export default function Home() {
                   <span>Precise entry zones</span>
                 </li>
               </ul>
+
+              {/* Mobile: collapse benefits under price, expand on tap */}
+              <div className="block md:hidden border-t border-[#1a3a52] pt-4">
+                <details className="group">
+                  <summary className="cursor-pointer flex items-center justify-between text-sm font-semibold text-gray-100">
+                    <span>See what&apos;s included</span>
+                    <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                  </summary>
+                  <ul className="mt-4 space-y-3 text-sm">
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>1-3 stock picks daily</strong> (based on market opportunities)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span>Entry prices &amp; sector analysis</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span>Why it matters &amp; momentum checks</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span>Basic risk assessment</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span>7-day archive access</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-500">
+                      <span className="text-gray-600 mt-1">✕</span>
+                      <span>Confidence scores</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-500">
+                      <span className="text-gray-600 mt-1">✕</span>
+                      <span>Stop-loss &amp; profit targets</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-500">
+                      <span className="text-gray-600 mt-1">✕</span>
+                      <span>Portfolio allocation %</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-500">
+                      <span className="text-gray-600 mt-1">✕</span>
+                      <span>Precise entry zones</span>
+                    </li>
+                  </ul>
+                </details>
+              </div>
 
               <a
                 href="#subscribe"
@@ -451,7 +524,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <ul className="space-y-3">
+              {/* Desktop: always show full list */}
+              <ul className="space-y-3 hidden md:block">
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
                   <span className="font-semibold">Same 1-3 daily picks + the secret sauce:</span>
@@ -490,21 +564,52 @@ export default function Home() {
                 </li>
               </ul>
 
-              {/* Prominent Guarantee */}
-              <div className="bg-[#00ff88]/10 border border-[#00ff88]/30 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <span className="text-xl">🛡️</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white mb-1">
-                      60-Day Money-Back Guarantee
-                    </p>
-                    <p className="text-xs text-gray-300 leading-relaxed">
-                      Not satisfied? Get a full refund, no questions asked. We&apos;re that confident in our picks.
-                    </p>
-                  </div>
-                </div>
+              {/* Mobile: collapse Pro benefits under price, expand on tap */}
+              <div className="block md:hidden border-t border-[#1a3a52] pt-4">
+                <details className="group">
+                  <summary className="cursor-pointer flex items-center justify-between text-sm font-semibold text-gray-100">
+                    <span>See everything in Pro</span>
+                    <Plus className="h-5 w-5 text-[#00ff88] transition-transform duration-200 group-open:rotate-45 flex-shrink-0" />
+                  </summary>
+                  <ul className="mt-4 space-y-3 text-sm">
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span className="font-semibold">Same 1-3 daily picks + the secret sauce:</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>AI confidence scores</strong> (0-100 rating for conviction)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>Precise entry zones</strong> (save 3-5% on entries)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>Stop-loss levels</strong> (protect against losses)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>Profit targets</strong> (2:1 reward-to-risk ratio)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>Portfolio allocation %</strong> (optimize position sizing)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span><strong>Full risk breakdown</strong> (all caution notes)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span>Unlimited archive + performance tracking</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-gray-400 mt-1">✓</span>
+                      <span>Daily learning moments (investing education)</span>
+                    </li>
+                  </ul>
+                </details>
               </div>
 
               {/* Payment Option */}
@@ -636,7 +741,7 @@ export default function Home() {
       <SectionDivider />
 
       {/* Final CTA Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border border-[#00ff88]/20 rounded-2xl p-8 md:p-12 text-center space-y-6">
           <h3 className="text-2xl md:text-3xl font-bold text-white text-balance">Start your mornings smarter</h3>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto text-pretty">
@@ -649,6 +754,40 @@ export default function Home() {
         </div>
       </section>
       </main>
+
+      {/* Mobile sticky CTA bar */}
+      {showMobileStickyCTA && (
+        <div className="fixed inset-x-0 bottom-0 z-40 md:hidden px-4 pb-4">
+          <div className="bg-[#0B1E32]/95 border border-[#1a3a52] rounded-2xl shadow-lg shadow-black/40 p-3 flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Dismiss quick actions"
+              className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-300"
+              onClick={() => setShowMobileStickyCTA(false)}
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">Ready for Pro-level guidance?</p>
+              <p className="text-xs text-gray-400">Unlock AI confidence scores, precise entries, and risk levels.</p>
+            </div>
+            <a
+              href="#pricing"
+              className="px-3 py-2 text-xs font-semibold rounded-lg bg-[#00ff88] text-[#0B1E32] hover:bg-[#00dd77] transition-colors whitespace-nowrap"
+            >
+              Go Pro
+            </a>
+          </div>
+          <div className="mt-1 flex justify-end">
+            <a
+              href="#subscribe"
+              className="text-[11px] text-gray-300 hover:text-[#00ff88] underline-offset-2 hover:underline"
+            >
+              Or start free
+            </a>
+          </div>
+        </div>
+      )}
 
       <SiteFooter />
     </div>

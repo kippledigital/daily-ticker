@@ -108,7 +108,7 @@ export function PerformanceDashboard() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8">
       {/* Performance Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Win Rate */}
         <div className="bg-[#0a1929] border border-[#1a3a52] rounded-xl p-6 space-y-3">
           <div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ export function PerformanceDashboard() {
       <div className="bg-[#0a1929] border border-[#1a3a52] rounded-xl overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-[#1a3a52]">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <h3 className="text-lg font-mono font-bold text-white" id="picks-table">Recent Closed Picks</h3>
             <div className="flex gap-2">
               <button
@@ -228,6 +228,10 @@ export function PerformanceDashboard() {
               </button>
             </div>
           </div>
+          {/* Mobile-only quick summary of performance for context */}
+          <p className="mt-3 text-xs text-gray-400 md:hidden">
+            Last {summary.total_closed_picks || 0} closed picks: {summary.win_rate_percent?.toFixed?.(0) ?? Math.round(summary.win_rate_percent || 0)}% win rate, avg return {(summary.avg_return_percent || 0) >= 0 ? '+' : ''}{(summary.avg_return_percent || 0).toFixed(1)}%.
+          </p>
         </div>
 
         {/* Table */}
@@ -239,8 +243,8 @@ export function PerformanceDashboard() {
                 <th className="text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Entry</th>
                 <th className="text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Exit</th>
                 <th className="text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Return</th>
-                <th className="text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Days</th>
-                <th className="text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="hidden sm:table-cell text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Days</th>
+                <th className="text-left p-4 text-xs font-mono text-gray-400 uppercase tracking-wider whitespace-nowrap">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -256,7 +260,7 @@ export function PerformanceDashboard() {
                     <td className="p-4">
                       <div>
                         <p className="text-sm font-mono font-bold text-white">{pick.stocks.ticker}</p>
-                        <p className="text-xs text-gray-400">{pick.stocks.sector}</p>
+                        <p className="hidden sm:block text-xs text-gray-400">{pick.stocks.sector}</p>
                       </div>
                     </td>
                     <td className="p-4">
@@ -294,14 +298,15 @@ export function PerformanceDashboard() {
                         <p className="text-sm text-gray-400">-</p>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 hidden sm:table-cell">
                       <p className="text-sm font-mono text-gray-300">
                         {pick.holding_days !== null ? `${pick.holding_days}d` : '-'}
                       </p>
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 whitespace-nowrap">
                       <span className={cn(
-                        "px-2 py-1 text-xs font-mono rounded-full font-semibold",
+                        // Inline-flex + no-wrap so pills don't break on small screens
+                        "inline-flex items-center justify-center gap-1 px-2 py-1 text-xs font-mono rounded-full font-semibold whitespace-nowrap min-w-[72px]",
                         pick.outcome === 'win' ? "bg-[#00ff88]/10 text-[#00ff88]" :
                         pick.outcome === 'loss' ? "bg-[#ff4444]/10 text-[#ff4444]" :
                         "bg-gray-500/10 text-gray-400"

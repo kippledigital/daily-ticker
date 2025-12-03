@@ -39,7 +39,7 @@ export function EmailPreview() {
       </div>
       <div className="grid lg:grid-cols-[380px,1fr] gap-6">
         {/* Left: Inbox Preview */}
-        <div className="bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden">
+        <div className="hidden lg:block bg-[#0a1929] border-2 border-[#1a3a52] rounded-xl overflow-hidden">
           <div className="bg-[#1a3a52]/30 border-b border-[#1a3a52] px-4 py-3 flex items-center gap-2">
             <Mail className="h-4 w-4 text-gray-400" />
             <span className="text-sm font-semibold text-white">Inbox</span>
