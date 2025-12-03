@@ -21,10 +21,11 @@ interface ArchivePageClientProps {
 
 export function ArchivePageClient({ brief }: ArchivePageClientProps) {
   const [userTier, setUserTier] = useState<'free' | 'premium'>('free')
-  const supabase = createClient()
 
   // Fetch user tier from Supabase session
   useEffect(() => {
+    const supabase = createClient()
+
     async function getUserTier() {
       const { data: { session } } = await supabase.auth.getSession()
 
@@ -43,7 +44,7 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
     }
 
     getUserTier()
-  }, [supabase])
+  }, [])
 
   const formattedDate = formatArchiveDate(brief.date)
   const shareUrl = `https://dailyticker.co/archive/${brief.date}`
