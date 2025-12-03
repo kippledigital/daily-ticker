@@ -71,11 +71,6 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
             {brief.subject}
           </h1>
-          {brief.tldr && (
-            <p className="text-lg text-gray-300 leading-relaxed">
-              {brief.tldr}
-            </p>
-          )}
         </div>
 
         {/* Brief Content - Matching Email Design */}

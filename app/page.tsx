@@ -53,7 +53,7 @@ export default function Home() {
     name: "Daily Ticker",
     url: "https://dailyticker.co",
     logo: "https://dailyticker.co/logo.png",
-    description: "A daily, clear & actionable market brief for people who want to be in the action but don't have time to do the research. Get up to 3 actionable stock picks daily — FREE.",
+    description: "A daily, clear & actionable market brief for people who want to trade short-term market moves but don't have time to do the research. Get 1-3 short-term stock setups in a 5-minute morning brief — FREE.",
     sameAs: [
       "https://twitter.com/GetDailyTicker"
     ],
@@ -158,13 +158,13 @@ export default function Home() {
 
           {/* Headline - Updated per PM spec */}
           <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight text-balance">
-            Market insights that make sense
+            Short-term market moves that make sense
           </h2>
 
           {/* Subtext - NEW: Clear value prop per PM spec */}
           <div className="space-y-3">
             <p className="text-xl md:text-2xl text-white font-semibold">
-              Get up to 3 actionable stock picks daily — FREE
+              Get 1-3 short-term stock setups in a 5-minute morning brief — FREE
             </p>
             <p className="text-base md:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Upgrade to Pro for confidence scores, stop-loss levels, and profit targets that give you an edge on every trade.
@@ -239,7 +239,7 @@ export default function Home() {
                 <h4 className="text-xl font-bold text-white">Actionable Stock Picks</h4>
               </div>
               <p className="text-gray-300 leading-relaxed text-sm">
-                Not just &ldquo;what moved&rdquo; but <strong>when to enter</strong>, <strong>how much to allocate</strong>, and <strong>why it matters</strong>. Every pick includes entry zones and risk levels.
+                Not just &ldquo;what moved&rdquo; but <strong>short-term momentum and breakout setups</strong> with <strong>when to enter</strong>, <strong>how much to allocate</strong>, and <strong>why it matters</strong>. Every pick includes entry zones and risk levels.
               </p>
             </div>
 
@@ -343,9 +343,9 @@ export default function Home() {
           <div className="text-center mb-8 md:mb-12">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Choose Your Investment Edge</h3>
             <p className="text-gray-300 text-lg max-w-3xl mx-auto">
-              Both tiers get the same daily stock picks (1-3 depending on market opportunities).
+              Both tiers get the same daily stock picks and short-term setups (1-3 depending on market opportunities).
               <br />
-              <strong className="text-white">Pro unlocks the data that turns picks into profits.</strong>
+              <strong className="text-white">Pro unlocks the trading toolkit — confidence scores, precise entry zones, stop-loss levels, and profit targets.</strong>
             </p>
             {/* Mobile-only quick summary so users grok pricing at a glance */}
             <p className="mt-3 text-sm text-gray-400 md:hidden">

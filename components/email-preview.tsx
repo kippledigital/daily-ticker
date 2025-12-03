@@ -234,8 +234,9 @@ export function EmailPreview() {
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
                   <p className="text-sm text-gray-300">
-                    Consider scaling in on pullbacks to $510-515 range. Watch tomorrow&apos;s broader tech sector
-                    performance for confirmation of trend strength.
+                    Consider scaling in on pullbacks to the $510-515 range over the next few sessions. This is a short-term
+                    momentum swing, not a multi-year hold—watch tomorrow&apos;s broader tech sector performance for confirmation
+                    of trend strength.
                   </p>
                 </div>
               </div>
@@ -317,8 +318,8 @@ export function EmailPreview() {
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
                   <p className="text-sm text-gray-300">
-                    Good entry opportunity on any dip below $145. Set alerts for MI300X shipment updates
-                    as a momentum catalyst.
+                    Good swing-trade entry on any dip below $145. Set alerts for MI300X shipment updates as near-term
+                    momentum catalysts for this setup.
                   </p>
                 </div>
               </div>
@@ -400,8 +401,8 @@ export function EmailPreview() {
                 <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
                   <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
                   <p className="text-sm text-gray-300">
-                    Core long-term hold. Add on any pullback to $375-380 support level. Watch quarterly
-                    Azure growth numbers closely.
+                    Core long-term name, but today&apos;s setup is a swing-style add-on: add on any pullback to the $375-380
+                    support level with a defined stop and profit target. Watch quarterly Azure growth numbers closely as catalysts.
                   </p>
                 </div>
               </div>

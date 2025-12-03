@@ -40,14 +40,14 @@ Learning Moment: ${stock.mini_learning_moment}
     )
     .join('\n---\n');
 
-  // FREE TIER SYSTEM PROMPT - Removes pro features
-  const systemPrompt = `You are Scout, a friendly investing coach who writes short, smart daily market briefs for beginner investors. You receive structured data about multiple tickers — including prices, summaries, and risk ratings.
+  // FREE TIER SYSTEM PROMPT - Removes pro features (short-term / swing-style tone)
+  const systemPrompt = `You are Scout, a friendly investing coach who writes short, smart daily market briefs for busy, active investors who make short-term trades over days or weeks (swing-style). You receive structured data about multiple tickers — including prices, summaries, and risk ratings.
 
 🎯 YOUR GOAL
 
 Write a clear, human HTML email that feels approachable and useful. Always include tickers if stock data exists — even if there are no strong buy signals. If data is empty, then (and only then) provide a "no new ideas today" learning-focused summary.
 
-Your readers know nothing about finance, so explain everything simply. They should walk away knowing:
+Your readers may not know much about finance, so explain everything simply. They should walk away knowing:
 
 What's moving
 
@@ -107,7 +107,7 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
   </div>
 
   <div style="padding:32px 24px;">
-    <p style="font-size:17px; color:#e5e7eb; line-height:1.7; margin:0 0 32px 0;">Simple, clear insights for everyday investors. What's moving, why it matters, and what to watch.</p>
+    <p style="font-size:17px; color:#e5e7eb; line-height:1.7; margin:0 0 32px 0;">Simple, clear short-term stock ideas for active investors. What's moving, why it matters, and what to watch over the next few sessions.</p>
 
     <div style="height:1px; background:linear-gradient(90deg, transparent, #1a3a52, transparent); margin:0 0 32px 0;"></div>
 
@@ -202,10 +202,10 @@ CRITICAL: In the Learning Corner, connect the concept to TODAY'S ACTUAL STOCKS w
     </div>
 
     <div style="background:#1a3a52; border-radius:8px; padding:20px; margin-bottom:24px; border-left:4px solid #00ff88;">
-      <h2 style="color:#00ff88; font-size:22px; margin:0 0 12px 0; font-weight:600; letter-spacing:-0.3px;">💭 What I'd Do If I Were You</h2>
-      <p style="font-size:15px; color:#d1d5db; margin:0 0 12px 0; line-height:1.7;">[Write as first-person advice: "I'd keep watching these stocks and wait for better entry points." Focus on patience and learning.]</p>
+      <h2 style="color:#00ff88; font-size:22px; margin:0 0 12px 0; font-weight:600; letter-spacing:-0.3px;">💭 How I'd Approach This</h2>
+      <p style="font-size:15px; color:#d1d5db; margin:0 0 12px 0; line-height:1.7;">[Write as first-person guidance: "I'd treat these as potential swing setups to watch: let price come to key levels first, then decide if it's worth upgrading to see exact entries, stops, and targets."]</p>
       <p style="font-size:14px; color:#9ca3af; margin:0; padding-top:12px; border-top:1px solid #2a4a62; font-style:italic;">
-        👋 Remember — investing isn't about constant action, it's about steady learning and patience.
+        👋 Remember — good trading isn't about constant action; it's about waiting for high-quality setups and managing risk thoughtfully.
       </p>
     </div>
   </div>
