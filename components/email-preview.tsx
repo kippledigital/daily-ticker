@@ -231,14 +231,24 @@ export function EmailPreview() {
                   </div>
                 )}
 
-                <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
-                  <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
-                  <p className="text-sm text-gray-300">
-                    Consider scaling in on pullbacks to the $510-515 range over the next few sessions. This is a short-term
-                    momentum swing, not a multi-year hold—watch tomorrow&apos;s broader tech sector performance for confirmation
-                    of trend strength.
-                  </p>
-                </div>
+                {viewMode === 'pro' ? (
+                  <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
+                    <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
+                    <p className="text-sm text-gray-300">
+                      Consider scaling in on pullbacks to the $510-515 range over the next few sessions. This is a short-term
+                      momentum swing, not a multi-year hold—watch tomorrow&apos;s broader tech sector performance for confirmation
+                      of trend strength.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
+                    <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
+                    <p className="text-sm text-gray-300">
+                      Treat this as a short-term momentum swing and watch how NVDA pulls back and reacts over the next few sessions,
+                      especially relative to the broader tech sector, rather than chasing the initial move.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -315,13 +325,23 @@ export function EmailPreview() {
                   </div>
                 )}
 
-                <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
-                  <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
-                  <p className="text-sm text-gray-300">
-                    Good swing-trade entry on any dip below $145. Set alerts for MI300X shipment updates as near-term
-                    momentum catalysts for this setup.
-                  </p>
-                </div>
+                {viewMode === 'pro' ? (
+                  <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
+                    <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
+                    <p className="text-sm text-gray-300">
+                      Good swing-trade entry on any dip below $145. Set alerts for MI300X shipment updates as near-term
+                      momentum catalysts for this setup.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
+                    <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
+                    <p className="text-sm text-gray-300">
+                      Consider AMD a short-term swing candidate and look for healthy pullbacks and renewed strength around AI news,
+                      instead of buying after a sharp up day.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -398,13 +418,23 @@ export function EmailPreview() {
                   </div>
                 )}
 
-                <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
-                  <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
-                  <p className="text-sm text-gray-300">
-                    Core long-term name, but today&apos;s setup is a swing-style add-on: add on any pullback to the $375-380
-                    support level with a defined stop and profit target. Watch quarterly Azure growth numbers closely as catalysts.
-                  </p>
-                </div>
+                {viewMode === 'pro' ? (
+                  <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
+                    <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
+                    <p className="text-sm text-gray-300">
+                      Core long-term name, but today&apos;s setup is a swing-style add-on: add on any pullback to the $375-380
+                      support level with a defined stop and profit target. Watch quarterly Azure growth numbers closely as catalysts.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-r from-[#00ff88]/10 to-transparent border-l-2 border-[#00ff88] p-3 rounded">
+                    <p className="text-sm font-bold text-white mb-1">🎯 What to Do</p>
+                    <p className="text-sm text-gray-300">
+                      Think of MSFT as a core name with a short-term add-on trade: watch how price behaves around recent support
+                      and key Azure updates before committing, and focus on having a clear plan for exits.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

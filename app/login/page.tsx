@@ -20,8 +20,31 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
+      const normalizedEmail = email.trim().toLowerCase()
+
+      // Check if this email belongs to an active Pro subscriber before sending magic link
+      const { data: subscriber, error: lookupError } = await supabase
+        .from('subscribers')
+        .select('tier, subscription_status')
+        .eq('email', normalizedEmail)
+        .single()
+
+      const isPremium =
+        !lookupError &&
+        subscriber &&
+        subscriber.tier === 'premium' &&
+        subscriber.subscription_status !== 'canceled'
+
+      if (!isPremium) {
+        setError(
+          "This email isn't on a Pro plan yet. Use the email you used at checkout, or upgrade to Pro first."
+        )
+        setLoading(false)
+        return
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email: normalizedEmail,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -61,9 +84,9 @@ export default function LoginPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-[#00ff88]/10 border-2 border-[#00ff88] rounded-full mb-4">
                     <Mail className="h-8 w-8 text-[#00ff88]" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                  <h2 className="text-2xl font-bold text-white mb-2">Sign in to Pro</h2>
                   <p className="text-gray-400">
-                    Enter your email to receive a magic link
+                    Use the same email you used at checkout to unlock Pro features in the archive.
                   </p>
                 </div>
 
@@ -156,9 +179,9 @@ export default function LoginPage() {
           {/* Help Text */}
           <div className="mt-8 text-center">
             <p className="text-gray-400 text-sm">
-              Don&apos;t have an account?{' '}
+              Not on Pro yet?{' '}
               <Link href="/#pricing" className="text-[#00ff88] hover:text-[#00dd77] font-medium">
-                Subscribe to Daily Ticker
+                See Pro pricing
               </Link>
             </p>
           </div>

@@ -11,6 +11,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { createClient } from '@/lib/supabase-auth'
 import { ArchiveNavigation } from './archive-navigation'
 import { PerformanceSummary } from './performance-summary'
+import { LoginModal } from '@/components/login-modal'
 import type { BriefData } from '@/app/api/archive/store/route'
 import { formatArchiveDate } from '@/lib/seo/generate-archive-metadata'
 
@@ -153,7 +154,7 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
                     <div className="bg-[#2a1a1f] border-2 border-[#ff3366] rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <p className="text-[#ffb3c6] text-xs uppercase font-semibold tracking-wider">Stop Loss</p>
-                        <PremiumBadge size="sm" />
+                        {userTier === 'free' && <PremiumBadge size="sm" />}
                       </div>
                       <p className="text-[#ff3366] text-xl font-bold font-mono">
                         <BlurredPremium tier={userTier} feature="Stop Loss">
@@ -164,7 +165,7 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
                     <div className="bg-[#0a2a1a] border-2 border-[#00ff88] rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <p className="text-[#b3ffdd] text-xs uppercase font-semibold tracking-wider">Profit Target</p>
-                        <PremiumBadge size="sm" />
+                        {userTier === 'free' && <PremiumBadge size="sm" />}
                       </div>
                       <p className="text-[#00ff88] text-xl font-bold font-mono">
                         <BlurredPremium tier={userTier} feature="Profit Target">
@@ -207,7 +208,7 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
                     <span className="text-gray-600">•</span>
                     <span className="flex items-center gap-1">
                       <strong>Confidence:</strong>
-                      <PremiumBadge size="sm" />
+                      {userTier === 'free' && <PremiumBadge size="sm" />}
                       <BlurredPremium tier={userTier} feature="Confidence Score">
                         {stock.confidence}%
                       </BlurredPremium>
@@ -225,7 +226,7 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
         {/* Archive Navigation */}
         <ArchiveNavigation currentDate={brief.date} />
 
-        {/* Pro Upgrade CTA */}
+        {/* Pro Upgrade / Sign-In CTA */}
         <div className="mt-16 p-8 md:p-12 bg-gradient-to-br from-[#1a3a52] to-[#0B1E32] border-2 border-[#00ff88]/40 rounded-2xl">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -236,7 +237,8 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
               Unlock Full Analysis
             </h3>
             <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-center">
-              Upgrade to Pro to see confidence scores, stop-loss levels, profit targets, and complete position sizing recommendations
+              Free readers see a limited version of this brief. Pro members unlock confidence scores, stop-loss levels,
+              profit targets, and complete position sizing recommendations across the full archive.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
               <Link href="/#pricing">
@@ -244,6 +246,10 @@ export function ArchivePageClient({ brief }: ArchivePageClientProps) {
                   Upgrade to Pro
                 </Button>
               </Link>
+              <LoginModal
+                triggerText="Pro member? Sign in"
+                triggerClassName="px-8 py-3 border border-[#00ff88]/60 text-[#00ff88] hover:bg-[#00ff88]/10 text-lg rounded-lg font-medium transition-colors"
+              />
             </div>
             <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
               <span>Starting at $8/month</span>

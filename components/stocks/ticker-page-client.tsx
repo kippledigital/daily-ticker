@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, TrendingUp, TrendingDown, CheckCircle2, XCircle, Clock, BarChart3, Target, ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SubscribeForm } from '@/components/subscribe-form';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
+import { createClient } from '@/lib/supabase-auth';
+import { PremiumBadge } from '@/components/premium-badge';
 import type { TickerPick, TickerMetrics, RelatedTickerWithMetrics } from '@/lib/data/get-ticker-data';
 
 interface TickerPageClientProps {
@@ -26,6 +28,30 @@ export function TickerPageClient({
 }: TickerPageClientProps) {
   const [showAllPicks, setShowAllPicks] = useState(false);
   const displayedPicks = showAllPicks ? picks : picks.slice(0, 5);
+  const [userTier, setUserTier] = useState<'free' | 'premium'>('free');
+
+  // Fetch user tier to gate Pro-only metrics like confidence scores
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function getUserTier() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user?.email) {
+        const { data: subscriber, error } = await supabase
+          .from('subscribers')
+          .select('tier')
+          .eq('email', session.user.email)
+          .single();
+
+        if (!error && subscriber) {
+          setUserTier(subscriber.tier === 'premium' ? 'premium' : 'free');
+        }
+      }
+    }
+
+    getUserTier();
+  }, []);
 
   const formatDate = (dateStr: string) => {
     // Debug logging
@@ -361,7 +387,11 @@ export function TickerPageClient({
                 )}
                 <div>
                   <div className="text-gray-400 mb-1">Confidence</div>
-                  <div className="font-semibold text-white">{metrics.latestPick.confidence}%</div>
+                  <div className="font-semibold text-white">
+                    {userTier === 'premium'
+                      ? `${metrics.latestPick.confidence}%`
+                      : <PremiumBadge size="sm" />}
+                  </div>
                 </div>
                 <div>
                   <div className="text-gray-400 mb-1">Risk Level</div>

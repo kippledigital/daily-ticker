@@ -1,11 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { TrendingUp, Menu, X } from 'lucide-react'
+import { LoginModal } from '@/components/login-modal'
+import { createClient } from '@/lib/supabase-auth'
 
 export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userTier, setUserTier] = useState<'guest' | 'free' | 'premium'>('guest')
+
+  // Detect logged-in Pro users so we don't keep prompting them to sign in
+  useEffect(() => {
+    const supabase = createClient()
+
+    async function getTier() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session?.user?.email) {
+        const { data: subscriber } = await supabase
+          .from('subscribers')
+          .select('tier')
+          .eq('email', session.user.email)
+          .single()
+
+        if (subscriber?.tier === 'premium') {
+          setUserTier('premium')
+        } else if (subscriber) {
+          setUserTier('free')
+        } else {
+          setUserTier('guest')
+        }
+      } else {
+        setUserTier('guest')
+      }
+    }
+
+    getTier()
+  }, [])
 
   return (
     <header className="border-b border-[#1a3a52] bg-[#0B1E32]/95 backdrop-blur-sm sticky top-0 z-50">
@@ -23,11 +55,12 @@ export function SiteHeader() {
           <Link href="/archive" className="text-sm text-gray-300 hover:text-white transition-colors">
             Archive
           </Link>
+          {userTier !== 'premium' && <LoginModal />}
           <a
             href="/#pricing"
             className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] font-bold text-sm rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/20 hover:shadow-[#00ff88]/40"
           >
-            Go Pro
+            {userTier === 'premium' ? 'Pro' : 'Go Pro'}
           </a>
         </nav>
 
@@ -64,12 +97,18 @@ export function SiteHeader() {
             >
               Archive
             </Link>
+            {userTier !== 'premium' && (
+              <LoginModal
+                triggerText="Sign in"
+                triggerClassName="text-sm text-gray-300 hover:text-white transition-colors py-2 text-left"
+              />
+            )}
             <a
               href="/#pricing"
               onClick={() => setMobileMenuOpen(false)}
               className="px-4 py-2 bg-[#00ff88] text-[#0B1E32] font-bold text-sm rounded-lg hover:bg-[#00dd77] transition-colors shadow-lg shadow-[#00ff88]/20 text-center"
             >
-              Go Pro
+              {userTier === 'premium' ? 'Pro' : 'Go Pro'}
             </a>
           </nav>
         </div>

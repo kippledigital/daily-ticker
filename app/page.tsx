@@ -415,7 +415,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3 text-gray-200">
                   <span className="text-gray-400 mt-1">✓</span>
-                  <span>7-day archive access</span>
+                  <span>Full archive with basic data (Pro unlocks exact levels)</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-500">
                   <span className="text-gray-600 mt-1">✕</span>
@@ -461,7 +461,7 @@ export default function Home() {
                     </li>
                     <li className="flex items-start gap-3 text-gray-200">
                       <span className="text-gray-400 mt-1">✓</span>
-                      <span>7-day archive access</span>
+                      <span>Full archive with basic data (Pro unlocks exact levels)</span>
                     </li>
                     <li className="flex items-start gap-3 text-gray-500">
                       <span className="text-gray-600 mt-1">✕</span>
