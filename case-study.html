@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Ticker - Case Study | Nikki Kipple</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0B1E32;
+      color: #F0F0F0;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(180deg, #1a3a52 0%, #0B1E32 100%);
+      border-bottom: 2px solid #00FF88;
+      padding: 48px 0;
+      margin-bottom: 64px;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .back-link {
+      color: #00FF88;
+      text-decoration: none;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .back-link:hover {
+      opacity: 0.8;
+    }
+
+    h1 {
+      font-size: 64px;
+      font-weight: 700;
+      color: #00FF88;
+      font-family: 'Space Mono', monospace;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      font-size: 24px;
+      color: #D1D5DB;
+      font-weight: 400;
+      max-width: 800px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #9CA3AF;
+    }
+
+    .meta-item strong {
+      color: #F0F0F0;
+    }
+
+    /* Section Styles */
+    section {
+      margin-bottom: 96px;
+    }
+
+    h2 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 24px;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: #00FF88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    h3 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #D1D5DB;
+      margin-bottom: 16px;
+      max-width: 800px;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(26, 58, 82, 0.3);
+      border: 1px solid #1a3a52;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .card-premium {
+      background: linear-gradient(135deg, rgba(26, 58, 82, 0.8) 0%, rgba(11, 30, 50, 0.8) 100%);
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin: 32px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin: 32px 0;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+      background: rgba(26, 58, 82, 0.3);
+      border: 1px solid #1a3a52;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: #00FF88;
+      font-family: 'Space Mono', monospace;
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Feature List */
+    .feature-list {
+      list-style: none;
+      margin: 24px 0;
+    }
+
+    .feature-list li {
+      padding: 16px 0;
+      border-bottom: 1px solid #1a3a52;
+      font-size: 18px;
+      color: #D1D5DB;
+      display: flex;
+      align-items: start;
+      gap: 12px;
+    }
+
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .feature-list li::before {
+      content: "→";
+      color: #00FF88;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Tech Stack */
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .tech-badge {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      color: #00FF88;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Screenshot Container */
+    .screenshot {
+      background: #0B1E32;
+      border: 2px solid #1a3a52;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 32px 0;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .screenshot img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .screenshot-caption {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #9CA3AF;
+      text-align: center;
+    }
+
+    /* Call to Action */
+    .cta-box {
+      background: linear-gradient(135deg, #1a3a52 0%, #0B1E32 100%);
+      border: 2px solid #00FF88;
+      border-radius: 12px;
+      padding: 48px;
+      text-align: center;
+      margin: 64px 0;
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.15);
+    }
+
+    .cta-box h2 {
+      margin-bottom: 16px;
+    }
+
+    .cta-box h2::after {
+      display: none;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #00FF88;
+      color: #0B1E32;
+      padding: 16px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: 24px;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn:hover {
+      background: #00dd77;
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #00FF88;
+      border: 2px solid #00FF88;
+      margin-left: 16px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    /* Comparison Table */
+    .comparison {
+      margin: 32px 0;
+    }
+
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .comparison-col {
+      background: rgba(26, 58, 82, 0.3);
+      border: 1px solid #1a3a52;
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .comparison-col h4 {
+      color: #00FF88;
+      font-size: 18px;
+      margin-bottom: 12px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+      margin: 32px 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, #00FF88 0%, transparent 100%);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 32px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -46px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #00FF88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    .timeline-week {
+      color: #00FF88;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 40px;
+      }
+
+      .tagline {
+        font-size: 18px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      .comparison-row {
+        grid-template-columns: 1fr;
+      }
+
+      .meta {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .btn-secondary {
+        margin-left: 0;
+        margin-top: 16px;
+      }
+    }
+
+    /* LED Glow Effect */
+    .led-text {
+      color: #00FF88;
+      font-family: 'Space Mono', monospace;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    /* Live Indicator */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      color: #00FF88;
+      margin-bottom: 24px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #00FF88;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="https://nikkikipple.com" class="back-link">← Back to Portfolio</a>
+        <h1>Daily Ticker</h1>
+        <p class="tagline">Building a market brief that busy investors actually trust</p>
+        <div class="meta">
+          <div class="meta-item">
+            <span>🎨</span>
+            <span><strong>Role:</strong> Product Design</span>
+          </div>
+          <div class="meta-item">
+            <span>💻</span>
+            <span><strong>Development:</strong> Full-Stack</span>
+          </div>
+          <div class="meta-item">
+            <span>🤖</span>
+            <span><strong>AI:</strong> Multi-Agent Systems</span>
+          </div>
+          <div class="meta-item">
+            <span>⏱️</span>
+            <span><strong>Timeline:</strong> 6 weeks</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Overview -->
+    <section>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span>Live Product</span>
+      </div>
+      <h2>Overview</h2>
+      <p>
+        Daily Ticker is an AI-powered market brief that delivers 1-3 actionable short-term stock setups every weekday morning.
+        What started as a personal tool to save time on market research evolved into a full product serving investors who want
+        to trade momentum but don't have hours to research.
+      </p>
+      <p>
+        The challenge: Create a system that generates trustworthy, actionable market analysis at scale while maintaining
+        the quality of human research.
+      </p>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Automated Analysis</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">5min</span>
+          <span class="stat-label">Read Time</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">Daily</span>
+          <span class="stat-label">Delivery</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Problem -->
+    <section>
+      <h2>The Problem</h2>
+      <div class="card">
+        <h3>Busy investors face a research paradox</h3>
+        <p>
+          Most market newsletters either spam you with 20+ tickers daily (impossible to act on) or
+          provide vague macro commentary (not actionable). Meanwhile, doing proper research on short-term
+          setups takes 2-3 hours every morning.
+        </p>
+
+        <h3 style="margin-top: 32px;">Key Pain Points</h3>
+        <ul class="feature-list">
+          <li><strong>Information overload:</strong> Too many signals, not enough conviction</li>
+          <li><strong>No clear entry points:</strong> "Watch AAPL" isn't actionable</li>
+          <li><strong>Missing risk context:</strong> No stop-loss or position sizing guidance</li>
+          <li><strong>Time-intensive research:</strong> 2-3 hours daily to identify quality setups</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Solution -->
+    <section>
+      <h2>The Solution</h2>
+      <p>
+        A fully automated AI system that researches market data, identifies momentum setups,
+        and delivers a 5-minute brief with everything you need to make informed decisions.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Free Tier</h3>
+          <ul class="feature-list">
+            <li>1-3 daily stock picks</li>
+            <li>Entry prices & sector analysis</li>
+            <li>Why it matters & momentum checks</li>
+            <li>Basic risk assessment</li>
+            <li>Archive access with basic data</li>
+          </ul>
+        </div>
+
+        <div class="card card-premium">
+          <h3 class="led-text">Pro Tier - $10/month</h3>
+          <ul class="feature-list">
+            <li>Everything in Free, plus:</li>
+            <li><strong>AI confidence scores</strong> (0-100 conviction rating)</li>
+            <li><strong>Precise entry zones</strong> (save 3-5% on entries)</li>
+            <li><strong>Stop-loss levels</strong> (protect against losses)</li>
+            <li><strong>Profit targets</strong> (2:1 reward-to-risk ratio)</li>
+            <li><strong>Portfolio allocation %</strong> (optimize position sizing)</li>
+            <li><strong>Full risk breakdown</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design Process -->
+    <section>
+      <h2>Design Process</h2>
+
+      <h3>1. Research & Validation</h3>
+      <div class="card">
+        <p>
+          Started by interviewing 12 retail investors who actively trade short-term setups. Key insight:
+          They didn't need more information—they needed <strong>better curation and clearer conviction signals</strong>.
+        </p>
+        <p style="margin-top: 16px;">
+          Built an MVP that emailed myself daily picks. After 2 weeks of personal use, I knew the format worked.
+        </p>
+      </div>
+
+      <h3 style="margin-top: 48px;">2. Information Architecture</h3>
+      <div class="card">
+        <p>Designed the brief structure to answer 5 critical questions in order:</p>
+        <ul class="feature-list">
+          <li><strong>What's moving?</strong> Market pulse + sector rotation</li>
+          <li><strong>What should I buy?</strong> 1-3 specific tickers with conviction</li>
+          <li><strong>When do I enter?</strong> Entry price or zone</li>
+          <li><strong>What's my risk?</strong> Stop-loss, position size (Pro only)</li>
+          <li><strong>When do I exit?</strong> Profit targets (Pro only)</li>
+        </ul>
+      </div>
+
+      <h3 style="margin-top: 48px;">3. Visual System</h3>
+      <div class="card">
+        <p>
+          Created a design language inspired by Bloomberg terminals and LED ticker displays. The aesthetic
+          communicates credibility while being visually distinct from generic finance newsletters.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">#0B1E32</span>
+          <span class="tech-badge">#00FF88</span>
+          <span class="tech-badge">Inter</span>
+          <span class="tech-badge">Space Mono</span>
+          <span class="tech-badge">LED Glow Effects</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technical Implementation -->
+    <section>
+      <h2>Technical Implementation</h2>
+
+      <div class="card">
+        <h3>Full-Stack Architecture</h3>
+        <p>Built on Next.js 14 with TypeScript, deployed on Vercel with edge functions for performance.</p>
+
+        <div class="tech-stack">
+          <span class="tech-badge">Next.js 14</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Supabase</span>
+          <span class="tech-badge">Stripe</span>
+          <span class="tech-badge">Resend</span>
+          <span class="tech-badge">Claude API</span>
+          <span class="tech-badge">Vercel</span>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 48px;">AI Analysis Pipeline</h3>
+      <div class="card">
+        <p>
+          Multi-agent system using Claude Sonnet 3.7 for analysis. Each morning at 2 AM UTC:
+        </p>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-week">Step 1: Data Collection</div>
+            <p>Fetch market data, news, sector performance, and technical indicators</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-week">Step 2: Analysis Agent</div>
+            <p>AI analyzes 50+ tickers, identifies momentum setups, generates conviction scores</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-week">Step 3: Risk Assessment</div>
+            <p>Calculate stop-loss levels, profit targets, and position sizing (Pro features)</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-week">Step 4: Brief Generation</div>
+            <p>Format analysis into readable brief with market context</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-week">Step 5: Distribution</div>
+            <p>Send tiered emails (Free vs Pro), archive to database, update performance tracking</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 48px;">Key Technical Challenges</h3>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="color: #FF3366; margin-bottom: 12px;">Challenge: Email Deliverability</h4>
+          <p style="font-size: 16px;">
+            <strong>Problem:</strong> Daily automated emails risk spam filters
+          </p>
+          <p style="font-size: 16px; margin-top: 12px;">
+            <strong>Solution:</strong> Implemented SPF, DKIM, DMARC records, warmed up sending domain gradually,
+            monitored bounce rates, and built unsubscribe flows that preserve sender reputation
+          </p>
+        </div>
+
+        <div class="card">
+          <h4 style="color: #FF3366; margin-bottom: 12px;">Challenge: Cron Timeout Limits</h4>
+          <p style="font-size: 16px;">
+            <strong>Problem:</strong> AI analysis takes 5-10 minutes, Vercel default limit is 5 min
+          </p>
+          <p style="font-size: 16px; margin-top: 12px;">
+            <strong>Solution:</strong> Upgraded to Vercel Pro for 15-minute limit, optimized prompt engineering
+            to reduce token usage, implemented retry logic for failures
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section>
+      <h2>Shipped Features</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Freemium Model</h3>
+          <p>Free tier gets picks, Pro tier gets the trading toolkit</p>
+        </div>
+
+        <div class="card">
+          <h3>Archive System</h3>
+          <p>Browse past briefs, track performance, verify historical accuracy</p>
+        </div>
+
+        <div class="card">
+          <h3>Performance Dashboard</h3>
+          <p>Live tracking of every pick's performance with win rate, avg return, charts</p>
+        </div>
+
+        <div class="card">
+          <h3>Gated Pro Content</h3>
+          <p>Blurred risk levels, login modal, Stripe integration for upgrades</p>
+        </div>
+
+        <div class="card">
+          <h3>Ticker Animations</h3>
+          <p>Line-by-line cascade effects for visual engagement on landing page</p>
+        </div>
+
+        <div class="card">
+          <h3>Email Preferences</h3>
+          <p>User dashboard to manage subscription, pause emails, update payment</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section>
+      <h2>Results & Impact</h2>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Uptime Since Launch</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">Daily</span>
+          <span class="stat-label">Automated Briefs</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">Live</span>
+          <span class="stat-label">Performance Tracking</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 32px;">
+        <h3>What I Learned</h3>
+        <ul class="feature-list">
+          <li><strong>AI reliability:</strong> Production AI systems need extensive error handling—network timeouts,
+          API rate limits, and malformed responses happen daily</li>
+          <li><strong>Email is hard:</strong> Deliverability isn't just tech—it's reputation management,
+          engagement rates, and constant monitoring</li>
+          <li><strong>Freemium positioning:</strong> The line between free and paid must be clear. "Context vs. conviction"
+          worked—free gives picks, Pro gives exact execution levels</li>
+          <li><strong>Performance transparency:</strong> Showing live win rates builds trust faster than marketing copy</li>
+          <li><strong>Cron job complexity:</strong> Serverless cron jobs sound simple but require careful timeout management,
+          retry logic, and monitoring</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h2>See It Live</h2>
+      <p style="margin: 0 auto;">
+        Daily Ticker is live and delivering briefs every weekday. Check out the performance dashboard,
+        browse the archive, or try the free tier yourself.
+      </p>
+      <div>
+        <a href="https://www.dailyticker.co" class="btn" target="_blank">Visit Daily Ticker →</a>
+        <a href="https://www.dailyticker.co/style-guide" class="btn btn-secondary" target="_blank">View Style Guide</a>
+      </div>
+    </div>
+
+    <!-- Footer Navigation -->
+    <div style="text-align: center; padding: 48px 0; border-top: 1px solid #1a3a52; margin-top: 64px;">
+      <a href="https://nikkikipple.com" class="back-link" style="font-size: 16px;">← Back to Portfolio</a>
+    </div>
+  </main>
+</body>
+</html>

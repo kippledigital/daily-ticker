@@ -4,6 +4,7 @@ import { sendPerformanceUpdateNotification } from '@/lib/emails/admin-notificati
 
 // Force dynamic rendering (don't pre-render at build time)
 export const dynamic = 'force-dynamic'
+export const maxDuration = 300 // Allow up to 5 minutes for cron processing
 
 /**
  * GET/POST /api/performance/update
@@ -61,8 +62,12 @@ async function updatePerformance() {
     const today = new Date()
     const updates = []
 
-    // Smart filtering: Only check positions that actually need checking
-    // This keeps us under the 60s timeout while checking what matters
+    // Smart filtering: Only check positions that actually need checking.
+    // With Polygon's free tier (5 calls/minute) and a 5 minute maxDuration,
+    // we can safely process a larger slice of the book each day while staying
+    // under both the runtime and rate limits.
+    const MAX_POSITIONS_PER_RUN = 15
+
     const positionsToCheck = openPositions
       .map(position => {
         const entryDate = new Date(position.entry_date)
@@ -81,9 +86,9 @@ async function updatePerformance() {
       })
       // Sort by priority: oldest first (approaching 30-day limit)
       .sort((a, b) => b.daysOld - a.daysOld)
-      // Limit to what we can process in ~50 seconds (4 positions × 13s = 52s)
-      // This leaves buffer for the timeout
-      .slice(0, 4)
+      // Limit to what we can process in a single run while respecting
+      // Polygon rate limits and the 5 minute function timeout.
+      .slice(0, MAX_POSITIONS_PER_RUN)
 
     console.log(`📊 Smart filtering: ${openPositions.length} open → ${positionsToCheck.length} need checking`)
     if (positionsToCheck.length < openPositions.length) {
