@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import HyperText from "@/components/ui/hyper-text"
 import NumberTicker from "@/components/ui/number-ticker"
 import { BorderBeam } from "@/components/ui/border-beam"
+import { TickerCardAnimated } from "@/components/ui/ticker-card-animated"
 
 interface MarketIndex {
   symbol: string
@@ -365,49 +366,12 @@ export function HybridTicker() {
               )}
             </div>
 
-            <div key={currentPickIndex} className="space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-2xl font-mono font-bold text-white">
-                    {topPick.ticker}
-                  </div>
-                  <div className="text-sm text-gray-300 mt-1">{topPick.sector}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xl font-mono font-bold text-white">${topPick.entryPrice.toFixed(2)}</div>
-                  <div className={cn(
-                    "text-sm font-mono font-bold flex items-center gap-1 justify-end mt-1",
-                    "text-[#00ff88]"
-                  )}>
-                    <TrendingUp className="h-3 w-3" aria-hidden="true" />
-                    {topPick.action}
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-300 leading-relaxed">{topPick.summary}</p>
-
-              <div className="flex items-center gap-2 text-xs">
-                <span className={cn(
-                  "px-2 py-1 rounded-full font-mono font-semibold",
-                  topPick.riskLevel === "Low" ? "bg-[#00ff88]/10 text-[#00ff88]" :
-                  topPick.riskLevel === "Medium" ? "bg-yellow-500/10 text-yellow-400" :
-                  "bg-red-500/10 text-red-400"
-                )}>
-                  {topPick.riskLevel} Risk
-                </span>
-              </div>
-
-              <div className="flex justify-end">
-                <a
-                  href={`/archive/${todayDateString}`}
-                  className="inline-flex items-center text-sm font-semibold text-[#00ff88] hover:text-[#00dd77] transition-colors group"
-                >
-                  See Full Analysis
-                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                </a>
-              </div>
-            </div>
+            <TickerCardAnimated
+              pick={topPick}
+              pickIndex={currentPickIndex}
+              todayDateString={todayDateString}
+              animationStyle="scramble-up"
+            />
           </div>
         </div>
 
@@ -488,49 +452,12 @@ export function HybridTicker() {
               )}
             </div>
 
-            <div key={currentPickIndex} className="space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-2xl font-mono font-bold text-white">
-                    {topPick.ticker}
-                  </div>
-                  <div className="text-sm text-gray-300 mt-1">{topPick.sector}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xl font-mono font-bold text-white">${topPick.entryPrice.toFixed(2)}</div>
-                  <div className={cn(
-                    "text-sm font-mono font-bold flex items-center gap-1 justify-end mt-1",
-                    "text-[#00ff88]"
-                  )}>
-                    <TrendingUp className="h-3 w-3" aria-hidden="true" />
-                    {topPick.action}
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-300 leading-relaxed">{topPick.summary}</p>
-
-              <div className="flex items-center gap-2 text-xs flex-wrap">
-                <span className={cn(
-                  "px-2 py-1 rounded-full font-mono font-semibold",
-                  topPick.riskLevel === "Low" ? "bg-[#00ff88]/10 text-[#00ff88]" :
-                  topPick.riskLevel === "Medium" ? "bg-yellow-500/10 text-yellow-400" :
-                  "bg-red-500/10 text-red-400"
-                )}>
-                  {topPick.riskLevel} Risk
-                </span>
-              </div>
-
-              <div className="flex justify-end">
-                <a
-                  href={`/archive/${todayDateString}`}
-                  className="inline-flex items-center text-sm font-semibold text-[#00ff88] hover:text-[#00dd77] transition-colors group"
-                >
-                  See Full Analysis
-                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                </a>
-              </div>
-            </div>
+            <TickerCardAnimated
+              pick={topPick}
+              pickIndex={currentPickIndex}
+              todayDateString={todayDateString}
+              animationStyle="scramble-up"
+            />
           </div>
         </div>
         </div>
