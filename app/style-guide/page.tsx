@@ -310,7 +310,7 @@ export default function StyleGuidePage() {
         <section id="spacing" className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-6">Spacing</h2>
           <p className="text-gray-300 mb-8">
-            Consistent spacing creates visual hierarchy and improves readability. We use Tailwind's default spacing scale.
+            Consistent spacing creates visual hierarchy and improves readability. We use Tailwind&apos;s default spacing scale.
           </p>
           <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6">
             <div className="space-y-4">
@@ -652,7 +652,7 @@ export default function StyleGuidePage() {
         <section id="breakpoints" className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-6">Responsive Breakpoints</h2>
           <p className="text-gray-300 mb-8">
-            Tailwind's default breakpoints for responsive design.
+            Tailwind&apos;s default breakpoints for responsive design.
           </p>
           <div className="bg-[#1a3a52]/30 border border-[#1a3a52] rounded-lg p-6">
             <div className="space-y-3">
